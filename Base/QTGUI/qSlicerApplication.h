@@ -118,6 +118,10 @@ public:
 
 public slots:
 
+  /// Open module for node (\sa openNodeModule) and select node for editing
+  /// in that module
+  void editNode(vtkMRMLNode* node);
+
   /// Utility function that retrieve the best module for a node and trigger
   /// its associated QAction which eventually opens the module.
   /// \note qSlicerApplication is a temporary host for the function as it should be

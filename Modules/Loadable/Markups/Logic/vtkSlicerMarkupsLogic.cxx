@@ -174,25 +174,25 @@ void vtkSlicerMarkupsLogic::RegisterNodes()
 
   // Nodes
   vtkMRMLMarkupsNode* markupsNode = vtkMRMLMarkupsNode::New();
-  this->GetMRMLScene()->RegisterNodeClass(markupsNode);
+  this->GetMRMLScene()->RegisterNodeClass(markupsNode, "Markups");
   markupsNode->Delete();
 
   vtkMRMLMarkupsFiducialNode* fidNode = vtkMRMLMarkupsFiducialNode::New();
-  this->GetMRMLScene()->RegisterNodeClass(fidNode);
+  this->GetMRMLScene()->RegisterNodeClass(fidNode, "Markups");
   fidNode->Delete();
 
   // Display nodes
   vtkMRMLMarkupsDisplayNode* markupsDisplayNode = vtkMRMLMarkupsDisplayNode::New();
-  this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode);
+  this->GetMRMLScene()->RegisterNodeClass(markupsDisplayNode, "Markups");
   markupsDisplayNode->Delete();
 
   // Storage Nodes
   vtkMRMLMarkupsStorageNode* markupsStorageNode = vtkMRMLMarkupsStorageNode::New();
-  this->GetMRMLScene()->RegisterNodeClass(markupsStorageNode);
+  this->GetMRMLScene()->RegisterNodeClass(markupsStorageNode, "Markups");
   markupsStorageNode->Delete();
 
   vtkMRMLMarkupsFiducialStorageNode* markupsFiducialStorageNode = vtkMRMLMarkupsFiducialStorageNode::New();
-  this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode);
+  this->GetMRMLScene()->RegisterNodeClass(markupsFiducialStorageNode, "Markups");
   markupsFiducialStorageNode->Delete();
 }
 

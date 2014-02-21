@@ -37,6 +37,9 @@ public:
   qSlicerDataModuleWidget(QWidget *parentWidget = 0);
   virtual ~qSlicerDataModuleWidget();
 
+  /// Select a node for editing
+  virtual void editNode(vtkMRMLNode*)const;
+
 public slots:
 
   void setMRMLIDsVisible(bool visible);

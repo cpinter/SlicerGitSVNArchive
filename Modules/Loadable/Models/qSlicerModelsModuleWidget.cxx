@@ -341,8 +341,6 @@ void qSlicerModelsModuleWidget::onCurrentNodeChanged(vtkMRMLNode* newCurrentNode
 //-----------------------------------------------------------------------------
 void qSlicerModelsModuleWidget::setMRMLScene(vtkMRMLScene* scene)
 {
-  //Q_D(qSlicerModelsModuleWidget);
-
   if (scene == this->mrmlScene())
     {
     return;
@@ -378,6 +376,7 @@ void qSlicerModelsModuleWidget::hideAllModels()
     }
 }
 
+//-----------------------------------------------------------------------------
 void qSlicerModelsModuleWidget::includeFiberBundles(bool include)
 {
   Q_D(qSlicerModelsModuleWidget);
@@ -392,4 +391,11 @@ void qSlicerModelsModuleWidget::includeFiberBundles(bool include)
     }
 
   this->updateTreeViewModel();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerModelsModuleWidget::editNode(vtkMRMLNode* node)const
+{
+  Q_D(const qSlicerModelsModuleWidget);
+  d->ModelHierarchyTreeView->setCurrentNode(node);
 }

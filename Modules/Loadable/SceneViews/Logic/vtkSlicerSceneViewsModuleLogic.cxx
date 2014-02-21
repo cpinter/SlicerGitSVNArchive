@@ -230,15 +230,15 @@ void vtkSlicerSceneViewsModuleLogic::RegisterNodes()
     }
 
   vtkMRMLSceneViewNode* viewNode = vtkMRMLSceneViewNode::New();
-  this->GetMRMLScene()->RegisterNodeClass(viewNode);
+  this->GetMRMLScene()->RegisterNodeClass(viewNode, "SceneViews");
   // SceneSnapshot backward compatibility
 #if MRML_SUPPORT_VERSION < 0x040000
-  this->GetMRMLScene()->RegisterNodeClass(viewNode, "SceneSnapshot");
+  this->GetMRMLScene()->RegisterNodeClassWithTagName(viewNode, "SceneSnapshot", "SceneViews");
 #endif
   viewNode->Delete();
 
   vtkMRMLSceneViewStorageNode *storageNode = vtkMRMLSceneViewStorageNode::New();
-  this->GetMRMLScene()->RegisterNodeClass ( storageNode );
+  this->GetMRMLScene()->RegisterNodeClass ( storageNode, "SceneViews" );
   storageNode->Delete();
 }
 

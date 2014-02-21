@@ -77,6 +77,9 @@ public:
   /// Set up the logic default display settings from the appplication settings
   void updateLogicFromSettings();
 
+  /// Select a node for editing
+  virtual void editNode(vtkMRMLNode*)const;
+
 public slots:
 
   /// Respond to the scene events

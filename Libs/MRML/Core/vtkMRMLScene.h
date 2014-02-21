@@ -28,6 +28,7 @@ Version:   $Revision: 1.18 $
 #include <vector>
 #include <string>
 #include <set>
+#include <deque>
 
 class vtkCacheManager;
 class vtkDataIOManager;
@@ -107,6 +108,9 @@ public:
   /// \a tagName can be 0 or an XML tag a custom tagName.
   /// If \a tagName is 0 (default), the \a node GetNodeTagName() is used.
   /// Otherwise, tagName is used.
+  /// \a editorModuleName specifies the name of the module that can edit the
+  /// node properties. More specifically, which module to open when Edit
+  /// properties action is requested for a node with that type.
   ///
   /// The signature with tagName != 0 is useful to add support for
   /// scene backward compatibility. Calls with an obsolete tag should be
@@ -115,19 +119,23 @@ public:
   /// Z the patch version.
   ///
   /// \sa CreateNodeByClass(), GetClassNameByTag()
-  void RegisterNodeClass(vtkMRMLNode* node, const char* tagName);
+  void RegisterNodeClassWithTagName(vtkMRMLNode* node,
+    const char* tagName, const char* editorModuleName=NULL);
 
   /// Utility function to RegisterNodeClass(), the node tag name is used when
   /// registering the node.
   ///
   /// \sa RegisterNodeClass()
-  void RegisterNodeClass(vtkMRMLNode* node);
+  void RegisterNodeClass(vtkMRMLNode* node, const char* editorModuleName=NULL);
 
-  /// Add a path to the list.
+  /// Get MRML node class name by tag
   const char* GetClassNameByTag(const char *tagName);
 
-  /// Add a path to the list.
+  /// Get tag name for MRML node class name
   const char* GetTagByClassName(const char *className);
+
+  /// Get module name for MRML node class name
+  const char* GetEditorModuleNameByClassName(const char *className);
 
   /// Return collection of nodes
   vtkCollection* GetNodes();
@@ -635,16 +643,22 @@ protected:
   std::list< vtkCollection* >  UndoStack;
   std::list< vtkCollection* >  RedoStack;
 
-
   std::string                 URL;
   std::string                 RootDirectory;
 
   std::map<std::string, int> UniqueIDs;
   std::map<std::string, int> UniqueNames;
   std::set<std::string>   ReservedIDs;
-  
-  std::vector< vtkMRMLNode* > RegisteredNodeClasses;
-  std::vector< std::string >  RegisteredNodeTags;
+
+  /// Structure containing information for a registered MRML node class
+  struct RegisteredNodeClassInfo
+  {
+    vtkMRMLNode* NodeInstance;
+    std::string TagName;
+    std::string EditorModuleName;
+  };
+
+  std::deque< RegisteredNodeClassInfo > RegisteredNodeClasses;
 
   NodeReferencesType NodeReferences; // ReferencedIDs (string), ReferencingNodes (node pointer)
   std::map< std::string, std::string > ReferencedIDChanges;

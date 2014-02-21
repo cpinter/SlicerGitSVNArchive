@@ -245,11 +245,16 @@ void vtkSlicerFiberBundleLogic::RegisterNodes()
     return;
     }
 #ifdef MRML_USE_vtkTeem
-  this->GetMRMLScene()->RegisterNodeClass(vtkNew<vtkMRMLFiberBundleNode>().GetPointer());
-  this->GetMRMLScene()->RegisterNodeClass(vtkNew<vtkMRMLFiberBundleLineDisplayNode>().GetPointer());
-  this->GetMRMLScene()->RegisterNodeClass(vtkNew<vtkMRMLFiberBundleTubeDisplayNode>().GetPointer());
-  this->GetMRMLScene()->RegisterNodeClass(vtkNew<vtkMRMLFiberBundleGlyphDisplayNode>().GetPointer());
-  this->GetMRMLScene()->RegisterNodeClass(vtkNew<vtkMRMLFiberBundleStorageNode>().GetPointer());
+  this->GetMRMLScene()->RegisterNodeClass(
+    vtkNew<vtkMRMLFiberBundleNode>().GetPointer(), "TractographyDisplay");
+  this->GetMRMLScene()->RegisterNodeClass(
+    vtkNew<vtkMRMLFiberBundleLineDisplayNode>().GetPointer(), "TractographyDisplay");
+  this->GetMRMLScene()->RegisterNodeClass(
+    vtkNew<vtkMRMLFiberBundleTubeDisplayNode>().GetPointer(), "TractographyDisplay");
+  this->GetMRMLScene()->RegisterNodeClass(
+    vtkNew<vtkMRMLFiberBundleGlyphDisplayNode>().GetPointer(), "TractographyDisplay");
+  this->GetMRMLScene()->RegisterNodeClass(
+    vtkNew<vtkMRMLFiberBundleStorageNode>().GetPointer(), "TractographyDisplay");
 #endif
 }
 

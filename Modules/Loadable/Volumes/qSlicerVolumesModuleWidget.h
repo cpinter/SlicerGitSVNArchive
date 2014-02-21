@@ -41,6 +41,8 @@ public:
   qSlicerVolumesModuleWidget(QWidget *parent=0);
   virtual ~qSlicerVolumesModuleWidget();
 
+  virtual void editNode(vtkMRMLNode*)const;
+
 protected:
   virtual void setup();
 

@@ -42,6 +42,8 @@ public:
   qSlicerModelsModuleWidget(QWidget *parent=0);
   virtual ~qSlicerModelsModuleWidget();
 
+  virtual void editNode(vtkMRMLNode*)const;
+
 public slots:
   virtual void setMRMLScene(vtkMRMLScene* scene);
   

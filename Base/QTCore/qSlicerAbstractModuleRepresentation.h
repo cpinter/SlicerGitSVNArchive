@@ -34,6 +34,7 @@ class vtkMRMLAbstractLogic;
 class qSlicerAbstractCoreModule;
 class QAction;
 class qSlicerAbstractModuleRepresentationPrivate;
+class vtkMRMLNode;
 
 class Q_SLICER_BASE_QTCORE_EXPORT qSlicerAbstractModuleRepresentation : virtual public qSlicerObject
 {
@@ -49,6 +50,9 @@ public:
   /// Returns the module the representation belongs to.
   /// The module is set right before setup() is called.
   qSlicerAbstractCoreModule* module()const;
+
+  /// Select a node for editing
+  virtual void editNode(vtkMRMLNode*)const { };
 
 protected:
   /// All inialization code (typically setupUi()) must be done in setup()

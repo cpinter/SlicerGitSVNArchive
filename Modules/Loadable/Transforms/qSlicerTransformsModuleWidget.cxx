@@ -307,3 +307,10 @@ void qSlicerTransformsModuleWidget::hardenSelectedNodes()
     d->logic()->hardenTransform(vtkMRMLTransformableNode::SafeDownCast(node));
     }
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerTransformsModuleWidget::editNode(vtkMRMLNode* node)const
+{
+  Q_D(const qSlicerTransformsModuleWidget);
+  d->TransformNodeSelector->setCurrentNode(node);
+}

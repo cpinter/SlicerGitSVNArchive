@@ -2794,3 +2794,10 @@ void qSlicerMarkupsModuleWidget::updateLogicFromSettings()
   this->markupsLogic()->SetDefaultMarkupsDisplayNodeSliceProjectionColor(projectionColor);
   this->markupsLogic()->SetDefaultMarkupsDisplayNodeSliceProjectionOpacity(projectionOpacity);
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerMarkupsModuleWidget::editNode(vtkMRMLNode* node)const
+{
+  //Q_D(qSlicerMarkupsModuleWidget);
+  qWarning() << "qSlicerMarkupsModuleWidget::editNode: Node editing not yet implemented!";
+}

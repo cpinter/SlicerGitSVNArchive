@@ -45,6 +45,8 @@ public:
   /// Reimplemented for internal reasons
   void setMRMLScene(vtkMRMLScene* scene);
 
+  virtual void editNode(vtkMRMLNode*)const;
+
 public slots:
   /// Set the matrix to identity, the sliders are reset to the position 0
   void identity();

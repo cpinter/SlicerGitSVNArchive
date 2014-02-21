@@ -92,7 +92,7 @@ void qSlicerDataModuleWidget::setup()
 
   // Edit properties...
   connect(d->MRMLTreeView, SIGNAL(editNodeRequested(vtkMRMLNode*)),
-          qSlicerApplication::application(), SLOT(openNodeModule(vtkMRMLNode*)));
+          qSlicerApplication::application(), SLOT(editNode(vtkMRMLNode*)));
 
   // Insert transform
   QAction* insertTransformAction = new QAction(tr("Insert transform"),this);
@@ -240,3 +240,9 @@ void qSlicerDataModuleWidget::hardenTransformOnCurrentNode()
     vtkMRMLTransformableNode::SafeDownCast(node));
 }
 
+//-----------------------------------------------------------------------------
+void qSlicerDataModuleWidget::editNode(vtkMRMLNode* node)const
+{
+  Q_D(const qSlicerDataModuleWidget);
+  d->MRMLTreeView->setCurrentNode(node);
+}

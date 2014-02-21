@@ -273,3 +273,10 @@ void qSlicerColorsModuleWidget::copyCurrentColorNode()
   colorNode->Delete();
   d->ColorTableComboBox->setCurrentNode(colorNode);
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerColorsModuleWidget::editNode(vtkMRMLNode* node)const
+{
+  Q_D(const qSlicerColorsModuleWidget);
+  d->ColorTableComboBox->setCurrentNode(node);
+}

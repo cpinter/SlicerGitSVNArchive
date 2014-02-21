@@ -117,34 +117,42 @@ void vtkSlicerVolumeRenderingLogic::RegisterNodes()
   assert(this->GetMRMLScene());
 
   vtkNew<vtkMRMLVolumePropertyNode> vpn;
-  this->GetMRMLScene()->RegisterNodeClass( vpn.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( vpn.GetPointer(),
+                                          "VolumeRendering" );
 
   vtkNew<vtkMRMLVolumePropertyStorageNode> vpsn;
-  this->GetMRMLScene()->RegisterNodeClass( vpsn.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( vpsn.GetPointer(),
+                                          "VolumeRendering" );
 
   vtkNew<vtkMRMLVolumeRenderingScenarioNode> vrsNode;
-  this->GetMRMLScene()->RegisterNodeClass( vrsNode.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( vrsNode.GetPointer(),
+                                          "VolumeRendering" );
 
   vtkNew<vtkMRMLCPURayCastVolumeRenderingDisplayNode> cpuVRNode;
-  this->GetMRMLScene()->RegisterNodeClass( cpuVRNode.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( cpuVRNode.GetPointer(),
+                                          "VolumeRendering" );
   // Volume rendering nodes used to have the tag "VolumeRenderingParameters"
   // in scenes prior to Slicer 4.2
 #if MRML_SUPPORT_VERSION < 0x040200
-  this->GetMRMLScene()->RegisterNodeClass( cpuVRNode.GetPointer(),
-                                           "VolumeRenderingParameters");
+  this->GetMRMLScene()->RegisterNodeClassWithTagName( cpuVRNode.GetPointer(),
+                    "VolumeRenderingParameters", "VolumeRendering");
 #endif
 
   vtkNew<vtkMRMLNCIRayCastVolumeRenderingDisplayNode> nciNode;
-  this->GetMRMLScene()->RegisterNodeClass( nciNode.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( nciNode.GetPointer(),
+                                          "VolumeRendering" );
 
   vtkNew<vtkMRMLNCIMultiVolumeRayCastVolumeRenderingDisplayNode> nciMVNode;
-  this->GetMRMLScene()->RegisterNodeClass( nciMVNode.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( nciMVNode.GetPointer(),
+                                          "VolumeRendering" );
 
   vtkNew<vtkMRMLGPUTextureMappingVolumeRenderingDisplayNode> tmNode;
-  this->GetMRMLScene()->RegisterNodeClass( tmNode.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( tmNode.GetPointer(),
+                                          "VolumeRendering" );
 
   vtkNew<vtkMRMLGPURayCastVolumeRenderingDisplayNode> gpuNode;
-  this->GetMRMLScene()->RegisterNodeClass( gpuNode.GetPointer() );
+  this->GetMRMLScene()->RegisterNodeClass( gpuNode.GetPointer(),
+                                          "VolumeRendering" );
 }
 //----------------------------------------------------------------------------
 void vtkSlicerVolumeRenderingLogic

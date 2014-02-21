@@ -56,3 +56,10 @@ void qSlicerVolumesModuleWidget::setup()
   //ctkModelTester* tester = new ctkModelTester(this);
   //tester->setModel(d->ActiveVolumeNodeSelector->model());
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumesModuleWidget::editNode(vtkMRMLNode* node)const
+{
+  Q_D(const qSlicerVolumesModuleWidget);
+  d->ActiveVolumeNodeSelector->setCurrentNode(node);
+}
