@@ -490,6 +490,7 @@ std::string vtkMRMLSelectionNode::GetPlaceNodeResourceByIndex(int n)
 //----------------------------------------------------------------------------
 void vtkMRMLSelectionNode::GetUnitNodes(std::vector<vtkMRMLUnitNode*>& units)
 {
+  this->UpdateNodeReferences();
   for (NodeReferencesType::const_iterator it = this->NodeReferences.begin();
     it != this->NodeReferences.end(); ++it)
     {
@@ -498,8 +499,34 @@ void vtkMRMLSelectionNode::GetUnitNodes(std::vector<vtkMRMLUnitNode*>& units)
         it->second.size() > 0)
       {
       // there is only one referenced node per reference role
-      units.push_back(
-        vtkMRMLUnitNode::SafeDownCast(it->second[0]->ReferencedNode));
+      vtkMRMLNodeReference * reference = it->second[0];
+      if (reference)
+        {
+        units.push_back(
+          vtkMRMLUnitNode::SafeDownCast(reference->ReferencedNode));
+        }
+      }
+    }
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLSelectionNode::GetUnitNodeIDs(std::vector<const char*>& quantities,
+                                          std::vector<const char*>& units)
+{
+  for (NodeReferencesType::const_iterator it = this->NodeReferences.begin();
+    it != this->NodeReferences.end(); ++it)
+    {
+    if (it->first.compare(0, strlen(this->GetUnitNodeReferenceRole()),
+                          this->GetUnitNodeReferenceRole()) == 0 &&
+        it->second.size() > 0)
+      {
+      // there is only one referenced node per reference role
+      vtkMRMLNodeReference * reference = it->second[0];
+      if (reference)
+        {
+        quantities.push_back(&reference->GetReferenceRole()[strlen(this->GetUnitNodeReferenceRole())]);
+        units.push_back(reference->GetReferencedNodeID());
+        }
       }
     }
 }
