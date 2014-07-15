@@ -89,11 +89,11 @@ public:
   static vtkMRMLSubjectHierarchyNode* GetChildWithName(vtkMRMLSubjectHierarchyNode* parent, const char* name, vtkMRMLScene* scene=NULL);
 
   /// Create subject hierarchy node in the scene under a specified parent
-  /// \scene MRML scene
-  /// \parent Parent node under which the created node is put. If NULL, then the child will be a top-level node
-  /// \level Level string of the created node
-  /// \nodeName Name of the node (subject hierarchy postfix is added to it)
-  /// \associatedNode Data node to associate with the created subject hierarchy node. If NULL, then no node will be associated
+  /// \param scene MRML scene
+  /// \param parent Parent node under which the created node is put. If NULL, then the child will be a top-level node
+  /// \param level Level string of the created node
+  /// \param nodeName Name of the node (subject hierarchy postfix is added to it)
+  /// \param associatedNode Data node to associate with the created subject hierarchy node. If NULL, then no node will be associated
   static vtkMRMLSubjectHierarchyNode* CreateSubjectHierarchyNode(vtkMRMLScene* scene, vtkMRMLSubjectHierarchyNode* parentNode, const char* level, const char* nodeName, vtkMRMLNode* associatedNode=NULL);
 
 public:
@@ -147,6 +147,11 @@ public:
 
   /// Harden transform on itself and on all children, recursively
   void HardenTransformOnBranch();
+
+  /// Set Modified flag on all nodes in a branch
+  /// \param shNodesOnly If true, only set Modified on subject hierarchy nodes. If false, nested hierarchy nodes and data nodes too. Default value is false
+  /// \param setModifiedOnRoot Set Modified on the root node of the branch (this) if true. Default value is false
+  void SetModifiedOnBranch(bool shNodesOnly=false, bool setModifiedOnRoot=false);
 
 public:
   /// Set level

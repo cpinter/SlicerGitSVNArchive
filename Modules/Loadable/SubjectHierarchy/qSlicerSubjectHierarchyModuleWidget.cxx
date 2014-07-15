@@ -144,18 +144,12 @@ void qSlicerSubjectHierarchyModuleWidget::setup()
   connect( d->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), d->MRMLNodeAttributeTableWidget, SLOT(setMRMLNode(vtkMRMLNode*)) );
 
   // Connect subject hierarchy tree with potential nodes list
-  connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->PotentialSubjectHierarchyListView->model(), SLOT(invalidate()) );
-  connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->SubjectHierarchyTreeView->model(), SLOT(invalidate()) );
+  //connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->PotentialSubjectHierarchyListView->model(), SLOT(invalidate()) );
+  //connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->SubjectHierarchyTreeView->model(), SLOT(invalidate()) );
 
   // Connect logic custom event for scene update
-  qMRMLSceneSubjectHierarchyModel* sceneModel = qobject_cast<qMRMLSceneSubjectHierarchyModel*>(d->SubjectHierarchyTreeView->sceneModel());
-  sceneModel->setObjectName("SceneSubjectHierarchyModel"); // Set object name for debugging purposes
-  qvtkConnect( d->logic(), vtkSlicerSubjectHierarchyModuleLogic::SceneUpdateNeededEvent, sceneModel, SLOT( forceUpdateScene() ) );
-
-  qMRMLSortFilterPotentialSubjectHierarchyProxyModel* potentialProxyModel = qobject_cast<qMRMLSortFilterPotentialSubjectHierarchyProxyModel*>(d->PotentialSubjectHierarchyListView->model());
-  qMRMLScenePotentialSubjectHierarchyModel* potentialSceneModel = qobject_cast<qMRMLScenePotentialSubjectHierarchyModel*>(potentialProxyModel->sourceModel());
-  potentialSceneModel->setObjectName("ScenePotentialSubjectHierarchyModel"); // Set object name for debugging purposes
-  qvtkConnect( d->logic(), vtkSlicerSubjectHierarchyModuleLogic::SceneUpdateNeededEvent, potentialSceneModel, SLOT( invalidate() ) );
+  qvtkConnect( d->logic(), vtkSlicerSubjectHierarchyModuleLogic::SceneUpdateNeededEvent, d->SubjectHierarchyTreeView->model(), SLOT( invalidate() ) );
+  qvtkConnect( d->logic(), vtkSlicerSubjectHierarchyModuleLogic::SceneUpdateNeededEvent, d->PotentialSubjectHierarchyListView->model(), SLOT( invalidate() ) );
 
   this->setMRMLIDsVisible(d->DisplayMRMLIDsCheckBox->isChecked());
   this->setTransformsVisible(d->DisplayTransformsCheckBox->isChecked());
@@ -182,7 +176,7 @@ void qSlicerSubjectHierarchyModuleWidget::updateWidgetFromMRML()
 
   //d->SubjectHierarchyTreeView->sortFilterProxyModel()->invalidate();
   qMRMLSceneSubjectHierarchyModel* sceneModel = (qMRMLSceneSubjectHierarchyModel*)d->SubjectHierarchyTreeView->sceneModel();
-  sceneModel->forceUpdateScene();
+  //sceneModel->forceUpdateScene();
   d->SubjectHierarchyTreeView->header()->resizeSection(sceneModel->transformColumn(), 60);
   d->SubjectHierarchyTreeView->expandToDepth(4);
 

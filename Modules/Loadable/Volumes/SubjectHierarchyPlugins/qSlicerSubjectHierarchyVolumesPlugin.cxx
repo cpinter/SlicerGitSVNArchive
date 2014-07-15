@@ -142,7 +142,7 @@ double qSlicerSubjectHierarchyVolumesPlugin::canAddNodeToSubjectHierarchy(vtkMRM
     }
   else if (node->IsA("vtkMRMLScalarVolumeNode"))
     {
-    // Node is a model
+    // Node is a volume
     return 0.5;
     }
   return 0.0;

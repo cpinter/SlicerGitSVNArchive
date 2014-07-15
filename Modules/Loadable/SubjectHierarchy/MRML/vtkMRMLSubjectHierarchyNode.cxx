@@ -39,7 +39,7 @@
 #include <vtkSmartPointer.h>
 
 // STD includes
-#include <sstream>
+#include <sstream>862
 #include <set>
 
 //----------------------------------------------------------------------------
@@ -823,4 +823,75 @@ void vtkMRMLSubjectHierarchyNode::HardenTransformOnBranch()
       }
     subjectHierarchyNode->Modified();
     }
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLSubjectHierarchyNode::SetModifiedOnBranch(bool shNodesOnly/*=false*/, bool setModifiedOnRoot/*=false*/)
+{
+  //TODO: indent
+  std::vector<vtkMRMLHierarchyNode*> childShNodes;
+  this->GetAllChildrenNodes(childShNodes);
+
+  // Collect nodes to set modified on
+  std::set<vtkMRMLNode*> nodesToSetModifiedOn;
+  for (std::vector<vtkMRMLHierarchyNode*>::iterator childShIt = childShNodes.begin(); childShIt != childShNodes.end(); ++childShIt)
+  {
+    nodesToSetModifiedOn.insert(*childShIt);
+
+    // Add associated nodes if requested
+    if (!shNodesOnly)
+    {
+      vtkMRMLNode* directlyAssociatedNode = (*childShIt)->vtkMRMLHierarchyNode::GetAssociatedNode();
+      if (directlyAssociatedNode)
+      {
+        nodesToSetModifiedOn.insert(directlyAssociatedNode);
+
+        // Nested association
+        if (directlyAssociatedNode->IsA("vtkMRMLHierarchyNode"))
+        {
+          vtkMRMLNode* secondAssociatedNode = vtkMRMLHierarchyNode::SafeDownCast(directlyAssociatedNode)->GetAssociatedNode();
+          if (secondAssociatedNode)
+          {
+            nodesToSetModifiedOn.insert(secondAssociatedNode);
+          }
+          else
+          {
+            vtkErrorMacro("SetModifiedOnBranch: Looks like a nested association, but there is no data node! (" << (*childShIt)->GetName() << ")");
+          }
+        }
+      }
+    }
+  }
+
+  // Set Modified flag for all collected nodes
+  for (std::set<vtkMRMLNode*>::iterator nodeIt = nodesToSetModifiedOn.begin(); nodeIt != nodesToSetModifiedOn.end(); ++ nodeIt)
+  {
+    (*nodeIt)->Modified();
+  }
+
+  // Set Modified on root if requested
+  if (setModifiedOnRoot)
+  {
+    this->Modified();
+
+    vtkMRMLNode* directlyAssociatedNode = this->vtkMRMLHierarchyNode::GetAssociatedNode();
+    if (directlyAssociatedNode)
+    {
+      directlyAssociatedNode->Modified();
+
+      // Nested association
+      if (directlyAssociatedNode->IsA("vtkMRMLHierarchyNode"))
+      {
+        vtkMRMLNode* secondAssociatedNode = vtkMRMLHierarchyNode::SafeDownCast(directlyAssociatedNode)->GetAssociatedNode();
+        if (secondAssociatedNode)
+        {
+          secondAssociatedNode->Modified();
+        }
+        else
+        {
+          vtkErrorMacro("SetModifiedOnBranch: Looks like a nested association, but there is no data node! (" << this->Name << ")");
+        }
+      }
+    }
+  }
 }

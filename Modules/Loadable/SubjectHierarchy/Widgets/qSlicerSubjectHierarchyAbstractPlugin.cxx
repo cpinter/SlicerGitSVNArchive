@@ -307,6 +307,9 @@ void qSlicerSubjectHierarchyAbstractPlugin::createChildForCurrentNode()
 
   // Create child subject hierarchy node
   std::string childNodeName = vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_NEW_NODE_NAME_PREFIX + childLevel.toLatin1().constData();
+  vtkMRMLScene* scene = qSlicerSubjectHierarchyPluginHandler::instance()->scene();
+  childNodeName = scene->GenerateUniqueName(childNodeName);
+
   this->createChildNode(currentNode, childNodeName.c_str());
 }
 
