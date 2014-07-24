@@ -813,6 +813,10 @@ QStandardItem* qMRMLSceneModel::insertNode(vtkMRMLNode* node)
   int row = min + this->nodeIndex(node);
   if (row > max)
     {
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << "   !!! Misplaced node " << node->GetName() << " min: " << min << " max: " << max << " row: " << row << " !!!\n";
+//test.close();
     d->MisplacedNodes << node;
     row = max;
     }
@@ -903,6 +907,10 @@ void qMRMLSceneModel::updateItemFromNode(QStandardItem* item, vtkMRMLNode* node,
       if (parentItem != newParentItem ||
           newIndex != item->row())
         {
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << "   --- Reparent node in scene model " << node->GetName() << " parent: " << (this->parentNode(node)?this->parentNode(node)->GetName():"NULL") << " newIndex: " << newIndex << " parentMismatch: " << (parentItem != newParentItem?"YES":"NO") << " rowMismatch: " << (newIndex != item->row()? QString::number(item->row()).toLatin1().constData() :"NO") << " ---\n";
+//test.close();
         QList<QStandardItem*> children = parentItem->takeRow(item->row());
         d->reparentItems(children, newIndex, newParentItem);
         }

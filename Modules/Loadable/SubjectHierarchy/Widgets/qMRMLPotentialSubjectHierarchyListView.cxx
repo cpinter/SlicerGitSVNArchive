@@ -59,6 +59,8 @@ void qMRMLPotentialSubjectHierarchyListViewPrivate::init()
   this->SortFilterModel = new qMRMLSortFilterPotentialSubjectHierarchyProxyModel(q);
   this->SortFilterModel->setSourceModel(sceneModel);
 
+  q->setDragDropMode(QAbstractItemView::DragOnly);
+
   q->QListView::setModel(this->SortFilterModel);
 }
 

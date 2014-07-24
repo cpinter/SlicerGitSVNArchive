@@ -94,16 +94,25 @@ qMRMLSceneSubjectHierarchyModel::~qMRMLSceneSubjectHierarchyModel()
 }
 
 //------------------------------------------------------------------------------
-QStringList qMRMLSceneSubjectHierarchyModel::mimeTypes()const
+Qt::DropActions qMRMLSceneSubjectHierarchyModel::supportedDropActions()const
 {
-  QStringList types;
-  types << "application/vnd.text.list";
-  return types;
+  return Qt::MoveAction;
 }
+
+//------------------------------------------------------------------------------
+//QStringList qMRMLSceneSubjectHierarchyModel::mimeTypes()const
+//{
+//  QStringList types;
+//  types << "application/vnd.text.list";
+//  return types;
+//}
+//TODO:
 
 //------------------------------------------------------------------------------
 QMimeData* qMRMLSceneSubjectHierarchyModel::mimeData(const QModelIndexList &indexes) const
 {
+return Superclass::mimeData(indexes); //TODO: TEST
+
   Q_D(const qMRMLSceneSubjectHierarchyModel);
 
   QMimeData* mimeData = new QMimeData();
@@ -129,6 +138,8 @@ QMimeData* qMRMLSceneSubjectHierarchyModel::mimeData(const QModelIndexList &inde
 //------------------------------------------------------------------------------
 vtkMRMLNode* qMRMLSceneSubjectHierarchyModel::parentNode(vtkMRMLNode* node)const
 {
+return Superclass::parentNode(node); //TODO: TEST
+
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
     {
@@ -140,23 +151,25 @@ vtkMRMLNode* qMRMLSceneSubjectHierarchyModel::parentNode(vtkMRMLNode* node)const
 //------------------------------------------------------------------------------
 int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
 {
+return Superclass::nodeIndex(node); //TODO: TEST
+
   Q_D(const qMRMLSceneSubjectHierarchyModel);
   if (!d->MRMLScene)
     {
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << "No scene!\n";
-test.close();
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << "No scene!\n";
+//test.close();
     return -1;
     }
 
   const char* nodeId = node ? node->GetID() : 0;
   if (nodeId == 0)
     {
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << "Invalid node!\n";
-test.close();
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << "Invalid node!\n";
+//test.close();
     return -1;
     }
 
@@ -177,10 +190,10 @@ test.close();
       }
       if (childNode == node)
       {
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << node->GetName() << " (" << node->GetID() << ") " << index << " (SH)\n";
-test.close();
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << node->GetName() << " (" << node->GetID() << ") " << index << " (SH)\n";
+//test.close();
         return index;
       }
       ++index;
@@ -231,10 +244,10 @@ test.close();
       if (node==n)
       {
         // found the node
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level)\n";
-test.close();
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level)\n";
+//test.close();
         return index;
       }
     }
@@ -252,32 +265,36 @@ test.close();
       nId = n->GetID();
       if (nId && !strcmp(nodeId, nId))
       {
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level by ID)\n";
-test.close();
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level by ID)\n";
+//test.close();
         return index;
       }
     }
   }
 
   // Not found
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << node->GetName() << " (" << node->GetID() << ") " << "NOT FOUND" << "\n";
-test.close();
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << node->GetName() << " (" << node->GetID() << ") " << "NOT FOUND" << "\n";
+//test.close();
   return -1;
 }
 
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::canBeAChild(vtkMRMLNode* node)const
 {
+return Superclass::canBeAChild(node); //TODO: TEST
+
   return node && node->IsA("vtkMRMLSubjectHierarchyNode");
 }
 
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::canBeAParent(vtkMRMLNode* node)const
 {
+return Superclass::canBeAParent(node); //TODO: TEST
+
   return node && node->IsA("vtkMRMLSubjectHierarchyNode");
 }
 
@@ -327,6 +344,9 @@ int qMRMLSceneSubjectHierarchyModel::maxColumnId()const
 //------------------------------------------------------------------------------
 QFlags<Qt::ItemFlag> qMRMLSceneSubjectHierarchyModel::nodeFlags(vtkMRMLNode* node, int column)const
 {
+return Superclass::nodeFlags(node,column); //TODO: TEST
+
+
   QFlags<Qt::ItemFlag> flags = this->Superclass::nodeFlags(node, column);
 
   if (column == this->transformColumn() && node)
@@ -340,11 +360,16 @@ QFlags<Qt::ItemFlag> qMRMLSceneSubjectHierarchyModel::nodeFlags(vtkMRMLNode* nod
 //------------------------------------------------------------------------------
 void qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode(QStandardItem* item, vtkMRMLNode* node, int column)
 {
+//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
+//return;
+
   Q_D(qMRMLSceneSubjectHierarchyModel);
 
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
     {
+//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
+//return;
 //TEST code for showing nodeIndex in ID column
 if (column == this->nameColumn()) //TODO: Remove test code
 {
@@ -354,37 +379,46 @@ item->setToolTip(QString(node->GetID()));
 }
 if (column == this->idColumn())
 {
-item->setText(QString::number(this->nodeIndex(node)));
+  item->setText(QString(node->GetID()));
+//item->setText(QString::number(this->nodeIndex(node)));
 }
 //\TEST
     return;
     }
+
   qSlicerSubjectHierarchyAbstractPlugin* ownerPlugin =
     qSlicerSubjectHierarchyPluginHandler::instance()->getOwnerPluginForSubjectHierarchyNode(subjectHierarchyNode);
   if (!ownerPlugin)
     {
-    // Set warning icon if the column is the node type column
-    if (column == this->nodeTypeColumn())
-      {
-      item->setIcon(d->WarningIcon);
-      }
+    //// Set warning icon if the column is the node type column
+    //if (column == this->nodeTypeColumn()) //TODO: test
+    //  {
+    //  item->setIcon(d->WarningIcon);
+    //  }
 
-    qCritical() << "qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode: No owner plugin defined for subject hierarchy node '" << subjectHierarchyNode->GetName() << "'!";
-    return;
+    //qCritical() << "qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode: No owner plugin defined for subject hierarchy node '" << subjectHierarchyNode->GetName() << "'!";
+    //return;
+//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
+return;
     }
 
   // Name column
   if (column == this->nameColumn())
     {
     // Have owner plugin set the name and the tooltip
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << "updateItemDataFromNode: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
     item->setText(ownerPlugin->displayedName(subjectHierarchyNode));
     item->setToolTip(ownerPlugin->tooltip(subjectHierarchyNode));
+test << "updateItemDataFromNode: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
+test.close();
     }
   // ID column
   if (column == this->idColumn())
     {
-item->setText(QString::number(this->nodeIndex(subjectHierarchyNode)));
-//    item->setText(QString(subjectHierarchyNode->GetID()));
+item->setText(QString::number(this->nodeIndex(subjectHierarchyNode))); //TODO: test
+    //item->setText(QString(subjectHierarchyNode->GetID()));
     }
   // Visibility column
   if (column == this->visibilityColumn())
@@ -395,6 +429,7 @@ item->setText(QString::number(this->nodeIndex(subjectHierarchyNode)));
   // Node type column
   if (column == this->nodeTypeColumn())
     {
+return; //TODO: test
     // Have owner plugin set the icon
     bool iconSetSuccessfullyByPlugin = ownerPlugin->setIcon(subjectHierarchyNode, item);
     if (!iconSetSuccessfullyByPlugin)
@@ -405,6 +440,8 @@ item->setText(QString::number(this->nodeIndex(subjectHierarchyNode)));
   // Transform column
   if (column == this->transformColumn())
     {
+//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
+//return;
     if (item->data(Qt::WhatsThisRole).toString().isEmpty())
       {
       item->setData( "Transform", Qt::WhatsThisRole );
@@ -436,6 +473,9 @@ item->setText(QString::number(this->nodeIndex(subjectHierarchyNode)));
 //------------------------------------------------------------------------------
 void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, QStandardItem* item)
 {
+//Superclass::updateNodeFromItemData(node,item); //TODO: TEST
+//return;
+
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
     {
@@ -448,7 +488,12 @@ void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, 
   // Name column
   if ( item->column() == this->nameColumn() )
     {
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << "updateNodeFromItemData: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
     subjectHierarchyNode->SetName(item->text().append(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_NODE_NAME_POSTFIX.c_str()).toLatin1().constData());
+test << "updateNodeFromItemData: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
+test.close();
 
     // Rename data node too
     vtkMRMLNode* associatedDataNode = subjectHierarchyNode->GetAssociatedNode();
@@ -465,12 +510,13 @@ void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, 
     if (visible > -1)
       {
       // Have owner plugin set the display visibility
-      ownerPlugin->setDisplayVisibility(subjectHierarchyNode, visible);
+      //ownerPlugin->setDisplayVisibility(subjectHierarchyNode, visible); //TODO: test
       }
     }
   // Transform column
   if (item->column() == this->transformColumn())
     {
+//return; //TODO: test
     QVariant transformIdData = item->data(qMRMLSceneSubjectHierarchyModel::TransformIDRole);
     std::string newParentTransformNodeIdStr = transformIdData.toString().toLatin1().constData();
     vtkMRMLTransformNode* newParentTransformNode =
@@ -519,6 +565,8 @@ void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, 
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
+return Superclass::dropMimeData(data, action, row, column, parent); //TODO: TEST
+
   Q_D(const qMRMLSceneSubjectHierarchyModel);
   Q_UNUSED(row);
   Q_UNUSED(column);
@@ -558,7 +606,7 @@ bool qMRMLSceneSubjectHierarchyModel::dropMimeData(const QMimeData* data, Qt::Dr
     //QApplication::processEvents();
     //this->updateScene();
     //emit loadTreeExpandState();
-    return true;//false;
+    return false;
     }
 
   // Decode MIME data
@@ -601,6 +649,8 @@ bool qMRMLSceneSubjectHierarchyModel::dropMimeData(const QMimeData* data, Qt::Dr
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* newParent)
 {
+return Superclass::reparent(node,newParent); //TODO: TEST
+
   if (!node || newParent == node)
     {
     std::cerr << "qMRMLSceneSubjectHierarchyModel::reparent: Invalid node to reparent!" << std::endl;
@@ -621,6 +671,11 @@ bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* n
     //emit loadTreeExpandState();
     return false;
     }
+
+//ofstream test;
+//test.open("D:\\log.txt", ios::app);
+//test << "=== Reparenting " << node->GetName() << " from " << (oldParent?oldParent->GetName():"NULL") << " to " << (newParent?newParent->GetName():"scene") << " ===\n";
+//test.close();
 
   if (!this->mrmlScene())
     {
@@ -753,5 +808,5 @@ void qMRMLSceneSubjectHierarchyModel::onRemoveTransformsFromBranchOfCurrentNode(
 void qMRMLSceneSubjectHierarchyModel::forceUpdateScene()
 {
   // Force updating the whole scene (TODO: this should not be needed)
-  this->updateScene();
+  //this->updateScene();
 }

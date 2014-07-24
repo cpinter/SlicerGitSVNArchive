@@ -220,7 +220,7 @@ void vtkMRMLSubjectHierarchyNode::SetOwnerPluginName(const char* pluginName)
     this->OwnerPluginName = NULL;
     }
   this->InvokeEvent(vtkMRMLSubjectHierarchyNode::OwnerPluginChangedEvent, oldPluginName);
-  if (oldPluginName)   { delete [] oldPluginName;   }
+  if (oldPluginName) { delete [] oldPluginName; }
   this->Modified();
 }
 

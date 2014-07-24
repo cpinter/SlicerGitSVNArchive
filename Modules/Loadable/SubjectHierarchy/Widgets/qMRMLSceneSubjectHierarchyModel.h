@@ -58,8 +58,11 @@ public:
     LastRole
   };
 
+  /// TODO:
+  virtual Qt::DropActions supportedDropActions()const;
+
   /// Function returning the supported MIME types
-  virtual QStringList mimeTypes()const;
+  //virtual QStringList mimeTypes()const; //TODO:
 
   /// Function encoding the dragged item to MIME data
   virtual QMimeData* mimeData(const QModelIndexList &indexes)const;
