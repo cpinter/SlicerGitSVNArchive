@@ -99,6 +99,10 @@ void qSlicerSubjectHierarchyModuleWidget::enter()
 {
   this->onEnter();
   this->Superclass::enter();
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << "=== Entering Subject hierarchy module ===\n";
+test.close();
 }
 
 //-----------------------------------------------------------------------------

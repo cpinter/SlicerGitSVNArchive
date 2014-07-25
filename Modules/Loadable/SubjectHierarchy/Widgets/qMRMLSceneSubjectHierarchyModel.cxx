@@ -180,46 +180,20 @@ int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
       if (!childNode)
       {
         qCritical() << "ZZZ sajt1!!!"; //TODO: remove if works
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << "ZZZ sajt1!!!\n";
+test.close();
       }
       if (childNode == node)
       {
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << node->GetName() << " (" << node->GetID() << ") " << index << " (SH)\n";
-//test.close();
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << node->GetName() << " (" << node->GetID() << ") " << index << " (SH)\n";
+test.close();
         return index;
       }
       ++index;
-
-//      // If there is nested association, give the index to the intermediate hierarchy node
-//      vtkMRMLHierarchyNode* nestedHierarchyNode = vtkMRMLHierarchyNode::SafeDownCast(childNode->vtkMRMLHierarchyNode::GetAssociatedNode());
-//      if (nestedHierarchyNode)
-//      {
-//        if (nestedHierarchyNode == node)
-//        {
-//          return index;
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << node->GetName() << " (" << node->GetID() << ") " << index << " (nested)\n";
-//test.close();
-//        }
-//        ++index;
-//      }
-//
-//      // Handle associated data node
-//      vtkMRMLNode* associatedNode = childNode->GetAssociatedNode();
-//      if (associatedNode)
-//      {
-//        if (associatedNode == node)
-//        {
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << node->GetName() << " (" << node->GetID() << ") " << index << " (data)\n";
-//test.close();
-//          return index;
-//        }
-//        ++index;
-//      }
     }
   }
 
@@ -233,16 +207,16 @@ int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
     // Note: parent can be NULL, it means that the scene is the parent
     if (parent == this->parentNode(n))
     {
-      ++index;
       if (node==n)
       {
         // found the node
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level)\n";
-//test.close();
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level)\n";
+test.close();
         return index;
       }
+      ++index;
     }
   }
 
@@ -258,20 +232,16 @@ int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
       nId = n->GetID();
       if (nId && !strcmp(nodeId, nId))
       {
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level by ID)\n";
-//test.close();
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level by ID)\n";
+test.close();
         return index;
       }
     }
   }
 
   // Not found
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << node->GetName() << " (" << node->GetID() << ") " << "NOT FOUND" << "\n";
-//test.close();
   return -1;
 }
 
@@ -632,6 +602,7 @@ return Superclass::dropMimeData(data, action, row, column, parent); //TODO: TEST
 bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* newParent)
 {
 //return Superclass::reparent(node,newParent); //TODO: TEST
+QApplication::processEvents(); //TODO: TEST
 
   if (!node || newParent == node)
     {
@@ -654,10 +625,10 @@ bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* n
     return false;
     }
 
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << "=== Reparenting " << node->GetName() << " from " << (oldParent?oldParent->GetName():"NULL") << " to " << (newParent?newParent->GetName():"scene") << " ===\n";
-//test.close();
+ofstream test;
+test.open("D:\\log.txt", ios::app);
+test << "=== Reparenting " << node->GetName() << " from " << (oldParent?oldParent->GetName():"NULL") << " to " << (newParent?newParent->GetName():"scene") << " ===\n";
+test.close();
 
   if (!this->mrmlScene())
     {
