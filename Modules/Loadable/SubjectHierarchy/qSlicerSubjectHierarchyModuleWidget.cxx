@@ -124,10 +124,6 @@ void qSlicerSubjectHierarchyModuleWidget::onEnter()
 
   Q_D(qSlicerSubjectHierarchyModuleWidget);
 
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << "=== Entering Subject hierarchy module ===\n";
-test.close();
   d->ModuleWindowInitialized = true;
   d->SubjectHierarchyTreeView->setMRMLScene(this->mrmlScene());
 

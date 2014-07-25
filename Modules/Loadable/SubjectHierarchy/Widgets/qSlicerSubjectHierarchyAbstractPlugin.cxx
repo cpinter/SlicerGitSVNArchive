@@ -183,7 +183,7 @@ double qSlicerSubjectHierarchyAbstractPlugin::canReparentNodeInsideSubjectHierar
 bool qSlicerSubjectHierarchyAbstractPlugin::reparentNodeInsideSubjectHierarchy(vtkMRMLSubjectHierarchyNode* nodeToReparent,
                                                                                vtkMRMLSubjectHierarchyNode* parentNode)
 {
-  nodeToReparent->SetParentNodeID(parentNode->GetID());
+  nodeToReparent->SetParentNodeID(parentNode ? parentNode->GetID() : NULL);
   return true;
 }
 

@@ -683,7 +683,7 @@ bool qMRMLSceneModel::dropMimeData(const QMimeData *data, Qt::DropAction action,
   Q_D(qMRMLSceneModel);
   Q_UNUSED(column);
   // We want to do drag&drop only into the first item of a line (and not on a
-  // randomn column.
+  // random column.
   bool res = this->Superclass::dropMimeData(
     data, action, row, 0, parent.sibling(parent.row(), 0));
   d->DraggedNodes.clear();

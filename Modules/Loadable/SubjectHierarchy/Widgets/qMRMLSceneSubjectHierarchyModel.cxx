@@ -111,6 +111,7 @@ Qt::DropActions qMRMLSceneSubjectHierarchyModel::supportedDropActions()const
 //------------------------------------------------------------------------------
 QMimeData* qMRMLSceneSubjectHierarchyModel::mimeData(const QModelIndexList &indexes) const
 {
+//QApplication::processEvents(); //TODO: TEST
 return Superclass::mimeData(indexes); //TODO: TEST
 
   Q_D(const qMRMLSceneSubjectHierarchyModel);
@@ -138,7 +139,7 @@ return Superclass::mimeData(indexes); //TODO: TEST
 //------------------------------------------------------------------------------
 vtkMRMLNode* qMRMLSceneSubjectHierarchyModel::parentNode(vtkMRMLNode* node)const
 {
-return Superclass::parentNode(node); //TODO: TEST
+//return Superclass::parentNode(node); //TODO: TEST
 
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
@@ -151,25 +152,17 @@ return Superclass::parentNode(node); //TODO: TEST
 //------------------------------------------------------------------------------
 int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
 {
-return Superclass::nodeIndex(node); //TODO: TEST
+//return Superclass::nodeIndex(node); //TODO: TEST
 
   Q_D(const qMRMLSceneSubjectHierarchyModel);
   if (!d->MRMLScene)
     {
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << "No scene!\n";
-//test.close();
     return -1;
     }
 
   const char* nodeId = node ? node->GetID() : 0;
   if (nodeId == 0)
     {
-//ofstream test;
-//test.open("D:\\log.txt", ios::app);
-//test << "Invalid node!\n";
-//test.close();
     return -1;
     }
 
@@ -285,7 +278,7 @@ return Superclass::nodeIndex(node); //TODO: TEST
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::canBeAChild(vtkMRMLNode* node)const
 {
-return Superclass::canBeAChild(node); //TODO: TEST
+//return Superclass::canBeAChild(node); //TODO: TEST
 
   return node && node->IsA("vtkMRMLSubjectHierarchyNode");
 }
@@ -293,7 +286,7 @@ return Superclass::canBeAChild(node); //TODO: TEST
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::canBeAParent(vtkMRMLNode* node)const
 {
-return Superclass::canBeAParent(node); //TODO: TEST
+//return Superclass::canBeAParent(node); //TODO: TEST
 
   return node && node->IsA("vtkMRMLSubjectHierarchyNode");
 }
@@ -344,7 +337,7 @@ int qMRMLSceneSubjectHierarchyModel::maxColumnId()const
 //------------------------------------------------------------------------------
 QFlags<Qt::ItemFlag> qMRMLSceneSubjectHierarchyModel::nodeFlags(vtkMRMLNode* node, int column)const
 {
-return Superclass::nodeFlags(node,column); //TODO: TEST
+//return Superclass::nodeFlags(node,column); //TODO: TEST
 
 
   QFlags<Qt::ItemFlag> flags = this->Superclass::nodeFlags(node, column);
@@ -379,8 +372,7 @@ item->setToolTip(QString(node->GetID()));
 }
 if (column == this->idColumn())
 {
-  item->setText(QString(node->GetID()));
-//item->setText(QString::number(this->nodeIndex(node)));
+item->setText(QString::number(this->nodeIndex(node)));
 }
 //\TEST
     return;
@@ -406,13 +398,8 @@ return;
   if (column == this->nameColumn())
     {
     // Have owner plugin set the name and the tooltip
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << "updateItemDataFromNode: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
     item->setText(ownerPlugin->displayedName(subjectHierarchyNode));
     item->setToolTip(ownerPlugin->tooltip(subjectHierarchyNode));
-test << "updateItemDataFromNode: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
-test.close();
     }
   // ID column
   if (column == this->idColumn())
@@ -424,7 +411,7 @@ item->setText(QString::number(this->nodeIndex(subjectHierarchyNode))); //TODO: t
   if (column == this->visibilityColumn())
     {
     // Have owner plugin set the visibility icon
-    ownerPlugin->setVisibilityIcon(subjectHierarchyNode, item);
+    //ownerPlugin->setVisibilityIcon(subjectHierarchyNode, item); //TODO: test
     }
   // Node type column
   if (column == this->nodeTypeColumn())
@@ -488,12 +475,7 @@ void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, 
   // Name column
   if ( item->column() == this->nameColumn() )
     {
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << "updateNodeFromItemData: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
     subjectHierarchyNode->SetName(item->text().append(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_NODE_NAME_POSTFIX.c_str()).toLatin1().constData());
-test << "updateNodeFromItemData: " << item->text().toLatin1().constData() << " (" << QString::number((unsigned long long)item,16).toLatin1().constData() << ")\n";
-test.close();
 
     // Rename data node too
     vtkMRMLNode* associatedDataNode = subjectHierarchyNode->GetAssociatedNode();
@@ -649,7 +631,7 @@ return Superclass::dropMimeData(data, action, row, column, parent); //TODO: TEST
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* newParent)
 {
-return Superclass::reparent(node,newParent); //TODO: TEST
+//return Superclass::reparent(node,newParent); //TODO: TEST
 
   if (!node || newParent == node)
     {
@@ -686,7 +668,7 @@ return Superclass::reparent(node,newParent); //TODO: TEST
   vtkMRMLSubjectHierarchyNode* parentSubjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(newParent);
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
 
-  if (!this->canBeAParent(newParent))
+  if (newParent && !this->canBeAParent(newParent))
     {
     vtkWarningWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::reparent: Target parent node (" << newParent->GetName() << ") is not a valid subject hierarchy parent node!");
     }
