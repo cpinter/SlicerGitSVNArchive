@@ -111,7 +111,6 @@ Qt::DropActions qMRMLSceneSubjectHierarchyModel::supportedDropActions()const
 //------------------------------------------------------------------------------
 QMimeData* qMRMLSceneSubjectHierarchyModel::mimeData(const QModelIndexList &indexes) const
 {
-//QApplication::processEvents(); //TODO: TEST
 return Superclass::mimeData(indexes); //TODO: TEST
 
   Q_D(const qMRMLSceneSubjectHierarchyModel);
@@ -177,14 +176,6 @@ int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
     for (std::vector<vtkMRMLHierarchyNode*>::iterator childIt = childHierarchyNodes.begin(); childIt != childHierarchyNodes.end(); ++childIt)
     {
       vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(*childIt);
-      if (!childNode)
-      {
-        qCritical() << "ZZZ sajt1!!!"; //TODO: remove if works
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << "ZZZ sajt1!!!\n";
-test.close();
-      }
       if (childNode == node)
       {
 ofstream test;
@@ -348,20 +339,27 @@ item->setText(QString::number(this->nodeIndex(node)));
     return;
     }
 
-  qSlicerSubjectHierarchyAbstractPlugin* ownerPlugin =
-    qSlicerSubjectHierarchyPluginHandler::instance()->getOwnerPluginForSubjectHierarchyNode(subjectHierarchyNode);
-  if (!ownerPlugin)
+  qSlicerSubjectHierarchyAbstractPlugin* ownerPlugin = NULL;
+  if (subjectHierarchyNode->GetOwnerPluginName())
     {
-    //// Set warning icon if the column is the node type column
-    //if (column == this->nodeTypeColumn()) //TODO: test
-    //  {
-    //  item->setIcon(d->WarningIcon);
-    //  }
-
-    //qCritical() << "qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode: No owner plugin defined for subject hierarchy node '" << subjectHierarchyNode->GetName() << "'!";
-    //return;
-//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
-return;
+    ownerPlugin = qSlicerSubjectHierarchyPluginHandler::instance()->getOwnerPluginForSubjectHierarchyNode(subjectHierarchyNode);
+    if (!ownerPlugin)
+      {
+      // Set warning icon if the column is the node type column
+      if ( column == this->nodeTypeColumn()
+        && item->icon().cacheKey() != d->WarningIcon.cacheKey() ) // Only set if it changed (https://bugreports.qt-project.org/browse/QTBUG-20248)
+        {
+        item->setIcon(d->WarningIcon);
+        }
+        return;
+      }
+    }
+  else
+    {
+    // Owner plugin name is not set for subject hierarchy node. Show it as a regular node
+    qDebug() << "qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode: No owner plugin defined for subject hierarchy node '" << subjectHierarchyNode->GetName() << "'!";
+    Superclass::updateItemDataFromNode(item,node,column);
+    return;
     }
 
   // Name column
@@ -380,25 +378,46 @@ item->setText(QString::number(this->nodeIndex(subjectHierarchyNode))); //TODO: t
   // Visibility column
   if (column == this->visibilityColumn())
     {
-    // Have owner plugin set the visibility icon
-    //ownerPlugin->setVisibilityIcon(subjectHierarchyNode, item); //TODO: test
+    // Have owner plugin give the visibility state and icon
+    int visible = ownerPlugin->getDisplayVisibility(subjectHierarchyNode);
+    QIcon visibilityIcon = ownerPlugin->visibilityIcon(visible);
+
+    // It should be fine to set the icon even if it is the same, but due
+    // to a bug in Qt (http://bugreports.qt.nokia.com/browse/QTBUG-20248),
+    // it would fire a superflous itemChanged() signal.
+    if (item->data(qMRMLSceneModel::VisibilityRole).isNull()
+      || item->data(qMRMLSceneModel::VisibilityRole).toInt() != visible)
+      {
+      item->setData(visible, qMRMLSceneModel::VisibilityRole);
+      if (!visibilityIcon.isNull())
+        {
+        item->setIcon(visibilityIcon);
+        }
+      }
     }
   // Node type column
   if (column == this->nodeTypeColumn())
     {
-return; //TODO: test
-    // Have owner plugin set the icon
-    bool iconSetSuccessfullyByPlugin = ownerPlugin->setIcon(subjectHierarchyNode, item);
-    if (!iconSetSuccessfullyByPlugin)
+    // Have owner plugin give the icon
+    QIcon icon = ownerPlugin->icon(subjectHierarchyNode);
+    if (!icon.isNull())
       {
-      item->setIcon(d->UnknownIcon);
+      if (item->icon().cacheKey() != icon.cacheKey()) // Only set if it changed (https://bugreports.qt-project.org/browse/QTBUG-20248)
+        {
+        item->setIcon(icon);
+        }
+      }
+    else
+      {
+      if (item->icon().cacheKey() != d->UnknownIcon.cacheKey()) // Only set if it changed (https://bugreports.qt-project.org/browse/QTBUG-20248)
+        {
+        item->setIcon(d->UnknownIcon);
+        }
       }
     }
   // Transform column
   if (column == this->transformColumn())
     {
-//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
-//return;
     if (item->data(Qt::WhatsThisRole).toString().isEmpty())
       {
       item->setData( "Transform", Qt::WhatsThisRole );
@@ -421,7 +440,6 @@ return; //TODO: test
       }
     else
       {
-      //item->setData( tr(""), qMRMLSceneSubjectHierarchyModel::TransformIDRole );
       item->setToolTip(tr("No transform can be directly applied on non-transformable nodes,\nhowever a transform can be chosen to apply it on all the children"));
       }
     }

@@ -150,52 +150,37 @@ const QString qSlicerSubjectHierarchyChartsPlugin::roleForPlugin()const
 }
 
 //---------------------------------------------------------------------------
-bool qSlicerSubjectHierarchyChartsPlugin::setIcon(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item)
+QIcon qSlicerSubjectHierarchyChartsPlugin::icon(vtkMRMLSubjectHierarchyNode* node)
 {
-  if (!node || !item)
+  if (!node)
     {
-    qCritical() << "qSlicerSubjectHierarchyChartsPlugin::setIcon: NULL node or item given!";
-    return false;
+    qCritical() << "qSlicerSubjectHierarchyChartsPlugin::icon: NULL node given!";
+    return QIcon();
     }
 
   Q_D(qSlicerSubjectHierarchyChartsPlugin);
 
   if (this->canOwnSubjectHierarchyNode(node))
     {
-    item->setIcon(d->ChartIcon);
-    return true;
+    return d->ChartIcon;
     }
 
   // Node unknown by plugin
-  return false;
+  return QIcon();
 }
 
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyChartsPlugin::setVisibilityIcon(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item)
+QIcon qSlicerSubjectHierarchyChartsPlugin::visibilityIcon(int visible)
 {
-  if (!node || !item)
-    {
-    qCritical() << "qSlicerSubjectHierarchyChartsPlugin::setVisibilityIcon: NULL node or item given!";
-    return;
-    }
-
   Q_D(qSlicerSubjectHierarchyChartsPlugin);
 
-  if (this->canOwnSubjectHierarchyNode(node))
+  if (visible)
     {
-    if (this->getDisplayVisibility(node))
-      {
-      item->setIcon(d->VisibleIcon);
-      }
-    else
-      {
-      item->setIcon(d->HiddenIcon);
-      }
+    return d->VisibleIcon;
     }
   else
     {
-    // For all other owned nodes the visibility icon is set as default
-    qSlicerSubjectHierarchyPluginHandler::instance()->defaultPlugin()->setVisibilityIcon(node, item);
+    return d->HiddenIcon;
     }
 }
 

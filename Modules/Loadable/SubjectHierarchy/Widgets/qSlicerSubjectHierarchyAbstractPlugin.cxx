@@ -88,24 +88,21 @@ const QString qSlicerSubjectHierarchyAbstractPlugin::helpText()const
 }
 
 //---------------------------------------------------------------------------
-bool qSlicerSubjectHierarchyAbstractPlugin::setIcon(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item)
+QIcon qSlicerSubjectHierarchyAbstractPlugin::icon(vtkMRMLSubjectHierarchyNode* node)
 {
   Q_UNUSED(node);
-  Q_UNUSED(item);
 
   // Default implementation applies to plugins that do not define roles, only functions and/or levels
   // If there is no role, then there is no icon to set
-  return false;
+  return QIcon();
 }
 
 //---------------------------------------------------------------------------
-void qSlicerSubjectHierarchyAbstractPlugin::setVisibilityIcon(vtkMRMLSubjectHierarchyNode* node, QStandardItem* item)
+QIcon qSlicerSubjectHierarchyAbstractPlugin::visibilityIcon(int visible)
 {
-  Q_UNUSED(node);
-  Q_UNUSED(item);
-
   // Default implementation applies to plugins that do not define roles, only functions and/or levels
   // If there is no role, then there is no visibility icon to set
+  return QIcon();
 }
 
 //---------------------------------------------------------------------------
