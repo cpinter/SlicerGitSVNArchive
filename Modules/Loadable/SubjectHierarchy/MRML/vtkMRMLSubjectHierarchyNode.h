@@ -148,11 +148,6 @@ public:
   /// Harden transform on itself and on all children, recursively
   void HardenTransformOnBranch();
 
-  /// Set Modified flag on all nodes in a branch
-  /// \param shNodesOnly If true, only set Modified on subject hierarchy nodes. If false, nested hierarchy nodes and data nodes too. Default value is false
-  /// \param setModifiedOnRoot Set Modified on the root node of the branch (this) if true. Default value is false
-  void SetModifiedOnBranch(bool shNodesOnly=false, bool setModifiedOnRoot=false);
-
 public:
   /// Set level
   vtkSetStringMacro(Level);

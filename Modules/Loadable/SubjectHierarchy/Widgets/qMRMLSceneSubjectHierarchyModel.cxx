@@ -138,8 +138,6 @@ return Superclass::mimeData(indexes); //TODO: TEST
 //------------------------------------------------------------------------------
 vtkMRMLNode* qMRMLSceneSubjectHierarchyModel::parentNode(vtkMRMLNode* node)const
 {
-//return Superclass::parentNode(node); //TODO: TEST
-
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
     {
@@ -151,8 +149,6 @@ vtkMRMLNode* qMRMLSceneSubjectHierarchyModel::parentNode(vtkMRMLNode* node)const
 //------------------------------------------------------------------------------
 int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
 {
-//return Superclass::nodeIndex(node); //TODO: TEST
-
   Q_D(const qMRMLSceneSubjectHierarchyModel);
   if (!d->MRMLScene)
     {
@@ -167,26 +163,21 @@ int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
 
   int index = 0;
 
-  //TODO: Indentation for braces!
   // If the node is not top-level, then find only the index in the branch
   vtkMRMLSubjectHierarchyNode* parent = vtkMRMLSubjectHierarchyNode::SafeDownCast(this->parentNode(node));
   if (parent)
-  {
+    {
     std::vector<vtkMRMLHierarchyNode*> childHierarchyNodes = parent->GetChildrenNodes();
     for (std::vector<vtkMRMLHierarchyNode*>::iterator childIt = childHierarchyNodes.begin(); childIt != childHierarchyNodes.end(); ++childIt)
-    {
+      {
       vtkMRMLSubjectHierarchyNode* childNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(*childIt);
       if (childNode == node)
-      {
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << node->GetName() << " (" << node->GetID() << ") " << index << " (SH)\n";
-test.close();
+        {
         return index;
-      }
+        }
       ++index;
+      }
     }
-  }
 
   // Iterate through the scene and see if there is any matching node.
   // First try to find based on ptr value, as it's much faster than comparing string IDs.
@@ -194,43 +185,35 @@ test.close();
   vtkMRMLNode* n = 0;
   vtkCollectionSimpleIterator it;
   for (nodes->InitTraversal(it); (n = (vtkMRMLNode*)nodes->GetNextItemAsObject(it)) ;)
-  {
+    {
     // Note: parent can be NULL, it means that the scene is the parent
     if (parent == this->parentNode(n))
-    {
-      if (node==n)
       {
+      if (node==n)
+        {
         // found the node
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level)\n";
-test.close();
         return index;
-      }
+        }
       ++index;
+      }
     }
-  }
 
   // Not found by node ptr, try to find it by ID (much slower)
   const char* nId = 0;
   for (nodes->InitTraversal(it);
     (n = (vtkMRMLNode*)nodes->GetNextItemAsObject(it)) ;)
-  {
+    {
     // Note: parent can be NULL, it means that the scene is the parent
     if (parent == this->parentNode(n))
-    {
+      {
       ++index;
       nId = n->GetID();
       if (nId && !strcmp(nodeId, nId))
-      {
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << node->GetName() << " (" << node->GetID() << ") " << index << " (top-level by ID)\n";
-test.close();
+        {
         return index;
+        }
       }
     }
-  }
 
   // Not found
   return -1;
@@ -239,16 +222,12 @@ test.close();
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::canBeAChild(vtkMRMLNode* node)const
 {
-//return Superclass::canBeAChild(node); //TODO: TEST
-
   return node && node->IsA("vtkMRMLSubjectHierarchyNode");
 }
 
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::canBeAParent(vtkMRMLNode* node)const
 {
-//return Superclass::canBeAParent(node); //TODO: TEST
-
   return node && node->IsA("vtkMRMLSubjectHierarchyNode");
 }
 
@@ -298,9 +277,6 @@ int qMRMLSceneSubjectHierarchyModel::maxColumnId()const
 //------------------------------------------------------------------------------
 QFlags<Qt::ItemFlag> qMRMLSceneSubjectHierarchyModel::nodeFlags(vtkMRMLNode* node, int column)const
 {
-//return Superclass::nodeFlags(node,column); //TODO: TEST
-
-
   QFlags<Qt::ItemFlag> flags = this->Superclass::nodeFlags(node, column);
 
   if (column == this->transformColumn() && node)
@@ -314,28 +290,12 @@ QFlags<Qt::ItemFlag> qMRMLSceneSubjectHierarchyModel::nodeFlags(vtkMRMLNode* nod
 //------------------------------------------------------------------------------
 void qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode(QStandardItem* item, vtkMRMLNode* node, int column)
 {
-//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
-//return;
-
   Q_D(qMRMLSceneSubjectHierarchyModel);
 
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
     {
-//Superclass::updateItemDataFromNode(item,node,column); //TODO: TEST
-//return;
-//TEST code for showing nodeIndex in ID column
-if (column == this->nameColumn()) //TODO: Remove test code
-{
-// Have owner plugin set the name and the tooltip
-item->setText(QString(node->GetName()));
-item->setToolTip(QString(node->GetID()));
-}
-if (column == this->idColumn())
-{
-item->setText(QString::number(this->nodeIndex(node)));
-}
-//\TEST
+    Superclass::updateItemDataFromNode(item,node,column);
     return;
     }
 
@@ -372,8 +332,7 @@ item->setText(QString::number(this->nodeIndex(node)));
   // ID column
   if (column == this->idColumn())
     {
-item->setText(QString::number(this->nodeIndex(subjectHierarchyNode))); //TODO: test
-    //item->setText(QString(subjectHierarchyNode->GetID()));
+    item->setText(QString(subjectHierarchyNode->GetID()));
     }
   // Visibility column
   if (column == this->visibilityColumn())
@@ -385,8 +344,8 @@ item->setText(QString::number(this->nodeIndex(subjectHierarchyNode))); //TODO: t
     // It should be fine to set the icon even if it is the same, but due
     // to a bug in Qt (http://bugreports.qt.nokia.com/browse/QTBUG-20248),
     // it would fire a superflous itemChanged() signal.
-    if (item->data(qMRMLSceneModel::VisibilityRole).isNull()
-      || item->data(qMRMLSceneModel::VisibilityRole).toInt() != visible)
+    if ( item->data(qMRMLSceneModel::VisibilityRole).isNull()
+      || item->data(qMRMLSceneModel::VisibilityRole).toInt() != visible )
       {
       item->setData(visible, qMRMLSceneModel::VisibilityRole);
       if (!visibilityIcon.isNull())
@@ -448,9 +407,6 @@ item->setText(QString::number(this->nodeIndex(subjectHierarchyNode))); //TODO: t
 //------------------------------------------------------------------------------
 void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, QStandardItem* item)
 {
-//Superclass::updateNodeFromItemData(node,item); //TODO: TEST
-//return;
-
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
     {
@@ -480,13 +436,12 @@ void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, 
     if (visible > -1)
       {
       // Have owner plugin set the display visibility
-      //ownerPlugin->setDisplayVisibility(subjectHierarchyNode, visible); //TODO: test
+      ownerPlugin->setDisplayVisibility(subjectHierarchyNode, visible);
       }
     }
   // Transform column
   if (item->column() == this->transformColumn())
     {
-//return; //TODO: test
     QVariant transformIdData = item->data(qMRMLSceneSubjectHierarchyModel::TransformIDRole);
     std::string newParentTransformNodeIdStr = transformIdData.toString().toLatin1().constData();
     vtkMRMLTransformNode* newParentTransformNode =
@@ -619,9 +574,6 @@ return Superclass::dropMimeData(data, action, row, column, parent); //TODO: TEST
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* newParent)
 {
-//return Superclass::reparent(node,newParent); //TODO: TEST
-QApplication::processEvents(); //TODO: TEST
-
   if (!node || newParent == node)
     {
     std::cerr << "qMRMLSceneSubjectHierarchyModel::reparent: Invalid node to reparent!" << std::endl;
@@ -635,18 +587,13 @@ QApplication::processEvents(); //TODO: TEST
   vtkMRMLSubjectHierarchyNode* oldParent = vtkMRMLSubjectHierarchyNode::SafeDownCast(this->parentNode(node));
   if (oldParent == newParent)
     {
-    // TODO: This is a workaround. Without this the node disappears and the tree collapses
+    // TODO: This is a workaround. Without this the item becomes invalid http://www.na-mic.org/Bug/view.php?id=3777
     //emit invalidateModels();
     //QApplication::processEvents();
     //this->updateScene();
     //emit loadTreeExpandState();
     return false;
     }
-
-ofstream test;
-test.open("D:\\log.txt", ios::app);
-test << "=== Reparenting " << node->GetName() << " from " << (oldParent?oldParent->GetName():"NULL") << " to " << (newParent?newParent->GetName():"scene") << " ===\n";
-test.close();
 
   if (!this->mrmlScene())
     {
@@ -690,17 +637,13 @@ test.close();
     successfullyReparentedByPlugin = selectedPlugin->reparentNodeInsideSubjectHierarchy(subjectHierarchyNode, parentSubjectHierarchyNode);
     if (!successfullyReparentedByPlugin)
       {
-      // TODO: Does this cause #473?
-      // Put back to its original place
       subjectHierarchyNode->SetParentNodeID( subjectHierarchyNode->GetParentNodeID() );
 
       vtkWarningWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::reparent: Failed to reparent node "
         << subjectHierarchyNode->GetName() << " through plugin '" << selectedPlugin->name().toLatin1().constData() << "'");
       }
-
-    //this->observeNode(node);
-    //subjectHierarchyNode->SetModifiedOnBranch(false, true); //TODO TEST
     }
+
   // If dropped from the potential subject hierarchy nodes list
   else
     {
@@ -732,21 +675,9 @@ test.close();
       vtkWarningWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::reparent: Failed to add node "
         << node->GetName() << " through plugin '" << selectedPlugin->name().toLatin1().constData() << "'");
       }
-
-    //vtkMRMLSubjectHierarchyNode* newSubjectHierarchyNode = vtkMRMLSubjectHierarchyNode::GetAssociatedSubjectHierarchyNode(node);
-    //newSubjectHierarchyNode->SetModifiedOnBranch(false, true); //TODO TEST
     }
 
-  //TEST TODO remove
-  // Set Modified flag on both old and new parent branches of reparented node to refresh node indices
-  //parentSubjectHierarchyNode->SetModifiedOnBranch();
-  //if (oldParent)
-  //{
-  //  oldParent->SetModifiedOnBranch();
-  //}
-  //\TEST
-
-  // TODO: This is a workaround. Without this the node disappears and the tree collapses
+  // TODO: This is a workaround. Without this the node becomes invalid and the tree collapses http://www.na-mic.org/Bug/view.php?id=3777
   //emit invalidateModels();
   //QApplication::processEvents();
   //this->updateScene();
