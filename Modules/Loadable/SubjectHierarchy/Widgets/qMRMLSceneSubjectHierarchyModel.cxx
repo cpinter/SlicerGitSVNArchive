@@ -183,7 +183,7 @@ int qMRMLSceneSubjectHierarchyModel::nodeIndex(vtkMRMLNode* node)const
 //------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::canBeAChild(vtkMRMLNode* node)const
 {
-  return node && node->IsA("vtkMRMLSubjectHierarchyNode");
+  return node;
 }
 
 //------------------------------------------------------------------------------
@@ -256,7 +256,19 @@ void qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode(QStandardItem* item
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
   if (!subjectHierarchyNode)
     {
-    Superclass::updateItemDataFromNode(item,node,column);
+    // If not subject hierarchy node (i.e. potential node or filtering is turned off),
+    // then show as any node, except for a tooltip explaining how to add it to subject hierarchy
+    if (column == this->nameColumn())
+      {
+      QString text = QString(node->GetName()) + QString(" (potential)");
+      item->setText(text);
+      item->setToolTip(tr("To add into subject hierarchy, drag&drop under a subject hierarchy node"));
+      }
+    // ID column
+    if (column == this->idColumn())
+      {
+      item->setText(QString(node->GetID()));
+      }
     return;
     }
 
@@ -271,6 +283,11 @@ void qMRMLSceneSubjectHierarchyModel::updateItemDataFromNode(QStandardItem* item
         && item->icon().cacheKey() != d->WarningIcon.cacheKey() ) // Only set if it changed (https://bugreports.qt-project.org/browse/QTBUG-20248)
         {
         item->setIcon(d->WarningIcon);
+        }
+      if (column == this->nameColumn())
+        {
+          item->setText(node->GetName());
+          item->setToolTip(tr("Not owned by any plugin!"));
         }
         return;
       }

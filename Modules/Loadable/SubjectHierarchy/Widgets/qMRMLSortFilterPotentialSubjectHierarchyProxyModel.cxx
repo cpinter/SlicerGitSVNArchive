@@ -40,13 +40,10 @@ class qMRMLSortFilterPotentialSubjectHierarchyProxyModelPrivate
 {
 public:
   qMRMLSortFilterPotentialSubjectHierarchyProxyModelPrivate();
-
-  bool includeHiddenNodes;
 };
 
 // -----------------------------------------------------------------------------
 qMRMLSortFilterPotentialSubjectHierarchyProxyModelPrivate::qMRMLSortFilterPotentialSubjectHierarchyProxyModelPrivate()
-: includeHiddenNodes(false)
 {
 }
 
@@ -84,7 +81,7 @@ qMRMLSortFilterProxyModel::AcceptType qMRMLSortFilterPotentialSubjectHierarchyPr
 
   // Show only nodes that do not have a subject hierarchy node associated
   vtkMRMLSubjectHierarchyNode* possibleShNode = vtkMRMLSubjectHierarchyNode::GetAssociatedSubjectHierarchyNode(node);
-  if (!possibleShNode && (d->includeHiddenNodes || !node->GetHideFromEditors()))
+  if (!possibleShNode && !node->GetHideFromEditors())
     {
     if (node->GetAttribute(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_EXCLUDE_FROM_POTENTIAL_NODES_LIST_ATTRIBUTE_NAME.c_str()))
       {
