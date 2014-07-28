@@ -2,7 +2,8 @@
 
   Program: 3D Slicer
 
-  Portions (c) Copyright Brigham and Women's Hospital (BWH) All Rights Reserved.
+  Copyright (c) Laboratory for Percutaneous Surgery (PerkLab)
+  Queen's University, Kingston, ON, Canada. All Rights Reserved.
 
   See COPYRIGHT.txt
   or http://www.slicer.org/copyright/copyright.txt for details.
@@ -144,8 +145,8 @@ void qSlicerSubjectHierarchyModuleWidget::setup()
   connect( d->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), d->MRMLNodeAttributeTableWidget, SLOT(setMRMLNode(vtkMRMLNode*)) );
 
   // Connect subject hierarchy tree with potential nodes list
-  //connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->PotentialSubjectHierarchyListView->model(), SLOT(invalidate()) );
-  //connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->SubjectHierarchyTreeView->model(), SLOT(invalidate()) );
+  connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->PotentialSubjectHierarchyListView->model(), SLOT(invalidate()) );
+  connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateModels()), d->SubjectHierarchyTreeView->model(), SLOT(invalidate()) );
 
   // Connect logic custom event for scene update
   qvtkConnect( d->logic(), vtkSlicerSubjectHierarchyModuleLogic::SceneUpdateNeededEvent, d->SubjectHierarchyTreeView->model(), SLOT( invalidate() ) );
@@ -176,7 +177,6 @@ void qSlicerSubjectHierarchyModuleWidget::updateWidgetFromMRML()
 
   //d->SubjectHierarchyTreeView->sortFilterProxyModel()->invalidate();
   qMRMLSceneSubjectHierarchyModel* sceneModel = (qMRMLSceneSubjectHierarchyModel*)d->SubjectHierarchyTreeView->sceneModel();
-  sceneModel->forceUpdateScene();
   d->SubjectHierarchyTreeView->header()->resizeSection(sceneModel->transformColumn(), 60);
   d->SubjectHierarchyTreeView->expandToDepth(4);
 

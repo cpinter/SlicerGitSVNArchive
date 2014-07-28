@@ -2,7 +2,8 @@
 
   Program: 3D Slicer
 
-  Copyright (c) Kitware Inc.
+  Copyright (c) Laboratory for Percutaneous Surgery (PerkLab)
+  Queen's University, Kingston, ON, Canada. All Rights Reserved.
 
   See COPYRIGHT.txt
   or http://www.slicer.org/copyright/copyright.txt for details.
@@ -100,49 +101,9 @@ Qt::DropActions qMRMLSceneSubjectHierarchyModel::supportedDropActions()const
 }
 
 //------------------------------------------------------------------------------
-//QStringList qMRMLSceneSubjectHierarchyModel::mimeTypes()const
-//{
-//  QStringList types;
-//  types << "application/vnd.text.list";
-//  return types;
-//}
-//TODO:
-
-//------------------------------------------------------------------------------
-QMimeData* qMRMLSceneSubjectHierarchyModel::mimeData(const QModelIndexList &indexes) const
-{
-return Superclass::mimeData(indexes); //TODO: TEST
-
-  Q_D(const qMRMLSceneSubjectHierarchyModel);
-
-  QMimeData* mimeData = new QMimeData();
-  QByteArray encodedData;
-
-  QDataStream stream(&encodedData, QIODevice::WriteOnly);
-
-  foreach (const QModelIndex &index, indexes)
-    {
-    // Only add one pointer per row
-    if (index.isValid() && index.column() == 0)
-      {
-      d->DraggedNodes << this->mrmlNodeFromIndex(index);
-      QString text = data(index, PointerRole).toString();
-      stream << text;
-      }
-    }
-
-  mimeData->setData("application/vnd.text.list", encodedData);
-  return mimeData;
-}
-
-//------------------------------------------------------------------------------
 vtkMRMLNode* qMRMLSceneSubjectHierarchyModel::parentNode(vtkMRMLNode* node)const
 {
   vtkMRMLSubjectHierarchyNode* subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(node);
-  if (!subjectHierarchyNode)
-    {
-    //subjectHierarchyNode = vtkMRMLSubjectHierarchyNode::GetAssociatedSubjectHierarchyNode(node); //TODO: TEST
-    }
   return subjectHierarchyNode ? subjectHierarchyNode->GetParentNode() : 0;
 }
 
@@ -488,90 +449,6 @@ void qMRMLSceneSubjectHierarchyModel::updateNodeFromItemData(vtkMRMLNode* node, 
 }
 
 //------------------------------------------------------------------------------
-bool qMRMLSceneSubjectHierarchyModel::dropMimeData(const QMimeData* data, Qt::DropAction action, int row, int column, const QModelIndex &parent)
-{
-return Superclass::dropMimeData(data, action, row, column, parent); //TODO: TEST
-
-  Q_D(const qMRMLSceneSubjectHierarchyModel);
-  Q_UNUSED(row);
-  Q_UNUSED(column);
-
-  // This list is not used now in this model, can be emptied
-  d->DraggedNodes.clear();
-
-  if (action == Qt::IgnoreAction)
-    {
-    return true;
-    }
-  if (!this->mrmlScene())
-    {
-    std::cerr << "qMRMLSceneSubjectHierarchyModel::dropMimeData: Invalid MRML scene!" << std::endl;
-    return false;
-    }
-  if (!data->hasFormat("application/vnd.text.list"))
-    {
-    vtkErrorWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::dropMimeData: Plain text MIME type is expected");
-    return false;
-    }
-
-  // Nothing can be dropped to the top level (subjects/patients can only be loaded at from the DICOM browser or created manually)
-  if (!parent.isValid())
-    {
-    vtkWarningWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::dropMimeData: Items cannot be dropped on top level!");
-    return false;
-    }
-  vtkMRMLNode* parentNode = this->mrmlNodeFromIndex(parent);
-  if (!parentNode)
-    {
-    vtkErrorWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::dropMimeData: Unable to get parent node!");
-    // TODO: This is a workaround. Without this the node disappears and the tree collapses
-    //emit saveTreeExpandState();
-    //QApplication::processEvents();
-    //emit invalidateModels();
-    //QApplication::processEvents();
-    //this->updateScene();
-    //emit loadTreeExpandState();
-    return false;
-    }
-
-  // Decode MIME data
-  QByteArray encodedData = data->data("application/vnd.text.list");
-  QDataStream stream(&encodedData, QIODevice::ReadOnly);
-  QStringList streamItems;
-  int rows = 0;
-
-  while (!stream.atEnd())
-    {
-    QString text;
-    stream >> text;
-    streamItems << text;
-    ++rows;
-    }
-
-  if (rows == 0)
-    {
-    vtkErrorWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::dropMimeData: Unable to decode dropped MIME data!");
-    return false;
-    }
-  if (rows > 1)
-    {
-    vtkWarningWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::dropMimeData: More than one data item decoded from dropped MIME data! Only the first one will be used.");
-    }
-
-  QString nodePointerString = streamItems[0];
-
-  vtkMRMLNode* droppedNode = vtkMRMLNode::SafeDownCast(reinterpret_cast<vtkObject*>(nodePointerString.toULongLong()));
-  if (!droppedNode)
-    {
-    vtkErrorWithObjectMacro(this->mrmlScene(), "qMRMLSceneSubjectHierarchyModel::dropMimeData: Unable to get MRML node from dropped MIME text (" << nodePointerString.toLatin1().constData() << ")!");
-    return false;
-    }
-
-  // Reparent the node
-  return this->reparent(droppedNode, parentNode);
-}
-
-//------------------------------------------------------------------------------
 bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* newParent)
 {
   if (!node || newParent == node)
@@ -580,18 +457,9 @@ bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* n
     return false;
     }
 
-  // Prevent collapse of the subject hierarchy tree view (TODO: This is a workaround)
-  //emit saveTreeExpandState();
-  //QApplication::processEvents();
-
   vtkMRMLSubjectHierarchyNode* oldParent = vtkMRMLSubjectHierarchyNode::SafeDownCast(this->parentNode(node));
   if (oldParent == newParent)
     {
-    // TODO: This is a workaround. Without this the item becomes invalid http://www.na-mic.org/Bug/view.php?id=3777
-    //emit invalidateModels();
-    //QApplication::processEvents();
-    //this->updateScene();
-    //emit loadTreeExpandState();
     return false;
     }
 
@@ -677,12 +545,6 @@ bool qMRMLSceneSubjectHierarchyModel::reparent(vtkMRMLNode* node, vtkMRMLNode* n
       }
     }
 
-  // TODO: This is a workaround. Without this the node becomes invalid and the tree collapses http://www.na-mic.org/Bug/view.php?id=3777
-  //emit invalidateModels();
-  //QApplication::processEvents();
-  //this->updateScene();
-  //emit loadTreeExpandState();
-
   return true;
 }
 
@@ -704,11 +566,4 @@ void qMRMLSceneSubjectHierarchyModel::onRemoveTransformsFromBranchOfCurrentNode(
     {
     currentNode->TransformBranch(NULL, false);
     }
-}
-
-//------------------------------------------------------------------------------
-void qMRMLSceneSubjectHierarchyModel::forceUpdateScene()
-{
-  // Force updating the whole scene (TODO: this should not be needed)
-  //this->updateScene();
 }
