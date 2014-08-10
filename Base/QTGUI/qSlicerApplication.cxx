@@ -671,11 +671,11 @@ void qSlicerApplication::setupFileLogging()
   if (f.open(QFile::Append))
     {
     QTextStream s(&f);
-    s << QString("Platform: %1").arg(this->platform())/*.toLatin1().constData()*/ << "\n";
-    s << QString("OS: %1").arg(this->os())/*.toLatin1().constData()*/ << "\n";
-    s << QString("Version: %1.%2").arg(this->majorVersion()).arg(this->minorVersion())/*.toLatin1().constData()*/ << "\n";
-    s << QString("Revision: %1").arg(this->repositoryRevision())/*.toLatin1().constData()*/ << "\n";
-    s << QString("DateTime: %1").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss"))/*.toLatin1().constData()*/ << "\n";
+    s << QString("Platform: %1").arg(this->platform()) << "\n";
+    s << QString("OS: %1").arg(this->os()) << "\n";
+    s << QString("Version: %1.%2").arg(this->majorVersion()).arg(this->minorVersion()) << "\n";
+    s << QString("Revision: %1").arg(this->repositoryRevision()) << "\n";
+    s << QString("DateTime: %1").arg(QDateTime::currentDateTime().toString("yyyy-MM-dd hh:mm:ss")) << "\n";
     s << "Installed:" << (this->isInstalled() ? "Yes" : "No") << "\n";
     f.close();
     }
