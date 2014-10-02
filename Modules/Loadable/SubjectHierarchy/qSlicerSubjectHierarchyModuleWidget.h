@@ -62,6 +62,9 @@ protected slots:
   /// Show or hide potential nodes in the tree
   void setPotentialNodesVisible(bool visible);
 
+  /// Show DICOM export dialog
+  void onExportButtonClicked();
+
 public:
   /// Assessor function for subject hierarchy scene model (for python)
   Q_INVOKABLE qMRMLSceneSubjectHierarchyModel* subjectHierarchySceneModel()const;

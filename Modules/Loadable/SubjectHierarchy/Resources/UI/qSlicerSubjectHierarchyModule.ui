@@ -39,10 +39,7 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <property name="horizontalSpacing">
-      <number>4</number>
-     </property>
-     <property name="verticalSpacing">
+     <property name="spacing">
       <number>0</number>
      </property>
      <item row="1" column="0" colspan="2">
@@ -64,13 +61,6 @@
          <widget class="qMRMLNodeAttributeTableWidget" name="MRMLNodeAttributeTableWidget"/>
         </item>
        </layout>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QCheckBox" name="DisplayMRMLIDsCheckBox">
-       <property name="text">
-        <string>MRML ID's</string>
-       </property>
       </widget>
      </item>
      <item row="0" column="1">
@@ -95,6 +85,29 @@
          </property>
          <property name="checked">
           <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QCheckBox" name="DisplayMRMLIDsCheckBox">
+         <property name="text">
+          <string>ID's</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="DICOMExportButton">
+         <property name="minimumSize">
+          <size>
+           <width>84</width>
+           <height>0</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Open DICOM export window</string>
+         </property>
+         <property name="text">
+          <string>DICOM Export</string>
          </property>
         </widget>
        </item>
@@ -166,6 +179,8 @@
   </customwidget>
  </customwidgets>
  <resources>
+  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
+  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
   <include location="../qSlicerSubjectHierarchyModule.qrc"/>
   <include location="../qSlicerSubjectHierarchyModule.qrc"/>
   <include location="../qSlicerSubjectHierarchyModule.qrc"/>

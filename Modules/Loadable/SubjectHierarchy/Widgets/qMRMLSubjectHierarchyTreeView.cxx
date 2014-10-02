@@ -187,6 +187,9 @@ void qMRMLSubjectHierarchyTreeViewPrivate::init2()
 
   // Update actions in owner plugin sub-menu when opened
   QObject::connect( this->SelectPluginSubMenu, SIGNAL(aboutToShow()), q, SLOT(updateSelectPluginActions()) );
+
+  // Connect invalidate filters
+  QObject::connect( q->sceneModel(), SIGNAL(invalidateFilter()), q->model(), SLOT(invalidate()) );
 }
 
 //------------------------------------------------------------------------------

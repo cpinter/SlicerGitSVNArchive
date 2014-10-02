@@ -37,6 +37,8 @@ set(${KIT}_SRCS
   qSlicerSubjectHierarchyRegisterPlugin.h
   qSlicerSubjectHierarchySegmentPlugin.cxx
   qSlicerSubjectHierarchySegmentPlugin.h
+  qSlicerDICOMExportDialog.cxx
+  qSlicerDICOMExportDialog.h
   )
 
 set(${KIT}_MOC_SRCS
@@ -53,9 +55,11 @@ set(${KIT}_MOC_SRCS
   qSlicerSubjectHierarchyParseLocalDataPlugin.h
   qSlicerSubjectHierarchyRegisterPlugin.h
   qSlicerSubjectHierarchySegmentPlugin.h
+  qSlicerDICOMExportDialog.h
   )
 
 set(${KIT}_UI_SRCS
+  Resources/UI/qSlicerDICOMExportDialog.ui
   )
 
 set(${KIT}_RESOURCES

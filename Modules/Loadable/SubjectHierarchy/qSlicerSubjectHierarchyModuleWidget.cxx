@@ -34,6 +34,8 @@
 #include "qSlicerSubjectHierarchyPluginHandler.h"
 #include "qSlicerSubjectHierarchyAbstractPlugin.h"
 
+#include "qSlicerDICOMExportDialog.h"
+
 // MRML includes
 #include <vtkMRMLScene.h>
 
@@ -132,17 +134,17 @@ void qSlicerSubjectHierarchyModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
-  // Make connection for the checkboxes
+  // Make connections for the checkboxes and buttons
   connect( d->DisplayMRMLIDsCheckBox, SIGNAL(toggled(bool)), this, SLOT(setMRMLIDsVisible(bool)) );
   connect( d->DisplayTransformsCheckBox, SIGNAL(toggled(bool)), this, SLOT(setTransformsVisible(bool)) );
   connect( d->PotentialNodesCheckBox, SIGNAL(toggled(bool)), this, SLOT(setPotentialNodesVisible(bool)) );
+  connect( d->DICOMExportButton, SIGNAL(clicked()), this, SLOT(onExportButtonClicked()) );
 
   // Set up tree view
   d->SubjectHierarchyTreeView->expandToDepth(4);
   d->SubjectHierarchyTreeView->setEditTriggers(QAbstractItemView::DoubleClicked | QAbstractItemView::EditKeyPressed);
 
   connect( d->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), d->MRMLNodeAttributeTableWidget, SLOT(setMRMLNode(vtkMRMLNode*)) );
-  connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateFilter()), d->SubjectHierarchyTreeView->model(), SLOT(invalidate()) );
 
   this->setMRMLIDsVisible(d->DisplayMRMLIDsCheckBox->isChecked());
   this->setTransformsVisible(d->DisplayTransformsCheckBox->isChecked());
@@ -168,7 +170,6 @@ void qSlicerSubjectHierarchyModuleWidget::updateWidgetFromMRML()
 {
   Q_D(qSlicerSubjectHierarchyModuleWidget);
 
-  //d->SubjectHierarchyTreeView->sortFilterProxyModel()->invalidate();
   qMRMLSceneSubjectHierarchyModel* sceneModel = (qMRMLSceneSubjectHierarchyModel*)d->SubjectHierarchyTreeView->sceneModel();
   d->SubjectHierarchyTreeView->header()->resizeSection(sceneModel->transformColumn(), 60);
   d->SubjectHierarchyTreeView->expandToDepth(4);
@@ -239,4 +240,14 @@ vtkMRMLSubjectHierarchyNode* qSlicerSubjectHierarchyModuleWidget::currentSubject
 void qSlicerSubjectHierarchyModuleWidget::setCurrentSubjectHierarchyNode(vtkMRMLSubjectHierarchyNode* node)
 {
   qSlicerSubjectHierarchyPluginHandler::instance()->setCurrentNode(node);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSubjectHierarchyModuleWidget::onExportButtonClicked()
+{
+  qSlicerDICOMExportDialog* exportDialog = new qSlicerDICOMExportDialog(NULL);
+  exportDialog->setMRMLScene(this->mrmlScene());
+  exportDialog->exec();
+
+  delete exportDialog;
 }
