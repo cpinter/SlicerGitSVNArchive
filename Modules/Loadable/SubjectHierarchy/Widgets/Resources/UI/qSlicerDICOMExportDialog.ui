@@ -88,7 +88,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_PopulateFromNode">
+         <widget class="QPushButton" name="PopulateFromNodeButton">
           <property name="minimumSize">
            <size>
             <width>160</width>
@@ -177,7 +177,7 @@
       </spacer>
      </item>
      <item>
-      <widget class="QPushButton" name="pushButton">
+      <widget class="QPushButton" name="ExportButton">
        <property name="text">
         <string>Export</string>
        </property>
@@ -205,6 +205,9 @@
    <class>qMRMLTreeView</class>
    <extends>QTreeView</extends>
    <header>qMRMLTreeView.h</header>
+   <slots>
+    <slot>setSceneModel(int)</slot>
+   </slots>
   </customwidget>
   <customwidget>
    <class>qMRMLSubjectHierarchyTreeView</class>

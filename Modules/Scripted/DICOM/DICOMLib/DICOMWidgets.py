@@ -577,7 +577,7 @@ class DICOMPluginSelector(object):
 
     else:
 
-      # All DICOM plugins would be enabled by defualt
+      # All DICOM plugins would be enabled by default
       for pluginClass in slicer.modules.dicomPlugins:
         self.checkBoxByPlugin[pluginClass].checked = True
 

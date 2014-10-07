@@ -41,10 +41,13 @@ const char* vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SUBSERIES = "
 
 const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX = "DICOMHierarchy.";
 const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_PATIENT_NAME_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "PatientName";
-const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_PATIENT_ID_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "PatientId";
+const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_PATIENT_ID_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "PatientID";
 const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_PATIENT_SEX_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "PatientSex";
 const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_PATIENT_BIRTH_DATE_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "PatientBirthDate";
+const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_PATIENT_COMMENTS_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "PatientComments";
+const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_STUDY_DESCRIPTION_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "StudyDescription";
 const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_STUDY_DATE_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "StudyDate";
 const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_STUDY_TIME_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "StudyTime";
 const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_SERIES_MODALITY_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "SeriesModality";
+const std::string vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_SERIES_NUMBER_ATTRIBUTE_NAME = vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX + "SeriesNumber";
 const char* vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_DICOM_UID_NAME = "DICOM";

@@ -44,11 +44,15 @@ public:
   virtual ~qSlicerDICOMExportDialog();
 
 public:
-  // Show dialog
+  /// Show dialog
   virtual bool exec();
 
-  // Set MRML scene
+  /// Set MRML scene
   void setMRMLScene(vtkMRMLScene* scene);
+
+protected slots:
+  /// Invokes plugins and shows eligible ones to export selection
+  void onExport();
 
 protected:
   QScopedPointer<qSlicerDICOMExportDialogPrivate> d_ptr;
