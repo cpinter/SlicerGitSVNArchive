@@ -367,4 +367,3 @@ AETable END
     fp = open(configFile,'w')
     fp.write(config)
     fp.close()
-

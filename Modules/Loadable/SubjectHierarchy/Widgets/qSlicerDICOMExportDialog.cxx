@@ -177,7 +177,7 @@ void qSlicerDICOMExportDialog::onExport()
     "    numOfLoadables += 1\n" //TODO
     "print numOfLoadables\n" ) //TODO
     .arg(selectedNode->GetID()) );
-  //QVariant exportables = context.getVariable("exportables");
+  QVariant exportablesVariant = context.getVariable("exportables");
   QVariant numOfLoadablesVariant = context.getVariable("numOfLoadables"); //TODO
   unsigned int numOfLoadables = numOfLoadablesVariant.toUInt();
   QVariant fileListVariant = context.getVariable("fileList"); //TODO

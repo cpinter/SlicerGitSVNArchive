@@ -54,34 +54,6 @@ class DICOMLoadable(object):
 
 
 #
-# DICOMExportable
-#
-
-class DICOMExportable(object):
-  """Container class for ways of exporting
-  slicer data into DICOM.
-  Each plugin returns a list of instances of this
-  from its exportOptions method
-  so the DICOM module can build an appropriate
-  interface to offer user the options to export
-  and perform the exporting operation.
-  """
-
-  def __init__(self):
-    # callable to be invoked if user selects this exporter
-    self.exportCallback = None
-    # name exposed to the user for the export method
-    self.name = "Untitled Exporter"
-    # extra information the user sees on mouse over the export option
-    self.tooltip = "Creates a DICOM file from the selected data"
-    # confidence - from 0 to 1 where 0 means that the plugin
-    # cannot export the given node, up to 1 that means that the
-    # plugin considers itself the best plugin to export the node
-    # (in case of specialized objects, e.g. RT dose volume)
-    self.confidence = 0
-
-
-#
 # DICOMPlugin
 #
 

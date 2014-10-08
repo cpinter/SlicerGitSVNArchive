@@ -2,7 +2,7 @@ import os
 from __main__ import vtk, qt, ctk, slicer
 from DICOMLib import DICOMPlugin
 from DICOMLib import DICOMLoadable
-from DICOMLib import DICOMExportable
+from vtkSlicerDICOMLibModuleLogicPython import vtkDICOMExportable
 
 #
 # This is the plugin to handle translation of scalar volumes
@@ -339,14 +339,15 @@ class DICOMScalarVolumePluginClass(DICOMPlugin):
     data into DICOM data
     """
     # cannot export if there is no data node or the data node is not a volume
-    if node.GetAssociatedNode() == None or node.GetAssociatedNode().IsA('vtkMRMLScalarVolumeNode'):
+    if node.GetAssociatedNode() == None or not node.GetAssociatedNode().IsA('vtkMRMLScalarVolumeNode'):
       return []
 
-    exportable = DICOMLib.DICOMExportable()
-    exportable.name = self.loadType
-    exportable.tooltip = "Creates a series of DICOM files from scalar volumes"
-    exportable.confidence = 0.5 # There could be more specialized volume types
-    exportable.exportCallback = self.export
+    exportable = vtkDICOMExportable()
+    exportable.SetName(self.loadType)
+    exportable.SetTooltip("Creates a series of DICOM files from scalar volumes")
+    exportable.SetConfidence(0.5) # There could be more specialized volume types
+    #exportable.exportCallback = self.export
+    return [exportable]
 
   def export(self,node):
     if node.GetAssociatedNode() == None or node.GetAssociatedNode().IsA('vtkMRMLScalarVolumeNode'):

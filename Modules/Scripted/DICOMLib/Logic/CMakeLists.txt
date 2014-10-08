@@ -2,20 +2,14 @@ project(vtkSlicer${MODULE_NAME}ModuleLogic)
 
 set(KIT ${PROJECT_NAME})
 
-set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT")
+set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_LOGIC_EXPORT")
 
 set(${KIT}_INCLUDE_DIRECTORIES
   )
 
 set(${KIT}_SRCS
-  vtkImageConnectivity.cxx
-  vtkImageErode.cxx
-  vtkImageFillROI.cxx
-  vtkImageLabelChange.cxx
-  vtkImageSlicePaint.cxx
-  vtkImageStash.cxx
-  vtkPichonFastMarching.cxx
-  vtkPichonFastMarchingPDF.cxx
+  vtkDICOMLoadable.cxx
+  vtkDICOMExportable.cxx
   )
 
 if(${VTK_VERSION_MAJOR} GREATER 5)
