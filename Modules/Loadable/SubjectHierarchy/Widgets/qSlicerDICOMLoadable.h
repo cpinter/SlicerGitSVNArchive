@@ -20,70 +20,36 @@
 
 ==============================================================================*/
 
-#ifndef __vtkDICOMLoadable_h
-#define __vtkDICOMLoadable_h
+#ifndef __qSlicerDICOMLoadable_h
+#define __qSlicerDICOMLoadable_h
 
-// VTK includes
-#include <vtkObject.h>
-#include <vtkStringArray.h>
+// Qt includes
+#include <QObject>
+#include <QStringList>
 
 // DICOMLib includes
-#include "vtkSlicerDICOMLibModuleLogicExport.h"
+#include "qSlicerSubjectHierarchyModuleWidgetsExport.h"
+
+class qSlicerDICOMLoadablePrivate;
 
 /// Container class for things that can be loaded from DICOM files into Slicer.
 /// Each plugin returns a list of instances from its evaluate method and accepts
 /// a list of these in its load method corresponding to the things the user has
 /// selected for loading
-class VTK_SLICER_DICOMLIB_LOGIC_EXPORT vtkDICOMLoadable : public vtkObject
+class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_EXPORT qSlicerDICOMLoadable : public QObject
 {
-public:
-  static vtkDICOMLoadable *New();
-  vtkTypeMacro(vtkDICOMLoadable,vtkObject);
+  Q_OBJECT
 
-public:
-  vtkSetStringMacro(Name);
-  vtkGetStringMacro(Name);
-
-  vtkSetStringMacro(Tooltip);
-  vtkGetStringMacro(Tooltip);
-
-  vtkSetStringMacro(Warning);
-  vtkGetStringMacro(Warning);
-
-  vtkSetObjectMacro(Files, vtkStringArray);
-  vtkGetObjectMacro(Files, vtkStringArray);
-
-  vtkGetMacro(Selected, bool);
-  vtkSetMacro(Selected, bool);
-  vtkBooleanMacro(Selected, bool);
-
-  vtkGetMacro(Confidence, double);
-  vtkSetMacro(Confidence, double);
-
-protected:
-  vtkDICOMLoadable();
-  virtual ~vtkDICOMLoadable();
-
-private:
-  vtkDICOMLoadable(const vtkDICOMLoadable&); // Not implemented
-  void operator=(const vtkDICOMLoadable&);   // Not implemented
-
-protected:
   /// Name exposed to the user for the node
-  char* Name;
-
+  Q_PROPERTY(QString name READ name WRITE setName)
   /// Extra information the user sees on mouse over of the thing
-  char* Tooltip;
-
+  Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip)
   /// Things the user should know before loading this data
-  char* Warning;
-
+  Q_PROPERTY(QString warning READ warning WRITE setWarning)
   /// The file list of the data to be loaded
-  vtkStringArray* Files;
-
+  Q_PROPERTY(QStringList files READ files WRITE setFiles)
   /// Is the object checked for loading by default
-  bool Selected;
-
+  Q_PROPERTY(bool selected READ selected WRITE setSelected)
   /// Confidence - from 0 to 1 where 0 means low chance
   /// that the user actually wants to load their data this
   /// way up to 1, which means that the plugin is very confident
@@ -92,7 +58,37 @@ protected:
   /// selected, the one with the highest confidence is
   /// actually selected by default.  In the case of a tie,
   /// both series are selected for loading.
-  double Confidence;
+  Q_PROPERTY(double confidence READ confidence WRITE setConfidence)
+
+public:
+  typedef QObject Superclass;
+  qSlicerDICOMLoadable(QObject *parent = 0);
+  virtual ~qSlicerDICOMLoadable();
+
+  virtual QString name()const;
+  void setName(const QString& newName);
+
+  virtual QString tooltip()const;
+  void setTooltip(const QString& newTooltip);
+
+  virtual QString warning()const;
+  void setWarning(const QString& newWarning);
+
+  virtual QStringList files()const;
+  void setFiles(const QStringList& newFiles);
+
+  virtual bool selected()const;
+  void setSelected(const bool newSelected);
+
+  virtual double confidence()const;
+  void setConfidence(const double newConfidence);
+
+protected:
+  QScopedPointer<qSlicerDICOMLoadablePrivate> d_ptr;
+
+private:
+  Q_DECLARE_PRIVATE(qSlicerDICOMLoadable);
+  Q_DISABLE_COPY(qSlicerDICOMLoadable);
 };
 
 #endif

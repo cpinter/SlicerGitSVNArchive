@@ -30,6 +30,9 @@
 // SubjectHierarchy includes
 #include "vtkMRMLSubjectHierarchyNode.h"
 
+// DICOMLib includes
+#include "qSlicerDICOMExportable.h"
+
 // Qt includes
 #include <QDialog>
 #include <QObject>
@@ -161,31 +164,26 @@ void qSlicerDICOMExportDialog::onExport()
   PythonQtObjectPtr context = PythonQt::self()->getMainModule();
   context.evalScript( QString(
     "exportables = []\n"
-    "loadables = []\n" //TODO
-    "numOfLoadables = 0\n" //TODO
-    "file1 = 'd:/devel/_Images/RT/20140923_ZahraDose/dose-2A/RTDose1.2.826.0.1.3680043.8.341.2.12048.4185466838053.14.dcm'\n" //TODO
-    "file2 = 'd:/devel/_Images/RT/20140923_ZahraDose/dose-2B/RTDose1.2.826.0.1.3680043.8.341.2.12048.4185469684804.3.dcm'\n" //TODO
-    "fileList = [file1,file2]\n" //TODO
     "selectedNode = slicer.mrmlScene.GetNodeByID('%1')\n"
-    "print(selectedNode.GetName())\n" //TODO
     "for pluginClass in slicer.modules.dicomPlugins:\n"
     "  plugin = slicer.modules.dicomPlugins[pluginClass]()\n"
-    "  if hasattr(plugin, 'examineForExport'):\n"
-    "    exportables.append(plugin.examineForExport(selectedNode))\n"
-    "  elif hasattr(plugin, 'examineFiles'):\n" //TODO
-    "    loadables.append(plugin.examineFiles(fileList))\n" //TODO
-    "    numOfLoadables += 1\n" //TODO
-    "print numOfLoadables\n" ) //TODO
+    "  exportables.extend(plugin.examineForExport(selectedNode))\n" )
     .arg(selectedNode->GetID()) );
-  QVariant exportablesVariant = context.getVariable("exportables");
-  QVariant numOfLoadablesVariant = context.getVariable("numOfLoadables"); //TODO
-  unsigned int numOfLoadables = numOfLoadablesVariant.toUInt();
-  QVariant fileListVariant = context.getVariable("fileList"); //TODO
-  QStringList fileList = fileListVariant.toStringList();
-  int size = fileList.size();
-  QString file1 = fileList.at(0);
-  QString file2 = fileList.at(1);
-  QVariant node = context.getVariable("selectedNode"); //TODO
 
-  int i=0; ++i;
+  // Extract resulting exportables from python
+  QList<QVariant> exportablesVariantList = context.getVariable("exportables").toList();
+  foreach(QVariant exportableVariant, exportablesVariantList)
+  {
+    qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
+      exportableVariant.value<QObject*>() );
+    if (!exportable)
+    {
+      qCritical() << "qSlicerDICOMExportDialog::onExport: Invalid exportable returned by DICOM plugin for node " << selectedNode->GetNameWithoutPostfix().c_str();
+      continue;
+    }
+
+    QString name = exportable->name();
+    QString pluginClass = exportable->pluginClass();
+    double confidence = exportable->confidence();
+  }
 }

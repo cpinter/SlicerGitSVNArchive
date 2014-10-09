@@ -39,6 +39,10 @@ set(${KIT}_SRCS
   qSlicerSubjectHierarchySegmentPlugin.h
   qSlicerDICOMExportDialog.cxx
   qSlicerDICOMExportDialog.h
+  qSlicerDICOMLoadable.cxx
+  qSlicerDICOMLoadable.h
+  qSlicerDICOMExportable.cxx
+  qSlicerDICOMExportable.h
   )
 
 set(${KIT}_MOC_SRCS
@@ -56,6 +60,8 @@ set(${KIT}_MOC_SRCS
   qSlicerSubjectHierarchyRegisterPlugin.h
   qSlicerSubjectHierarchySegmentPlugin.h
   qSlicerDICOMExportDialog.h
+  qSlicerDICOMLoadable.h
+  qSlicerDICOMExportable.h
   )
 
 set(${KIT}_UI_SRCS
@@ -72,7 +78,6 @@ set_source_files_properties( qSlicerSubjectHierarchyAbstractPlugin.h WRAP_EXCLUD
 SET (${KIT}_INCLUDE_DIRS ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_BINARY_DIR} CACHE INTERNAL "" FORCE)
 
 set(${KIT}_TARGET_LIBRARIES
-  qMRMLWidgets
   vtkSlicer${MODULE_NAME}ModuleMRML
   vtkSlicer${MODULE_NAME}ModuleLogic
   MRMLCore
