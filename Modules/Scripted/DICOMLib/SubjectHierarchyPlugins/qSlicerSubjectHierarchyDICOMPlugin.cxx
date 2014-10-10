@@ -306,8 +306,7 @@ void qSlicerSubjectHierarchyDICOMPlugin::openDICOMExportDialog()
 
   qSlicerDICOMExportDialog* exportDialog = new qSlicerDICOMExportDialog(NULL);
   exportDialog->setMRMLScene(qSlicerSubjectHierarchyPluginHandler::instance()->scene());
-  exportDialog->selectNode(currentNode);
-  exportDialog->exec();
+  exportDialog->exec(currentNode);
 
   delete exportDialog;
 }

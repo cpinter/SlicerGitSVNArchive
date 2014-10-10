@@ -61,8 +61,8 @@ public:
   Q_INVOKABLE void selectNode(vtkMRMLSubjectHierarchyNode* node);
 
 protected slots:
-  void onSelectionChanged(QItemSelection&,QItemSelection&);
-  //void onCurrentNodeChanged(vtkMRMLNode*);
+  /// Triggers examining node when selection changes
+  void onCurrentNodeChanged(vtkMRMLNode*);
 
   /// Show exportables returned by the plugins for selected node
   void examineSelectedNode();

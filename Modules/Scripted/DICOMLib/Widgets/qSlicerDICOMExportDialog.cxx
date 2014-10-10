@@ -94,8 +94,7 @@ void qSlicerDICOMExportDialogPrivate::init()
   //this->SubjectHierarchyTreeView->header()->resizeSection(sceneModel->transformColumn(), 60);
 
   // Make connections
-  connect(this->SubjectHierarchyTreeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection&,QItemSelection&)), q, SLOT(onSelectionChanged(QItemSelection&,QItemSelection&)));
-  //connect(this->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), q, SLOT(onCurrentNodeChanged(vtkMRMLNode*)));
+  connect(this->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), q, SLOT(onCurrentNodeChanged(vtkMRMLNode*)));
   connect(this->ExportButton, SIGNAL(clicked()), q, SLOT(onExport()));
 }
 
@@ -155,9 +154,15 @@ void qSlicerDICOMExportDialog::setMRMLScene(vtkMRMLScene* scene)
 void qSlicerDICOMExportDialog::selectNode(vtkMRMLSubjectHierarchyNode* node)
 {
   Q_D(qSlicerDICOMExportDialog);
-  //d->SubjectHierarchyTreeView->setCurrentNode(node);
   QModelIndex selectionIndex = d->SubjectHierarchyTreeView->sceneModel()->indexFromNode(node);
-  d->SubjectHierarchyTreeView->selectionModel()->select(selectionIndex, QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+  d->SubjectHierarchyTreeView->selectionModel()->select(selectionIndex, QItemSelectionModel::Rows | QItemSelectionModel::SelectCurrent);
+  d->SubjectHierarchyTreeView->setCurrentNode(node);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::onCurrentNodeChanged(vtkMRMLNode* node)
+{
+  this->examineSelectedNode();
 }
 
 //-----------------------------------------------------------------------------
@@ -165,15 +170,8 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
 {
   Q_D(qSlicerDICOMExportDialog);
 
-  // Get selected node
-  QModelIndexList selectedIndices = d->SubjectHierarchyTreeView->selectionModel()->selectedRows();
-  if (selectedIndices.size() < 1)
-  {
-    qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: No subject hierarchy node selected!";
-    return;
-  }
   vtkMRMLSubjectHierarchyNode* selectedNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
-    d->SubjectHierarchyTreeView->sortFilterProxyModel()->mrmlNodeFromIndex(selectedIndices.at(0)) ); // Single selection only
+    d->SubjectHierarchyTreeView->currentNode() );
   if (!selectedNode)
   {
     qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Unable to get selected subject hierarchy node!";
@@ -213,11 +211,4 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
 void qSlicerDICOMExportDialog::onExport()
 {
   //TODO:
-}
-
-//-----------------------------------------------------------------------------
-//void qSlicerDICOMExportDialog::onCurrentNodeChanged(vtkMRMLNode* node)
-void qSlicerDICOMExportDialog::onSelectionChanged(QItemSelection &selected,QItemSelection &deselected)
-{
-  this->examineSelectedNode();
 }
