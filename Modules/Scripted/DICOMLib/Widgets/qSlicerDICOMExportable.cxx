@@ -46,6 +46,9 @@ public:
   /// plugin considers itself the best plugin to export the node
   /// (in case of specialized objects, e.g. RT dose volume)
   double Confidence;
+  /// DICOM tags offered by the plugin, populated from subject hierarchy
+  /// node or edited by user
+  QMap<QString,QString> Tags;
 };
 
 //-----------------------------------------------------------------------------
@@ -99,3 +102,15 @@ CTK_GET_CPP(qSlicerDICOMExportable, QString, pluginClass, PluginClass)
 //-----------------------------------------------------------------------------
 CTK_SET_CPP(qSlicerDICOMExportable, const double, setConfidence, Confidence)
 CTK_GET_CPP(qSlicerDICOMExportable, double, confidence, Confidence)
+
+//-----------------------------------------------------------------------------
+QMap<QString,QString> qSlicerDICOMExportable::tags()const
+{
+  Q_D(const qSlicerDICOMExportable);
+  return d->Tags;
+}
+void qSlicerDICOMExportable::setTags(const QMap<QString,QString>& var)
+{
+  Q_D(qSlicerDICOMExportable);
+  d->Tags = var;
+}

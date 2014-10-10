@@ -26,14 +26,17 @@
 // Qt includes
 #include <QObject>
 
-// SubjectHierarchy includes
-#include "qSlicerSubjectHierarchyModuleWidgetsExport.h"
+// DICOMLib includes
+#include "qSlicerDICOMLibModuleWidgetsExport.h"
 
 class qSlicerDICOMExportDialogPrivate;
 class vtkMRMLScene;
+class vtkMRMLSubjectHierarchyNode;
+class vtkMRMLNode;
+class QItemSelection;
 
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Widgets
-class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_EXPORT qSlicerDICOMExportDialog : public QObject
+class Q_SLICER_MODULE_DICOMLIB_WIDGETS_EXPORT qSlicerDICOMExportDialog : public QObject
 {
 public:
   Q_OBJECT
@@ -45,13 +48,26 @@ public:
 
 public:
   /// Show dialog
-  virtual bool exec();
+  /// \param nodeToSelect Node is selected in the tree if given
+  virtual bool exec(vtkMRMLSubjectHierarchyNode* nodeToSelect=NULL);
 
   /// Set MRML scene
-  void setMRMLScene(vtkMRMLScene* scene);
+  Q_INVOKABLE void setMRMLScene(vtkMRMLScene* scene);
+
+  /// Python compatibility function for showing dialog (calls \a exec)
+  Q_INVOKABLE bool execDialog() { return this->exec(); };
+
+  /// Set specific node selected in subject hierarchy tree
+  Q_INVOKABLE void selectNode(vtkMRMLSubjectHierarchyNode* node);
 
 protected slots:
-  /// Invokes plugins and shows eligible ones to export selection
+  void onSelectionChanged(QItemSelection&,QItemSelection&);
+  //void onCurrentNodeChanged(vtkMRMLNode*);
+
+  /// Show exportables returned by the plugins for selected node
+  void examineSelectedNode();
+
+  /// Export selected node based on the selected exportable
   void onExport();
 
 protected:

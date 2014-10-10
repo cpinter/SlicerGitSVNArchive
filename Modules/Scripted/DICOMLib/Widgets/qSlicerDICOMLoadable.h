@@ -20,45 +20,50 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerDICOMExportable_h
-#define __qSlicerDICOMExportable_h
+#ifndef __qSlicerDICOMLoadable_h
+#define __qSlicerDICOMLoadable_h
 
 // Qt includes
 #include <QObject>
 #include <QStringList>
 
-// SubjectHierarchy includes
-#include "qSlicerSubjectHierarchyModuleWidgetsExport.h"
+// DICOMLib includes
+#include "qSlicerDICOMLibModuleWidgetsExport.h"
 
-class qSlicerDICOMExportablePrivate;
-class vtkMRMLSubjectHierarchyNode;
+class qSlicerDICOMLoadablePrivate;
 
 /// Container class for things that can be loaded from DICOM files into Slicer.
 /// Each plugin returns a list of instances from its evaluate method and accepts
 /// a list of these in its load method corresponding to the things the user has
 /// selected for loading
-class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_EXPORT qSlicerDICOMExportable : public QObject
+class Q_SLICER_MODULE_DICOMLIB_WIDGETS_EXPORT qSlicerDICOMLoadable : public QObject
 {
   Q_OBJECT
 
-  /// Name exposed to the user for the export method
+  /// Name exposed to the user for the node
   Q_PROPERTY(QString name READ name WRITE setName)
-  /// Extra information the user sees on mouse over of the export option
+  /// Extra information the user sees on mouse over of the thing
   Q_PROPERTY(QString tooltip READ tooltip WRITE setTooltip)
-  /// ID of MRML node to be exported
-  Q_PROPERTY(QString nodeID READ nodeID WRITE setNodeID)
-  /// Class of the plugin that created this exportable
-  Q_PROPERTY(QString pluginClass READ pluginClass WRITE setPluginClass)
-  /// Confidence - from 0 to 1 where 0 means that the plugin
-  /// cannot export the given node, up to 1 that means that the
-  /// plugin considers itself the best plugin to export the node
-  /// (in case of specialized objects, e.g. RT dose volume)
+  /// Things the user should know before loading this data
+  Q_PROPERTY(QString warning READ warning WRITE setWarning)
+  /// The file list of the data to be loaded
+  Q_PROPERTY(QStringList files READ files WRITE setFiles)
+  /// Is the object checked for loading by default
+  Q_PROPERTY(bool selected READ selected WRITE setSelected)
+  /// Confidence - from 0 to 1 where 0 means low chance
+  /// that the user actually wants to load their data this
+  /// way up to 1, which means that the plugin is very confident
+  /// that this is the best way to load the data.
+  /// When more than one plugin marks the same series as
+  /// selected, the one with the highest confidence is
+  /// actually selected by default.  In the case of a tie,
+  /// both series are selected for loading.
   Q_PROPERTY(double confidence READ confidence WRITE setConfidence)
 
 public:
   typedef QObject Superclass;
-  qSlicerDICOMExportable(QObject *parent = 0);
-  virtual ~qSlicerDICOMExportable();
+  qSlicerDICOMLoadable(QObject *parent = 0);
+  virtual ~qSlicerDICOMLoadable();
 
   virtual QString name()const;
   void setName(const QString& newName);
@@ -66,21 +71,24 @@ public:
   virtual QString tooltip()const;
   void setTooltip(const QString& newTooltip);
 
-  virtual QString nodeID()const;
-  void setNodeID(const QString& newNodeID);
+  virtual QString warning()const;
+  void setWarning(const QString& newWarning);
 
-  virtual QString pluginClass()const;
-  void setPluginClass(const QString& newPluginClass);
+  virtual QStringList files()const;
+  void setFiles(const QStringList& newFiles);
+
+  virtual bool selected()const;
+  void setSelected(const bool newSelected);
 
   virtual double confidence()const;
   void setConfidence(const double newConfidence);
 
 protected:
-  QScopedPointer<qSlicerDICOMExportablePrivate> d_ptr;
+  QScopedPointer<qSlicerDICOMLoadablePrivate> d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE(qSlicerDICOMExportable);
-  Q_DISABLE_COPY(qSlicerDICOMExportable);
+  Q_DECLARE_PRIVATE(qSlicerDICOMLoadable);
+  Q_DISABLE_COPY(qSlicerDICOMLoadable);
 };
 
 #endif

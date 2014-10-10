@@ -17,7 +17,6 @@ to manage DICOM data in the context of slicer.
 This code is slicer-specific and relies on the slicer python module
 for elements like slicer.dicomDatabase and slicer.mrmlScene
 
-# TODO :
 """
 #
 #########################################################

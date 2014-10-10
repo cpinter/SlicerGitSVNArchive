@@ -37,6 +37,7 @@
 #include <QDialog>
 #include <QObject>
 #include <QDebug>
+#include <QItemSelection>
 
 // PythonQt includes
 #include "PythonQt.h"
@@ -58,6 +59,7 @@ public:
   void init();
 private:
   vtkMRMLScene* Scene;
+  qSlicerDICOMExportable* SelectedExportable;
 private:
   friend class qSlicerDICOMExportDialog;
 };
@@ -66,6 +68,7 @@ private:
 qSlicerDICOMExportDialogPrivate::qSlicerDICOMExportDialogPrivate(qSlicerDICOMExportDialog& object)
   : q_ptr(&object)
   , Scene(NULL)
+  , SelectedExportable(NULL)
 {
 }
 
@@ -91,6 +94,8 @@ void qSlicerDICOMExportDialogPrivate::init()
   //this->SubjectHierarchyTreeView->header()->resizeSection(sceneModel->transformColumn(), 60);
 
   // Make connections
+  connect(this->SubjectHierarchyTreeView->selectionModel(), SIGNAL(selectionChanged(QItemSelection&,QItemSelection&)), q, SLOT(onSelectionChanged(QItemSelection&,QItemSelection&)));
+  //connect(this->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), q, SLOT(onCurrentNodeChanged(vtkMRMLNode*)));
   connect(this->ExportButton, SIGNAL(clicked()), q, SLOT(onExport()));
 }
 
@@ -112,12 +117,19 @@ qSlicerDICOMExportDialog::~qSlicerDICOMExportDialog()
 }
 
 //-----------------------------------------------------------------------------
-bool qSlicerDICOMExportDialog::exec()
+bool qSlicerDICOMExportDialog::exec(vtkMRMLSubjectHierarchyNode* nodeToSelect/*=NULL*/)
 {
   Q_D(qSlicerDICOMExportDialog);
 
   // Initialize dialog
   d->init();
+
+  // Make selection if requested
+  if (nodeToSelect)
+  {
+    QApplication::processEvents();
+    this->selectNode(nodeToSelect);
+  }
 
   // Show dialog
   bool result = false;
@@ -140,7 +152,16 @@ void qSlicerDICOMExportDialog::setMRMLScene(vtkMRMLScene* scene)
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerDICOMExportDialog::onExport()
+void qSlicerDICOMExportDialog::selectNode(vtkMRMLSubjectHierarchyNode* node)
+{
+  Q_D(qSlicerDICOMExportDialog);
+  //d->SubjectHierarchyTreeView->setCurrentNode(node);
+  QModelIndex selectionIndex = d->SubjectHierarchyTreeView->sceneModel()->indexFromNode(node);
+  d->SubjectHierarchyTreeView->selectionModel()->select(selectionIndex, QItemSelectionModel::Rows | QItemSelectionModel::ClearAndSelect);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::examineSelectedNode()
 {
   Q_D(qSlicerDICOMExportDialog);
 
@@ -148,14 +169,14 @@ void qSlicerDICOMExportDialog::onExport()
   QModelIndexList selectedIndices = d->SubjectHierarchyTreeView->selectionModel()->selectedRows();
   if (selectedIndices.size() < 1)
   {
-    qCritical() << "qSlicerDICOMExportDialog::onExport: No subject hierarchy node selected!";
+    qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: No subject hierarchy node selected!";
     return;
   }
   vtkMRMLSubjectHierarchyNode* selectedNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
     d->SubjectHierarchyTreeView->sortFilterProxyModel()->mrmlNodeFromIndex(selectedIndices.at(0)) ); // Single selection only
   if (!selectedNode)
   {
-    qCritical() << "qSlicerDICOMExportDialog::onExport: Unable to get selected subject hierarchy node!";
+    qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Unable to get selected subject hierarchy node!";
     return;
   }
 
@@ -178,7 +199,7 @@ void qSlicerDICOMExportDialog::onExport()
       exportableVariant.value<QObject*>() );
     if (!exportable)
     {
-      qCritical() << "qSlicerDICOMExportDialog::onExport: Invalid exportable returned by DICOM plugin for node " << selectedNode->GetNameWithoutPostfix().c_str();
+      qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Invalid exportable returned by DICOM plugin for node " << selectedNode->GetNameWithoutPostfix().c_str();
       continue;
     }
 
@@ -186,4 +207,17 @@ void qSlicerDICOMExportDialog::onExport()
     QString pluginClass = exportable->pluginClass();
     double confidence = exportable->confidence();
   }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::onExport()
+{
+  //TODO:
+}
+
+//-----------------------------------------------------------------------------
+//void qSlicerDICOMExportDialog::onCurrentNodeChanged(vtkMRMLNode* node)
+void qSlicerDICOMExportDialog::onSelectionChanged(QItemSelection &selected,QItemSelection &deselected)
+{
+  this->examineSelectedNode();
 }

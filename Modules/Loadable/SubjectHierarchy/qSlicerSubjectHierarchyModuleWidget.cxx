@@ -34,8 +34,6 @@
 #include "qSlicerSubjectHierarchyPluginHandler.h"
 #include "qSlicerSubjectHierarchyAbstractPlugin.h"
 
-#include "qSlicerDICOMExportDialog.h"
-
 // MRML includes
 #include <vtkMRMLScene.h>
 
@@ -138,7 +136,6 @@ void qSlicerSubjectHierarchyModuleWidget::setup()
   connect( d->DisplayMRMLIDsCheckBox, SIGNAL(toggled(bool)), this, SLOT(setMRMLIDsVisible(bool)) );
   connect( d->DisplayTransformsCheckBox, SIGNAL(toggled(bool)), this, SLOT(setTransformsVisible(bool)) );
   connect( d->PotentialNodesCheckBox, SIGNAL(toggled(bool)), this, SLOT(setPotentialNodesVisible(bool)) );
-  connect( d->DICOMExportButton, SIGNAL(clicked()), this, SLOT(onExportButtonClicked()) );
 
   // Set up tree view
   d->SubjectHierarchyTreeView->expandToDepth(4);
@@ -240,14 +237,4 @@ vtkMRMLSubjectHierarchyNode* qSlicerSubjectHierarchyModuleWidget::currentSubject
 void qSlicerSubjectHierarchyModuleWidget::setCurrentSubjectHierarchyNode(vtkMRMLSubjectHierarchyNode* node)
 {
   qSlicerSubjectHierarchyPluginHandler::instance()->setCurrentNode(node);
-}
-
-//-----------------------------------------------------------------------------
-void qSlicerSubjectHierarchyModuleWidget::onExportButtonClicked()
-{
-  qSlicerDICOMExportDialog* exportDialog = new qSlicerDICOMExportDialog(NULL);
-  exportDialog->setMRMLScene(this->mrmlScene());
-  exportDialog->exec();
-
-  delete exportDialog;
 }

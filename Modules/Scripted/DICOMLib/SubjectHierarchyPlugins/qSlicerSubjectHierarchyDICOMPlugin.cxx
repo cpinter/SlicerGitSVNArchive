@@ -29,6 +29,9 @@
 #include "qSlicerSubjectHierarchyDICOMPlugin.h"
 #include "qSlicerSubjectHierarchyDefaultPlugin.h"
 
+// DICOMLib includes
+#include "qSlicerDICOMExportDialog.h"
+
 // Qt includes
 #include <QDebug>
 #include <QAction>
@@ -60,6 +63,7 @@ public:
 
   QAction* CreateGenericSeriesAction;
   QAction* CreateGenericSubseriesAction;
+  QAction* OpenDICOMExportDialogAction;
 };
 
 //-----------------------------------------------------------------------------
@@ -73,6 +77,7 @@ qSlicerSubjectHierarchyDICOMPluginPrivate::qSlicerSubjectHierarchyDICOMPluginPri
 
   this->CreateGenericSeriesAction = NULL;
   this->CreateGenericSubseriesAction = NULL;
+  this->OpenDICOMExportDialogAction = NULL;
 }
 
 //------------------------------------------------------------------------------
@@ -85,6 +90,9 @@ void qSlicerSubjectHierarchyDICOMPluginPrivate::init()
 
   this->CreateGenericSubseriesAction = new QAction("Create child generic subseries",q);
   QObject::connect(this->CreateGenericSubseriesAction, SIGNAL(triggered()), q, SLOT(createChildForCurrentNode()));
+
+  this->OpenDICOMExportDialogAction = new QAction("Export to DICOM...",q);
+  QObject::connect(this->OpenDICOMExportDialogAction, SIGNAL(triggered()), q, SLOT(openDICOMExportDialog()));
 }
 
 //-----------------------------------------------------------------------------
@@ -239,7 +247,7 @@ QList<QAction*> qSlicerSubjectHierarchyDICOMPlugin::nodeContextMenuActions()cons
   Q_D(const qSlicerSubjectHierarchyDICOMPlugin);
 
   QList<QAction*> actions;
-  actions << d->CreateGenericSeriesAction << d->CreateGenericSubseriesAction;
+  actions << d->CreateGenericSeriesAction << d->CreateGenericSubseriesAction << d->OpenDICOMExportDialogAction;
   return actions;
 }
 
@@ -259,10 +267,21 @@ void qSlicerSubjectHierarchyDICOMPlugin::showContextMenuActionsForNode(vtkMRMLSu
   if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY))
     {
     d->CreateGenericSeriesAction->setVisible(true);
+    //if (this->canBeExported(node)) //TODO:
+      {
+      d->OpenDICOMExportDialogAction->setVisible(true);
+      }
     }
   // Series or Subseries
-  else if ( node->IsLevel(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SERIES)
-    || node->IsLevel(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SUBSERIES) )
+  else if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SERIES))
+    {
+    d->CreateGenericSubseriesAction->setVisible(true);
+    //if (this->canBeExported(node))
+      {
+      d->OpenDICOMExportDialogAction->setVisible(true);
+      }
+    }
+  else if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SUBSERIES))
     {
     d->CreateGenericSubseriesAction->setVisible(true);
     }
@@ -272,5 +291,23 @@ void qSlicerSubjectHierarchyDICOMPlugin::showContextMenuActionsForNode(vtkMRMLSu
 void qSlicerSubjectHierarchyDICOMPlugin::editProperties(vtkMRMLSubjectHierarchyNode* node)
 {
   Q_UNUSED(node);
-  //TODO: Show DICOM tag editor when implemented
+  //TODO: Show DICOM tag editor? Only for studies and subjects (only owns these kinds). Series? Probably owned by something else
+}
+
+//---------------------------------------------------------------------------
+void qSlicerSubjectHierarchyDICOMPlugin::openDICOMExportDialog()
+{
+  vtkMRMLSubjectHierarchyNode* currentNode = qSlicerSubjectHierarchyPluginHandler::instance()->currentNode();
+  if (!currentNode)
+  {
+    qCritical() << "qSlicerSubjectHierarchyDICOMPlugin::openDICOMExportDialog: Invalid current node!";
+    return;
+  }
+
+  qSlicerDICOMExportDialog* exportDialog = new qSlicerDICOMExportDialog(NULL);
+  exportDialog->setMRMLScene(qSlicerSubjectHierarchyPluginHandler::instance()->scene());
+  exportDialog->selectNode(currentNode);
+  exportDialog->exec();
+
+  delete exportDialog;
 }

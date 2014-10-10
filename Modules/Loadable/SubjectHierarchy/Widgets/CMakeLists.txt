@@ -27,8 +27,6 @@ set(${KIT}_SRCS
   qSlicerSubjectHierarchyDefaultPlugin.h
   qSlicerSubjectHierarchyCloneNodePlugin.cxx
   qSlicerSubjectHierarchyCloneNodePlugin.h
-  qSlicerSubjectHierarchyDICOMPlugin.cxx
-  qSlicerSubjectHierarchyDICOMPlugin.h
   qSlicerSubjectHierarchyChartsPlugin.cxx
   qSlicerSubjectHierarchyChartsPlugin.h
   qSlicerSubjectHierarchyParseLocalDataPlugin.cxx
@@ -37,12 +35,6 @@ set(${KIT}_SRCS
   qSlicerSubjectHierarchyRegisterPlugin.h
   qSlicerSubjectHierarchySegmentPlugin.cxx
   qSlicerSubjectHierarchySegmentPlugin.h
-  qSlicerDICOMExportDialog.cxx
-  qSlicerDICOMExportDialog.h
-  qSlicerDICOMLoadable.cxx
-  qSlicerDICOMLoadable.h
-  qSlicerDICOMExportable.cxx
-  qSlicerDICOMExportable.h
   )
 
 set(${KIT}_MOC_SRCS
@@ -54,18 +46,13 @@ set(${KIT}_MOC_SRCS
   qSlicerSubjectHierarchyPluginHandler.h
   qSlicerSubjectHierarchyDefaultPlugin.h
   qSlicerSubjectHierarchyCloneNodePlugin.h
-  qSlicerSubjectHierarchyDICOMPlugin.h
   qSlicerSubjectHierarchyChartsPlugin.h
   qSlicerSubjectHierarchyParseLocalDataPlugin.h
   qSlicerSubjectHierarchyRegisterPlugin.h
   qSlicerSubjectHierarchySegmentPlugin.h
-  qSlicerDICOMExportDialog.h
-  qSlicerDICOMLoadable.h
-  qSlicerDICOMExportable.h
   )
 
 set(${KIT}_UI_SRCS
-  Resources/UI/qSlicerDICOMExportDialog.ui
   )
 
 set(${KIT}_RESOURCES

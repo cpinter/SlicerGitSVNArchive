@@ -4,7 +4,8 @@ set(MODULE_NAME DICOMLib)
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
 #-----------------------------------------------------------------------------
-#add_subdirectory(Widgets)
+add_subdirectory(Widgets)
+add_subdirectory(SubjectHierarchyPlugins)
 
 #-----------------------------------------------------------------------------
 set(MODULE_PYTHON_SCRIPTS

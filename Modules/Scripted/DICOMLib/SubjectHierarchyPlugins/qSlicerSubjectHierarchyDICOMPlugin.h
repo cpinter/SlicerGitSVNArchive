@@ -26,7 +26,7 @@
 // SubjectHierarchy Plugins includes
 #include "qSlicerSubjectHierarchyAbstractPlugin.h"
 
-#include "qSlicerSubjectHierarchyModuleWidgetsExport.h"
+#include "qSlicerDICOMLibSubjectHierarchyPluginsExport.h"
 
 class qSlicerSubjectHierarchyDICOMPluginPrivate;
 class vtkMRMLNode;
@@ -39,7 +39,7 @@ class vtkMRMLSubjectHierarchyNode;
 //BTX
 
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Widgets
-class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_EXPORT qSlicerSubjectHierarchyDICOMPlugin : public qSlicerSubjectHierarchyAbstractPlugin
+class Q_SLICER_DICOMLIB_SUBJECT_HIERARCHY_PLUGINS_EXPORT qSlicerSubjectHierarchyDICOMPlugin : public qSlicerSubjectHierarchyAbstractPlugin
 {
 public:
   Q_OBJECT
@@ -83,6 +83,10 @@ public:
   /// Show context menu actions valid for  given subject hierarchy node.
   /// \param node Subject Hierarchy node to show the context menu items for. If NULL, then shows menu items for the scene
   virtual void showContextMenuActionsForNode(vtkMRMLSubjectHierarchyNode* node);
+
+public slots:
+  /// Open DICOM export dialog to export the selected series
+  void openDICOMExportDialog();
 
 protected:
   QScopedPointer<qSlicerSubjectHierarchyDICOMPluginPrivate> d_ptr;
