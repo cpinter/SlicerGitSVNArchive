@@ -20,26 +20,33 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
-#define __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
+#include "qSlicerDICOMLibModuleWidgetsAbstractPlugin.h"
 
-#include <QDesignerCustomWidgetInterface>
-#include "qSlicerSubjectHierarchyModuleWidgetsPluginsExport.h"
-
-class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_PLUGINS_EXPORT qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin
-    : public QDesignerCustomWidgetInterface
+//-----------------------------------------------------------------------------
+qSlicerDICOMLibModuleWidgetsAbstractPlugin::qSlicerDICOMLibModuleWidgetsAbstractPlugin()
 {
-  Q_INTERFACES(QDesignerCustomWidgetInterface);
-public:
+}
 
-  qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin();
-  // Don't reimplement this method.
-  QString group() const;
-  // You can reimplement these methods
-  virtual QIcon icon() const;
-  virtual QString toolTip() const;
-  virtual QString whatsThis() const;
+//-----------------------------------------------------------------------------
+QString qSlicerDICOMLibModuleWidgetsAbstractPlugin::group() const
+{
+  return "Slicer [DICOMLib Widgets]";
+}
 
-};
+//-----------------------------------------------------------------------------
+QIcon qSlicerDICOMLibModuleWidgetsAbstractPlugin::icon() const
+{
+  return QIcon();
+}
 
-#endif
+//-----------------------------------------------------------------------------
+QString qSlicerDICOMLibModuleWidgetsAbstractPlugin::toolTip() const
+{
+  return QString();
+}
+
+//-----------------------------------------------------------------------------
+QString qSlicerDICOMLibModuleWidgetsAbstractPlugin::whatsThis() const
+{
+  return QString();
+}

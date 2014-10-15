@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QDebug>
 #include <QItemSelection>
+#include <QListWidgetItem>
 
 // PythonQt includes
 #include "PythonQt.h"
@@ -95,6 +96,7 @@ void qSlicerDICOMExportDialogPrivate::init()
 
   // Make connections
   connect(this->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), q, SLOT(onCurrentNodeChanged(vtkMRMLNode*)));
+  connect(this->ExportablesListWidget, SIGNAL(currentRowChanged(int)), q, SLOT(onExportableSelectedAtRow(int)));
   connect(this->ExportButton, SIGNAL(clicked()), q, SLOT(onExport()));
 }
 
@@ -189,10 +191,13 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
     "  exportables.extend(plugin.examineForExport(selectedNode))\n" )
     .arg(selectedNode->GetID()) );
 
-  // Extract resulting exportables from python
+  // Extract resulting exportables from python and order them by confidence values
+  d->ExportablesListWidget->clear();
   QList<QVariant> exportablesVariantList = context.getVariable("exportables").toList();
+  QMap<double,qSlicerDICOMExportable*> exportablesMap;
   foreach(QVariant exportableVariant, exportablesVariantList)
   {
+    // Get exportable object (to compose item text)
     qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
       exportableVariant.value<QObject*>() );
     if (!exportable)
@@ -201,10 +206,44 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
       continue;
     }
 
-    QString name = exportable->name();
-    QString pluginClass = exportable->pluginClass();
-    double confidence = exportable->confidence();
+    // Add exportable to map with confidence as key. Confidence value is subtracted
+    // from 1 so that iterating through the map automatically orders the exportables.
+    exportablesMap[1.0 - exportable->confidence()] = exportable;
   }
+
+  // Populate the exportables list widget
+  QMapIterator<double,qSlicerDICOMExportable*> exportableIterator(exportablesMap);
+  while (exportableIterator.hasNext())
+  {
+    exportableIterator.next();
+    qSlicerDICOMExportable* exportable = exportableIterator.value();
+    QString itemText = QString("%1 (%2%)").arg(exportable->name()).arg(exportable->confidence()*100.0, 0, 'f', 0);
+    QListWidgetItem* exportableItem = new QListWidgetItem(itemText, d->ExportablesListWidget);
+    exportableItem->setToolTip(exportable->tooltip());
+    exportableItem->setData(Qt::UserRole, QVariant::fromValue<QObject*>(exportable));
+  }
+
+  // Select exportable with highest confidence (top one)
+  d->ExportablesListWidget->setCurrentRow(0);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
+{
+  Q_D(qSlicerDICOMExportDialog);
+
+  // Get exportable object from list item
+  QListWidgetItem* exportableItem = d->ExportablesListWidget->item(row);
+  qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
+    exportableItem->data(Qt::UserRole).value<QObject*>() );
+  if (!exportable)
+  {
+    qCritical() << "qSlicerDICOMExportDialog::onExportableSelectedAtRow: Unable to extract exportable";
+    return;
+  }
+
+  // Populate DICOM tag editor from exportable
+  //TODO:
 }
 
 //-----------------------------------------------------------------------------

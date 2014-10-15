@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>454</width>
-    <height>488</height>
+    <width>415</width>
+    <height>632</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -45,31 +45,90 @@
     </layout>
    </item>
    <item>
-    <widget class="qMRMLSubjectHierarchyTreeView" name="SubjectHierarchyTreeView"/>
-   </item>
-   <item>
-    <widget class="QFrame" name="frame_TagEditor">
-     <property name="frameShape">
+    <widget class="ctkCollapsibleButton" name="CollapsibleButton_SubjectHierarchyTree">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>4</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Select node</string>
+     </property>
+     <property name="contentsFrameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
-     <property name="frameShadow">
-      <enum>QFrame::Raised</enum>
-     </property>
-     <layout class="QGridLayout" name="gridLayout">
+     <layout class="QGridLayout" name="gridLayout_2">
       <property name="margin">
-       <number>4</number>
+       <number>0</number>
       </property>
       <property name="spacing">
        <number>4</number>
       </property>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>[ DICOM tag editor comes here ]</string>
-        </property>
-       </widget>
+       <widget class="qMRMLSubjectHierarchyTreeView" name="SubjectHierarchyTreeView"/>
       </item>
-      <item row="1" column="0">
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="CollapsibleButton_ExportableList">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>1</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Select export type</string>
+     </property>
+     <property name="contentsFrameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <layout class="QGridLayout" name="gridLayout">
+      <property name="margin">
+       <number>0</number>
+      </property>
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <item row="0" column="0">
+       <widget class="QListWidget" name="ExportablesListWidget"/>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="CollapsibleButton_Tags">
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+       <horstretch>0</horstretch>
+       <verstretch>3</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Edit DICOM tags</string>
+     </property>
+     <property name="contentsFrameShape">
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <layout class="QVBoxLayout" name="verticalLayout_2">
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>4</number>
+      </property>
+      <item>
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <property name="spacing">
          <number>4</number>
@@ -125,27 +184,6 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_3">
-     <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Output folder:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="ctkDirectoryButton" name="DirectoryButton_OutputFolder">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
     <spacer name="verticalSpacer">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
@@ -160,6 +198,33 @@
       </size>
      </property>
     </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_3">
+     <item>
+      <widget class="QLabel" name="label">
+       <property name="toolTip">
+        <string>Choose folder where the selected node is exported to DICOM. Leave unchanged to add it to the Slicer DICOM database folder</string>
+       </property>
+       <property name="text">
+        <string>Output folder:</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="ctkDirectoryButton" name="DirectoryButton_OutputFolder">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="toolTip">
+        <string>Choose folder where the selected node is exported to DICOM. Leave unchanged to add it to the Slicer DICOM database folder</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
@@ -213,6 +278,12 @@
    <class>qMRMLSubjectHierarchyTreeView</class>
    <extends>qMRMLTreeView</extends>
    <header>qMRMLSubjectHierarchyTreeView.h</header>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleButton</class>
+   <extends>QWidget</extends>
+   <header>ctkCollapsibleButton.h</header>
+   <container>1</container>
   </customwidget>
   <customwidget>
    <class>ctkDirectoryButton</class>

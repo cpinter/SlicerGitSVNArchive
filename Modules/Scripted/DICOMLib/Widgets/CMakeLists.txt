@@ -16,12 +16,15 @@ set(${KIT}_SRCS
   qSlicerDICOMLoadable.h
   qSlicerDICOMExportable.cxx
   qSlicerDICOMExportable.h
+  qSlicerDICOMTagEditorWidget.cxx
+  qSlicerDICOMTagEditorWidget.h
   )
 
 set(${KIT}_MOC_SRCS
   qSlicerDICOMExportDialog.h
   qSlicerDICOMLoadable.h
   qSlicerDICOMExportable.h
+  qSlicerDICOMTagEditorWidget.h
   )
 
 set(${KIT}_UI_SRCS
@@ -62,3 +65,6 @@ SlicerMacroBuildModuleWidgets(
 if(BUILD_TESTING)
   #add_subdirectory(Testing)
 endif()
+
+#-----------------------------------------------------------------------------
+add_subdirectory(DesignerPlugins)

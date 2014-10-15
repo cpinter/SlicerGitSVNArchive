@@ -67,6 +67,9 @@ protected slots:
   /// Show exportables returned by the plugins for selected node
   void examineSelectedNode();
 
+  /// Populates DICOM tags based on selection
+  void onExportableSelectedAtRow(int);
+
   /// Export selected node based on the selected exportable
   void onExport();
 

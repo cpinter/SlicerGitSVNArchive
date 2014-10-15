@@ -20,26 +20,30 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
-#define __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
+#ifndef __qSlicerDICOMLibModuleWidgetsPlugin_h
+#define __qSlicerDICOMLibModuleWidgetsPlugin_h
 
-#include <QDesignerCustomWidgetInterface>
-#include "qSlicerSubjectHierarchyModuleWidgetsPluginsExport.h"
+// Qt includes
+#include <QDesignerCustomWidgetCollectionInterface>
 
-class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_PLUGINS_EXPORT qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin
-    : public QDesignerCustomWidgetInterface
+// DICOMLib includes
+#include "qSlicerDICOMTagEditorWidgetPlugin.h"
+
+// \class Group the plugins in one library
+class Q_SLICER_MODULE_DICOMLIB_WIDGETS_PLUGINS_EXPORT qSlicerDICOMLibModuleWidgetsPlugin
+  : public QObject
+  , public QDesignerCustomWidgetCollectionInterface
 {
-  Q_INTERFACES(QDesignerCustomWidgetInterface);
+  Q_OBJECT
+  Q_INTERFACES(QDesignerCustomWidgetCollectionInterface);
+
 public:
-
-  qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin();
-  // Don't reimplement this method.
-  QString group() const;
-  // You can reimplement these methods
-  virtual QIcon icon() const;
-  virtual QString toolTip() const;
-  virtual QString whatsThis() const;
-
+  QList<QDesignerCustomWidgetInterface*> customWidgets() const
+    {
+    QList<QDesignerCustomWidgetInterface *> plugins;
+    plugins << new qSlicerDICOMTagEditorWidgetPlugin;
+    return plugins;
+    }
 };
 
 #endif

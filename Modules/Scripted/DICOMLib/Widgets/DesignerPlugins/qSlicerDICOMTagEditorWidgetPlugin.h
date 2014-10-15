@@ -20,25 +20,25 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
-#define __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
+#ifndef __qSlicerDICOMTagEditorWidgetPlugin_h
+#define __qSlicerDICOMTagEditorWidgetPlugin_h
 
-#include <QDesignerCustomWidgetInterface>
-#include "qSlicerSubjectHierarchyModuleWidgetsPluginsExport.h"
+#include "qSlicerDICOMLibModuleWidgetsAbstractPlugin.h"
 
-class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_PLUGINS_EXPORT qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin
-    : public QDesignerCustomWidgetInterface
+class Q_SLICER_MODULE_DICOMLIB_WIDGETS_PLUGINS_EXPORT qSlicerDICOMTagEditorWidgetPlugin
+  : public QObject
+  , public qSlicerDICOMLibModuleWidgetsAbstractPlugin
 {
-  Q_INTERFACES(QDesignerCustomWidgetInterface);
-public:
+  Q_OBJECT
 
-  qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin();
-  // Don't reimplement this method.
-  QString group() const;
-  // You can reimplement these methods
-  virtual QIcon icon() const;
-  virtual QString toolTip() const;
-  virtual QString whatsThis() const;
+public:
+  qSlicerDICOMTagEditorWidgetPlugin(QObject* parent = 0);
+
+  QWidget *createWidget(QWidget* parent);
+  QString  domXml() const;
+  QString  includeFile() const;
+  bool     isContainer() const;
+  QString  name() const;
 
 };
 

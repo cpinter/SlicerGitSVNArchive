@@ -46,8 +46,9 @@ public:
   /// plugin considers itself the best plugin to export the node
   /// (in case of specialized objects, e.g. RT dose volume)
   double Confidence;
-  /// DICOM tags offered by the plugin, populated from subject hierarchy
-  /// node or edited by user
+  /// Pseudo-tags offered by the plugin that are to be filled out for export.
+  /// The pseudo-tags are translated into real DICOM tags at the time of export.
+  /// It tag is a pair of strings (name, defaultValue)
   QMap<QString,QString> Tags;
 };
 

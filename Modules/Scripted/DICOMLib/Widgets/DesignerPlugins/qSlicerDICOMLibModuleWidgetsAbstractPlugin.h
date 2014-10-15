@@ -20,19 +20,19 @@
 
 ==============================================================================*/
 
-#ifndef __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
-#define __qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin_h
+#ifndef __qSlicerDICOMLibModuleWidgetsAbstractPlugin_h
+#define __qSlicerDICOMLibModuleWidgetsAbstractPlugin_h
 
 #include <QDesignerCustomWidgetInterface>
-#include "qSlicerSubjectHierarchyModuleWidgetsPluginsExport.h"
+#include "qSlicerDICOMLibModuleWidgetsPluginsExport.h"
 
-class Q_SLICER_MODULE_SUBJECTHIERARCHY_WIDGETS_PLUGINS_EXPORT qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin
+class Q_SLICER_MODULE_DICOMLIB_WIDGETS_PLUGINS_EXPORT qSlicerDICOMLibModuleWidgetsAbstractPlugin
     : public QDesignerCustomWidgetInterface
 {
   Q_INTERFACES(QDesignerCustomWidgetInterface);
 public:
 
-  qSlicerSubjectHierarchyModuleWidgetsAbstractPlugin();
+  qSlicerDICOMLibModuleWidgetsAbstractPlugin();
   // Don't reimplement this method.
   QString group() const;
   // You can reimplement these methods

@@ -276,7 +276,7 @@ void qSlicerSubjectHierarchyDICOMPlugin::showContextMenuActionsForNode(vtkMRMLSu
   else if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SERIES))
     {
     d->CreateGenericSubseriesAction->setVisible(true);
-    //if (this->canBeExported(node))
+    //if (this->canBeExported(node)) //TODO:
       {
       d->OpenDICOMExportDialogAction->setVisible(true);
       }
