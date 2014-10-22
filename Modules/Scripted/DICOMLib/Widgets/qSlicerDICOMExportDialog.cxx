@@ -61,8 +61,6 @@ public:
 private:
   vtkMRMLScene* Scene;
   qSlicerDICOMExportable* SelectedExportable;
-private:
-  friend class qSlicerDICOMExportDialog;
 };
 
 //-----------------------------------------------------------------------------
@@ -232,8 +230,14 @@ void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
 {
   Q_D(qSlicerDICOMExportDialog);
 
-  // Get exportable object from list item
+  // Get exportable item from row number
   QListWidgetItem* exportableItem = d->ExportablesListWidget->item(row);
+  if (!exportableItem)
+  {
+    return;
+  }
+
+  // Get exportable object from list item
   qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
     exportableItem->data(Qt::UserRole).value<QObject*>() );
   if (!exportable)

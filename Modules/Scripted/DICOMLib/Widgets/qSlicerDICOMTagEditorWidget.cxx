@@ -20,13 +20,18 @@
 
 ==============================================================================*/
 
-// Qt includes
+// DICOMLib includes
+#include "qSlicerDICOMTagEditorWidget.h"
+#include "qSlicerDICOMExportable.h"
 
-// SlicerQt includes
-#include "qSlicerApplication.h"
+// Qt includes
+#include <QDebug>
+#include <QtGui/QVBoxLayout>
+#include <QtGui/QTableWidget>
 
 // SubjectHierarchy includes
-#include "qSlicerDICOMTagEditorWidget.h"
+#include "vtkMRMLSubjectHierarchyNode.h"
+#include "vtkMRMLSubjectHierarchyConstants.h"
 
 // MRML includes
 #include <vtkMRMLScene.h>
@@ -41,14 +46,25 @@ protected:
 public:
   qSlicerDICOMTagEditorWidgetPrivate(qSlicerDICOMTagEditorWidget& object);
   virtual void init();
+  void setupUi(QWidget *qSlicerDICOMTagEditorWidget);
 
   QList<qSlicerDICOMExportable*> Exportables;
+  vtkMRMLScene* Scene;
+
+  QVBoxLayout* VerticalLayout;
+  QTableWidget* PatientTable;
+  QTableWidget* StudyTable;
+  QList<QTableWidget*> SeriesTables;
 };
 
 //------------------------------------------------------------------------------
 qSlicerDICOMTagEditorWidgetPrivate::qSlicerDICOMTagEditorWidgetPrivate(qSlicerDICOMTagEditorWidget& object)
   : q_ptr(&object)
 {
+  this->Scene = NULL;
+  this->VerticalLayout = NULL;
+  this->PatientTable = NULL;
+  this->StudyTable = NULL;
 }
 
 //------------------------------------------------------------------------------
@@ -56,15 +72,38 @@ void qSlicerDICOMTagEditorWidgetPrivate::init()
 {
   Q_Q(qSlicerDICOMTagEditorWidget);
 
-  //TODO:
+  this->SeriesTables.clear();
+}
+
+//------------------------------------------------------------------------------
+void qSlicerDICOMTagEditorWidgetPrivate::setupUi(QWidget *qSlicerDICOMTagEditorWidget)
+{
+  if (qSlicerDICOMTagEditorWidget->objectName().isEmpty())
+  {
+    qSlicerDICOMTagEditorWidget->setObjectName(QString::fromUtf8("qSlicerDICOMTagEditorWidget"));
+  }
+
+  // Create layout for the tables
+  this->VerticalLayout = new QVBoxLayout(qSlicerDICOMTagEditorWidget);
+  this->VerticalLayout->setSpacing(2);
+  this->VerticalLayout->setContentsMargins(2, 2, 2, 2);
+
+  // Create patient and study tables as they will be needed in any case
+  this->PatientTable = new QTableWidget(qSlicerDICOMTagEditorWidget);
+  this->VerticalLayout->addWidget(this->PatientTable);
+
+  this->StudyTable = new QTableWidget(qSlicerDICOMTagEditorWidget);
+  this->VerticalLayout->addWidget(this->StudyTable);
 }
 
 //------------------------------------------------------------------------------
 qSlicerDICOMTagEditorWidget::qSlicerDICOMTagEditorWidget(QWidget *parent)
   : QWidget(parent)
+  , d_ptr(new qSlicerDICOMTagEditorWidgetPrivate(*this))
 {
   Q_D(qSlicerDICOMTagEditorWidget);
   d->init();
+  d->setupUi(this);
 }
 
 //------------------------------------------------------------------------------
@@ -73,14 +112,69 @@ qSlicerDICOMTagEditorWidget::~qSlicerDICOMTagEditorWidget()
 }
 
 //------------------------------------------------------------------------------
+void qSlicerDICOMTagEditorWidget::setMRMLScene(vtkMRMLScene* scene)
+{
+  Q_D(qSlicerDICOMTagEditorWidget);
+  d->Scene = scene;
+}
+
+//------------------------------------------------------------------------------
 QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable*> exportables)
 {
   Q_D(qSlicerDICOMTagEditorWidget);
 
+  if (!d->Scene)
+  {
+    QString error("Invalid MRML scene!");
+    qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: " << error;
+    return error;
+  }
+
+  // Clear tables
+  foreach (QTableWidget* table, d->SeriesTables)
+  {
+    d->VerticalLayout->removeWidget(table);
+    //table->deleteLater(); //TODO: needed?
+  }
+  d->SeriesTables.clear();
+
   // Check if the exportables are in the same study
+  vtkMRMLSubjectHierarchyNode* parentStudyNode = NULL;
   foreach (qSlicerDICOMExportable* exportable, exportables)
   {
+    vtkMRMLSubjectHierarchyNode* node = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+      d->Scene->GetNodeByID(exportable->nodeID().toLatin1().data()) );
+    if ( !node || !node->IsLevel(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SERIES) )
+    {
+      qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: Exportable '" << exportable->name() << "' points to invalid node '"
+        << (node ? QString("%1 (level %2)").arg(node->GetNameWithoutPostfix().c_str()).arg(node->GetLevel()) : "NULL") << "'";
+      continue;
+    }
 
+    vtkMRMLSubjectHierarchyNode* parentNode = vtkMRMLSubjectHierarchyNode::SafeDownCast( node->GetParentNode() );
+    if (!parentStudyNode)
+    {
+      parentStudyNode = parentNode;
+    }
+    else if (parentStudyNode != parentNode)
+    {
+      QString error("Exportables are not in the same study!");
+      qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: " << error;
+      return error;
+    }
+  }
+
+  // Create patient and study section
+
+  // Populate patient and study section
+
+  // Create sections for each exportable
+  foreach (qSlicerDICOMExportable* exportable, exportables)
+  {
+    // Create series table for exportable
+    QTableWidget* seriesTable = new QTableWidget(this);
+    d->VerticalLayout->addWidget(seriesTable);
+    d->SeriesTables.append(seriesTable);
   }
 
   return QString();

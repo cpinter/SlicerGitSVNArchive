@@ -31,6 +31,7 @@
 
 class qSlicerDICOMExportable;
 class qSlicerDICOMTagEditorWidgetPrivate;
+class vtkMRMLScene;
 
 /// Widget for showing and editing pseudo-tags for series to export. Pseudo-tag is
 /// a concept defined by the DICOM plugin that produces the exportable that will be
@@ -65,6 +66,13 @@ public:
 
   /// Write added or edited tags into the MRML node attributes
   void commitChangesToNodes();
+
+public slots:
+  /// Set MRML scene
+  virtual void setMRMLScene(vtkMRMLScene* scene);
+
+protected:
+  QScopedPointer<qSlicerDICOMTagEditorWidgetPrivate> d_ptr;
 
 private:
   Q_DECLARE_PRIVATE(qSlicerDICOMTagEditorWidget);
