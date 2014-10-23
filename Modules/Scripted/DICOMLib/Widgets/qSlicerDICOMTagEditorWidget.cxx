@@ -28,6 +28,8 @@
 #include <QDebug>
 #include <QtGui/QVBoxLayout>
 #include <QtGui/QTableWidget>
+#include <QScrollArea>
+#include <QHeaderView>
 
 // SubjectHierarchy includes
 #include "vtkMRMLSubjectHierarchyNode.h"
@@ -51,7 +53,8 @@ public:
   QList<qSlicerDICOMExportable*> Exportables;
   vtkMRMLScene* Scene;
 
-  QVBoxLayout* VerticalLayout;
+  QWidget* ScrollWidget;
+  QVBoxLayout* TablesLayout;
   QTableWidget* PatientTable;
   QTableWidget* StudyTable;
   QList<QTableWidget*> SeriesTables;
@@ -62,7 +65,8 @@ qSlicerDICOMTagEditorWidgetPrivate::qSlicerDICOMTagEditorWidgetPrivate(qSlicerDI
   : q_ptr(&object)
 {
   this->Scene = NULL;
-  this->VerticalLayout = NULL;
+  this->ScrollWidget = NULL;
+  this->TablesLayout = NULL;
   this->PatientTable = NULL;
   this->StudyTable = NULL;
 }
@@ -83,17 +87,53 @@ void qSlicerDICOMTagEditorWidgetPrivate::setupUi(QWidget *qSlicerDICOMTagEditorW
     qSlicerDICOMTagEditorWidget->setObjectName(QString::fromUtf8("qSlicerDICOMTagEditorWidget"));
   }
 
+  // Create scroll area
+  QScrollArea* scrollArea = new QScrollArea(qSlicerDICOMTagEditorWidget);
+  scrollArea->setWidgetResizable(true);
+  scrollArea->setFrameShape(QFrame::NoFrame);
+  QVBoxLayout* mainLayout = new QVBoxLayout(qSlicerDICOMTagEditorWidget);
+  mainLayout->setSpacing(0);
+  mainLayout->setContentsMargins(0, 0, 0, 0);
+  mainLayout->addWidget(scrollArea);
+  this->ScrollWidget = new QWidget(qSlicerDICOMTagEditorWidget);
+
   // Create layout for the tables
-  this->VerticalLayout = new QVBoxLayout(qSlicerDICOMTagEditorWidget);
-  this->VerticalLayout->setSpacing(2);
-  this->VerticalLayout->setContentsMargins(2, 2, 2, 2);
+  this->TablesLayout = new QVBoxLayout(this->ScrollWidget);
+  this->TablesLayout->setSpacing(0);
+  this->TablesLayout->setContentsMargins(0, 0, 0, 0);
 
   // Create patient and study tables as they will be needed in any case
-  this->PatientTable = new QTableWidget(qSlicerDICOMTagEditorWidget);
-  this->VerticalLayout->addWidget(this->PatientTable);
+  this->PatientTable = new QTableWidget(this->ScrollWidget);
+  this->PatientTable->setColumnCount(2);
+  this->PatientTable->horizontalHeader()->setVisible(true);
+  this->PatientTable->verticalHeader()->setVisible(false);
+  this->PatientTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
+  this->PatientTable->horizontalHeader()->setStretchLastSection(true);
+  this->PatientTable->setColumnWidth(0, 200);
+  this->PatientTable->setSelectionMode(QAbstractItemView::NoSelection);
+  this->PatientTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
+  this->PatientTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  QStringList patientHeaderLabels;
+  patientHeaderLabels << "Patient tag" << "Value";
+  this->PatientTable->setHorizontalHeaderLabels(patientHeaderLabels);
+  this->TablesLayout->addWidget(this->PatientTable);
 
-  this->StudyTable = new QTableWidget(qSlicerDICOMTagEditorWidget);
-  this->VerticalLayout->addWidget(this->StudyTable);
+  this->StudyTable = new QTableWidget(this->ScrollWidget);
+  this->StudyTable->setColumnCount(2);
+  this->StudyTable->horizontalHeader()->setVisible(true);
+  this->StudyTable->verticalHeader()->setVisible(false);
+  this->StudyTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
+  this->StudyTable->horizontalHeader()->setStretchLastSection(true);
+  this->StudyTable->setColumnWidth(0, 200);
+  this->StudyTable->setSelectionMode(QAbstractItemView::NoSelection);
+  this->StudyTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
+  this->StudyTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  QStringList studyHeaderLabels;
+  studyHeaderLabels << "Study tag" << "Value";
+  this->StudyTable->setHorizontalHeaderLabels(studyHeaderLabels);
+  this->TablesLayout->addWidget(this->StudyTable);
+
+  scrollArea->setWidget(this->ScrollWidget);
 }
 
 //------------------------------------------------------------------------------
@@ -133,13 +173,13 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
   // Clear tables
   foreach (QTableWidget* table, d->SeriesTables)
   {
-    d->VerticalLayout->removeWidget(table);
+    d->TablesLayout->removeWidget(table);
     //table->deleteLater(); //TODO: needed?
   }
   d->SeriesTables.clear();
 
   // Check if the exportables are in the same study
-  vtkMRMLSubjectHierarchyNode* parentStudyNode = NULL;
+  vtkMRMLSubjectHierarchyNode* studyNode = NULL;
   foreach (qSlicerDICOMExportable* exportable, exportables)
   {
     vtkMRMLSubjectHierarchyNode* node = vtkMRMLSubjectHierarchyNode::SafeDownCast(
@@ -152,11 +192,11 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     }
 
     vtkMRMLSubjectHierarchyNode* parentNode = vtkMRMLSubjectHierarchyNode::SafeDownCast( node->GetParentNode() );
-    if (!parentStudyNode)
+    if (!studyNode)
     {
-      parentStudyNode = parentNode;
+      studyNode = parentNode;
     }
-    else if (parentStudyNode != parentNode)
+    else if (studyNode != parentNode)
     {
       QString error("Exportables are not in the same study!");
       qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: " << error;
@@ -164,18 +204,77 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     }
   }
 
-  // Populate study section
-
-  //TODO: copy tags from study node (and maybe merge it with a central list of study tags)
-
   // Populate patient section
+  vtkMRMLSubjectHierarchyNode* patientNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+    studyNode->GetParentNode() );
+  if (!patientNode)
+  {
+    QString error("No patient node found!");
+    qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: " << error;
+    return error;
+  }
+  std::vector<std::string> patientAttributes = patientNode->GetAttributeNames();
+  for (std::vector<std::string>::iterator it = patientAttributes.begin();
+    it != patientAttributes.end(); ++it)
+  {
+    std::string attribute = (*it);
+    std::string prefix = attribute.substr(0, vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size());
+    // If DICOM tag attribute
+    if (!prefix.compare(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX))
+    {
+      int rowCount = d->PatientTable->rowCount();
+      d->PatientTable->setRowCount(rowCount+1);
+      QString tagName(attribute.substr(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size()).c_str());
+      d->PatientTable->setItem(rowCount, 0, new QTableWidgetItem(tagName));
+      QString tagValue(patientNode->GetAttribute(attribute.c_str()));
+      d->PatientTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));
+    }
+  }
+  d->PatientTable->setFixedHeight(d->PatientTable->rowCount() * 30 + 26);
+
+  // Populate study section
+  std::vector<std::string> studyAttributes = studyNode->GetAttributeNames();
+  for (std::vector<std::string>::iterator it = studyAttributes.begin();
+    it != studyAttributes.end(); ++it)
+  {
+    std::string attribute = (*it);
+    std::string prefix = attribute.substr(0, vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size());
+    // If DICOM tag attribute
+    if (!prefix.compare(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX))
+    {
+      int rowCount = d->StudyTable->rowCount();
+      d->StudyTable->setRowCount(rowCount+1);
+      QString tagName(attribute.substr(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size()).c_str());
+      d->StudyTable->setItem(rowCount, 0, new QTableWidgetItem(tagName));
+      QString tagValue(studyNode->GetAttribute(attribute.c_str()));
+      d->StudyTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));
+    }
+  }
+  d->StudyTable->setFixedHeight(d->StudyTable->rowCount() * 30 + 26);
 
   // Create sections for each exportable
   foreach (qSlicerDICOMExportable* exportable, exportables)
   {
+    // Get exportable series node
+    vtkMRMLSubjectHierarchyNode* seriesNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+      d->Scene->GetNodeByID(exportable->nodeID().toLatin1().constData()) );
+
     // Create series table for exportable
-    QTableWidget* seriesTable = new QTableWidget(this);
-    d->VerticalLayout->addWidget(seriesTable);
+    QTableWidget* seriesTable = new QTableWidget(d->ScrollWidget);
+    seriesTable->setColumnCount(2);
+    seriesTable->horizontalHeader()->setVisible(true);
+    seriesTable->verticalHeader()->setVisible(false);
+    seriesTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
+    seriesTable->horizontalHeader()->setStretchLastSection(true);
+    seriesTable->setColumnWidth(0, 200);
+    seriesTable->setSelectionMode(QAbstractItemView::NoSelection);
+    seriesTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
+    seriesTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+    d->TablesLayout->addWidget(seriesTable);
+    QStringList seriesHeaderLabels;
+    seriesHeaderLabels << QString("%1 tag").arg(seriesNode->GetNameWithoutPostfix().c_str()) << "Value";
+    seriesTable->setHorizontalHeaderLabels(seriesHeaderLabels);
+
     d->SeriesTables.append(seriesTable);
   }
 
