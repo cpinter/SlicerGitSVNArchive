@@ -164,9 +164,11 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     }
   }
 
-  // Create patient and study section
+  // Populate study section
 
-  // Populate patient and study section
+  //TODO: copy tags from study node (and maybe merge it with a central list of study tags)
+
+  // Populate patient section
 
   // Create sections for each exportable
   foreach (qSlicerDICOMExportable* exportable, exportables)

@@ -92,6 +92,9 @@ void qSlicerDICOMExportDialogPrivate::init()
   this->SubjectHierarchyTreeView->hideColumn(sceneModel->transformColumn());
   //this->SubjectHierarchyTreeView->header()->resizeSection(sceneModel->transformColumn(), 60);
 
+  // Empty error label (was not empty to indicate its purpose in designer)
+  this->ErrorLabel->setText(QString());
+
   // Make connections
   connect(this->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), q, SLOT(onCurrentNodeChanged(vtkMRMLNode*)));
   connect(this->ExportablesListWidget, SIGNAL(currentRowChanged(int)), q, SLOT(onExportableSelectedAtRow(int)));
@@ -162,6 +165,9 @@ void qSlicerDICOMExportDialog::selectNode(vtkMRMLSubjectHierarchyNode* node)
 //-----------------------------------------------------------------------------
 void qSlicerDICOMExportDialog::onCurrentNodeChanged(vtkMRMLNode* node)
 {
+  Q_D(qSlicerDICOMExportDialog);
+  d->ErrorLabel->setText(QString());
+
   this->examineSelectedNode();
 }
 
@@ -189,10 +195,12 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
     "  exportables.extend(plugin.examineForExport(selectedNode))\n" )
     .arg(selectedNode->GetID()) );
 
-  // Extract resulting exportables from python and order them by confidence values
+  // Extract resulting exportables from python
   d->ExportablesListWidget->clear();
   QList<QVariant> exportablesVariantList = context.getVariable("exportables").toList();
-  QMap<double,qSlicerDICOMExportable*> exportablesMap;
+
+  // Group exportables by provider plugin
+  QMap<QString,QList<qSlicerDICOMExportable*>> exportablesByPlugin;
   foreach(QVariant exportableVariant, exportablesVariantList)
   {
     // Get exportable object (to compose item text)
@@ -204,21 +212,53 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
       continue;
     }
 
+    QString plugin = exportable->pluginClass();
+    if (!exportablesByPlugin.contains(plugin))
+    {
+      QList<qSlicerDICOMExportable*> firstExportableForPlugin;
+      firstExportableForPlugin.append(exportable);
+      exportablesByPlugin[plugin] = firstExportableForPlugin;
+    }
+    else
+    {
+      exportablesByPlugin[plugin].append(exportable);
+    }
+  }
+  // Map the grouped exportables by confidence values so that the highest confidence is on top
+  QMap<double,QList<qSlicerDICOMExportable*>> exportablesByConfidence;
+  foreach(QList<qSlicerDICOMExportable*> exportablesForPlugin, exportablesByPlugin)
+  {
+    double meanConfidenceForPlugin = 0.0;
+    foreach (qSlicerDICOMExportable* exportable, exportablesForPlugin)
+    {
+      meanConfidenceForPlugin += exportable->confidence();
+    }
+    meanConfidenceForPlugin /= exportablesForPlugin.count();
+
     // Add exportable to map with confidence as key. Confidence value is subtracted
     // from 1 so that iterating through the map automatically orders the exportables.
-    exportablesMap[1.0 - exportable->confidence()] = exportable;
+    exportablesByConfidence[1.0 - meanConfidenceForPlugin] = exportablesForPlugin;
   }
 
   // Populate the exportables list widget
-  QMapIterator<double,qSlicerDICOMExportable*> exportableIterator(exportablesMap);
+  QMapIterator<double,QList<qSlicerDICOMExportable*>> exportableIterator(exportablesByConfidence);
   while (exportableIterator.hasNext())
   {
     exportableIterator.next();
-    qSlicerDICOMExportable* exportable = exportableIterator.value();
-    QString itemText = QString("%1 (%2%)").arg(exportable->name()).arg(exportable->confidence()*100.0, 0, 'f', 0);
+    QList<qSlicerDICOMExportable*> exportables = exportableIterator.value();
+    // Set exportable name as the first one in the list, giving also the
+    // confidence number and plugin name in parentheses
+    QString itemText = QString("%1 (%2%, %3)").arg(exportables[0]->name())
+      .arg(exportableIterator.key()*100.0, 0, 'f', 0).arg(exportables[0]->pluginClass());
     QListWidgetItem* exportableItem = new QListWidgetItem(itemText, d->ExportablesListWidget);
-    exportableItem->setToolTip(exportable->tooltip());
-    exportableItem->setData(Qt::UserRole, QVariant::fromValue<QObject*>(exportable));
+    exportableItem->setToolTip(exportables[0]->tooltip());
+    // Construct data variant object
+    QList<QVariant> itemData;
+    foreach (qSlicerDICOMExportable* exportable, exportables)
+    {
+      itemData.append(QVariant::fromValue<QObject*>(exportable));
+    }
+    exportableItem->setData(Qt::UserRole, itemData);
   }
 
   // Select exportable with highest confidence (top one)
@@ -230,6 +270,8 @@ void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
 {
   Q_D(qSlicerDICOMExportDialog);
 
+  d->ErrorLabel->setText(QString());
+
   // Get exportable item from row number
   QListWidgetItem* exportableItem = d->ExportablesListWidget->item(row);
   if (!exportableItem)
@@ -238,16 +280,29 @@ void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
   }
 
   // Get exportable object from list item
-  qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
-    exportableItem->data(Qt::UserRole).value<QObject*>() );
-  if (!exportable)
+  QList<qSlicerDICOMExportable*> exportableList;
+  QList<QVariant> itemData = exportableItem->data(Qt::UserRole).toList();
+  foreach (QVariant exportableVariant, itemData)
   {
-    qCritical() << "qSlicerDICOMExportDialog::onExportableSelectedAtRow: Unable to extract exportable";
-    return;
+    qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
+      exportableVariant.value<QObject*>() );
+    if (!exportable)
+    {
+      QString errorMessage("Unable to extract exportable");
+      qCritical() << "qSlicerDICOMExportDialog::onExportableSelectedAtRow: " << errorMessage;
+      d->ErrorLabel->setText(errorMessage);
+      return;
+    }
+    exportableList.append(exportable);
   }
 
   // Populate DICOM tag editor from exportable
-  //TODO:
+  d->DICOMTagEditorWidget->setMRMLScene(d->Scene);
+  QString error = d->DICOMTagEditorWidget->setExportables(exportableList);
+  if (!error.isEmpty())
+  {
+    d->ErrorLabel->setText(error);
+  }
 }
 
 //-----------------------------------------------------------------------------
