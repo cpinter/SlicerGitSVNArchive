@@ -109,10 +109,10 @@ qSlicerSubjectHierarchyDefaultPlugin::qSlicerSubjectHierarchyDefaultPlugin(QObje
 
   // Scene -> Subject
   qSlicerSubjectHierarchyAbstractPlugin::m_ChildLevelMap.insert( QString(),
-    vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT );
+    vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelSubject() );
   // Subject -> Study
-  qSlicerSubjectHierarchyAbstractPlugin::m_ChildLevelMap.insert( vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT,
-    vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY );
+  qSlicerSubjectHierarchyAbstractPlugin::m_ChildLevelMap.insert( vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelSubject(),
+    vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelStudy() );
 
   Q_D(qSlicerSubjectHierarchyDefaultPlugin);
   d->init();
@@ -197,11 +197,11 @@ QIcon qSlicerSubjectHierarchyDefaultPlugin::icon(vtkMRMLSubjectHierarchyNode* no
   Q_D(qSlicerSubjectHierarchyDefaultPlugin);
 
   // Subject and Study icons
-  if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT))
+  if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelSubject()))
     {
     return d->SubjectIcon;
     }
-  else if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY))
+  else if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelStudy()))
     {
     return d->StudyIcon;
     }
@@ -261,7 +261,7 @@ void qSlicerSubjectHierarchyDefaultPlugin::showContextMenuActionsForNode(vtkMRML
     d->CreateSubjectAction->setVisible(true);
     }
   // Subject
-  else if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT))
+  else if (node->IsLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelSubject()))
     {
     d->CreateStudyAction->setVisible(true);
     }

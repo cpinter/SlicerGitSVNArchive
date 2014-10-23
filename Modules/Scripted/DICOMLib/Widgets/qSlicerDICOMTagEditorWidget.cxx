@@ -184,7 +184,7 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
   {
     vtkMRMLSubjectHierarchyNode* node = vtkMRMLSubjectHierarchyNode::SafeDownCast(
       d->Scene->GetNodeByID(exportable->nodeID().toLatin1().data()) );
-    if ( !node || !node->IsLevel(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_LEVEL_SERIES) )
+    if ( !node || !node->IsLevel(vtkMRMLSubjectHierarchyConstants::GetDICOMLevelSeries()) )
     {
       qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: Exportable '" << exportable->name() << "' points to invalid node '"
         << (node ? QString("%1 (level %2)").arg(node->GetNameWithoutPostfix().c_str()).arg(node->GetLevel()) : "NULL") << "'";
@@ -218,13 +218,13 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     it != patientAttributes.end(); ++it)
   {
     std::string attribute = (*it);
-    std::string prefix = attribute.substr(0, vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size());
+    std::string prefix = attribute.substr(0, vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix().size());
     // If DICOM tag attribute
-    if (!prefix.compare(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX))
+    if (!prefix.compare(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix()))
     {
       int rowCount = d->PatientTable->rowCount();
       d->PatientTable->setRowCount(rowCount+1);
-      QString tagName(attribute.substr(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size()).c_str());
+      QString tagName(attribute.substr(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix().size()).c_str());
       d->PatientTable->setItem(rowCount, 0, new QTableWidgetItem(tagName));
       QString tagValue(patientNode->GetAttribute(attribute.c_str()));
       d->PatientTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));
@@ -238,13 +238,13 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     it != studyAttributes.end(); ++it)
   {
     std::string attribute = (*it);
-    std::string prefix = attribute.substr(0, vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size());
+    std::string prefix = attribute.substr(0, vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix().size());
     // If DICOM tag attribute
-    if (!prefix.compare(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX))
+    if (!prefix.compare(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix()))
     {
       int rowCount = d->StudyTable->rowCount();
       d->StudyTable->setRowCount(rowCount+1);
-      QString tagName(attribute.substr(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_ATTRIBUTE_PREFIX.size()).c_str());
+      QString tagName(attribute.substr(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix().size()).c_str());
       d->StudyTable->setItem(rowCount, 0, new QTableWidgetItem(tagName));
       QString tagValue(studyNode->GetAttribute(attribute.c_str()));
       d->StudyTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));

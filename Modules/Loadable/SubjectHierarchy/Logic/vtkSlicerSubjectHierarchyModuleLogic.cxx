@@ -109,7 +109,7 @@ vtkMRMLSubjectHierarchyNode* vtkSlicerSubjectHierarchyModuleLogic::InsertDicomSe
     vtkMRMLSubjectHierarchyNode *node = vtkMRMLSubjectHierarchyNode::SafeDownCast(subjectHierarchyNodes[i]);
     if ( node && node->IsA("vtkMRMLSubjectHierarchyNode") )
       {
-      std::string nodeDicomUIDStr = node->GetUID(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_DICOM_UID_NAME);
+      std::string nodeDicomUIDStr = node->GetUID(vtkMRMLSubjectHierarchyConstants::GetDICOMUIDName());
       const char* nodeDicomUID = nodeDicomUIDStr.c_str();
       if (!nodeDicomUID)
         {
@@ -144,8 +144,8 @@ vtkMRMLSubjectHierarchyNode* vtkSlicerSubjectHierarchyModuleLogic::InsertDicomSe
   if (!patientNode)
     {
     patientNode = vtkMRMLSubjectHierarchyNode::New();
-    patientNode->SetLevel(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_SUBJECT);
-    patientNode->AddUID(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_DICOM_UID_NAME, patientId);
+    patientNode->SetLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelSubject());
+    patientNode->AddUID(vtkMRMLSubjectHierarchyConstants::GetDICOMUIDName(), patientId);
     patientNode->SetOwnerPluginName("DICOM");
     scene->AddNode(patientNode);
     patientNode->Delete(); // Return ownership to the scene only
@@ -154,8 +154,8 @@ vtkMRMLSubjectHierarchyNode* vtkSlicerSubjectHierarchyModuleLogic::InsertDicomSe
   if (!studyNode)
     {
     studyNode = vtkMRMLSubjectHierarchyNode::New();
-    studyNode->SetLevel(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_LEVEL_STUDY);
-    studyNode->AddUID(vtkMRMLSubjectHierarchyConstants::DICOMHIERARCHY_DICOM_UID_NAME, studyInstanceUID);
+    studyNode->SetLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelStudy());
+    studyNode->AddUID(vtkMRMLSubjectHierarchyConstants::GetDICOMUIDName(), studyInstanceUID);
     studyNode->SetOwnerPluginName("DICOM");
     studyNode->SetParentNodeID(patientNode->GetID());
     scene->AddNode(studyNode);

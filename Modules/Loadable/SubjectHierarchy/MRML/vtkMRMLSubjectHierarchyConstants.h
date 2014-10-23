@@ -37,31 +37,50 @@ public:
   //----------------------------------------------------------------------------
 
   // Subject hierarchy constants
-  static const std::string SUBJECTHIERARCHY_NODE_NAME_POSTFIX;
-  static const std::string SUBJECTHIERARCHY_ATTRIBUTE_PREFIX;
-  static const std::string SUBJECTHIERARCHY_EXCLUDE_FROM_POTENTIAL_NODES_LIST_ATTRIBUTE_NAME;
-  static const std::string SUBJECTHIERARCHY_NEW_NODE_NAME_PREFIX;
+  static const std::string GetSubjectHierarchyNodeNamePostfix()
+    { return "_SubjectHierarchy"; };
+  static const std::string GetSubjectHierarchyAttributePrefix()
+    { return "SubjectHierarchy."; };
+  static const std::string GetSubjectHierarchyExcludeFromPotentialNodesListAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyAttributePrefix() + "ExcludeFromPotentialNodesList"; };
+  static const std::string GetSubjectHierarchyNewNodeNamePrefix()
+    { return "New"; };
 
-  static const char* SUBJECTHIERARCHY_LEVEL_SUBJECT;
-  static const char* SUBJECTHIERARCHY_LEVEL_STUDY;
+  static const char* GetSubjectHierarchyLevelSubject()
+    { return "Subject"; };
+  static const char* GetSubjectHierarchyLevelStudy()
+    { return "Study"; };
 
   // DICOM plugin constants
-  static const char* DICOMHIERARCHY_LEVEL_SERIES;
-  static const char* DICOMHIERARCHY_LEVEL_SUBSERIES;
+  static const char* GetDICOMLevelSeries()
+    { return "Series"; };
+  static const char* GetDICOMLevelSubseries()
+    { return "Subseries"; };
 
-  static const std::string DICOMHIERARCHY_ATTRIBUTE_PREFIX;
-  static const std::string DICOMHIERARCHY_PATIENT_NAME_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_PATIENT_ID_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_PATIENT_SEX_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_PATIENT_BIRTH_DATE_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_PATIENT_COMMENTS_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_STUDY_DESCRIPTION_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_STUDY_DATE_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_STUDY_TIME_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_SERIES_MODALITY_ATTRIBUTE_NAME;
-  static const std::string DICOMHIERARCHY_SERIES_NUMBER_ATTRIBUTE_NAME;
-  static const char* DICOMHIERARCHY_DICOM_UID_NAME;
-
+  static const std::string GetDICOMAttributePrefix()
+    { return "DICOM."; };
+  static const std::string GetDICOMPatientNameAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "PatientName"; };
+  static const std::string GetDICOMPatientIDAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "PatientID"; };
+  static const std::string GetDICOMPatientSexAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "PatientSex"; };
+  static const std::string GetDICOMPatientBirthDateAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "PatientBirthDate"; };
+  static const std::string GetDICOMPatientCommentsAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "PatientComments"; };
+  static const std::string GetDICOMStudyDescriptionAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "StudyDescription"; };
+  static const std::string GetDICOMStudyDateAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "StudyDate"; };
+  static const std::string GetDICOMStudyTimeAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "StudyTime"; };
+  static const std::string GetDICOMSeriesModalityAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "SeriesModality"; };
+  static const std::string GetDICOMSeriesNumberAttributeName()
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "SeriesNumber"; };
+  static const char* GetDICOMUIDName()
+    { return "DICOM"; };
 };
 
 #endif

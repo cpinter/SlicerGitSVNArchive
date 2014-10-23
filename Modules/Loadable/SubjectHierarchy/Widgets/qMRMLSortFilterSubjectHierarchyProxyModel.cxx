@@ -103,7 +103,7 @@ qMRMLSortFilterProxyModel::AcceptType qMRMLSortFilterSubjectHierarchyProxyModel
     // or if there is a subject hierarchy node associated to it (i.e. it is in the hierarchy already)
     vtkMRMLSubjectHierarchyNode* associatedShNode = vtkMRMLSubjectHierarchyNode::GetAssociatedSubjectHierarchyNode(node);
     if ( associatedShNode
-      || node->GetAttribute(vtkMRMLSubjectHierarchyConstants::SUBJECTHIERARCHY_EXCLUDE_FROM_POTENTIAL_NODES_LIST_ATTRIBUTE_NAME.c_str()) )
+      || node->GetAttribute(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyExcludeFromPotentialNodesListAttributeName().c_str()) )
       {
       return Reject;
       }
