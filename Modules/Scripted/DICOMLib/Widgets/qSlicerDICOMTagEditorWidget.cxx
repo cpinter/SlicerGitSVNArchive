@@ -31,6 +31,9 @@
 #include <QScrollArea>
 #include <QHeaderView>
 
+// STD includes
+#include <algorithm>
+
 // SubjectHierarchy includes
 #include "vtkMRMLSubjectHierarchyNode.h"
 #include "vtkMRMLSubjectHierarchyConstants.h"
@@ -58,6 +61,8 @@ public:
   QTableWidget* PatientTable;
   QTableWidget* StudyTable;
   QList<QTableWidget*> SeriesTables;
+  QList<QString> PatientTags;
+  QList<QString> StudyTags;
 };
 
 //------------------------------------------------------------------------------
@@ -77,6 +82,16 @@ void qSlicerDICOMTagEditorWidgetPrivate::init()
   Q_Q(qSlicerDICOMTagEditorWidget);
 
   this->SeriesTables.clear();
+
+  this->PatientTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMPatientNameAttributeName().c_str()));
+  this->PatientTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMPatientIDAttributeName().c_str()));
+  this->PatientTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMPatientSexAttributeName().c_str()));
+  this->PatientTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMPatientBirthDateAttributeName().c_str()));
+  this->PatientTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMPatientCommentsAttributeName().c_str()));
+
+  this->StudyTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMStudyDescriptionAttributeName().c_str()));
+  this->StudyTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMStudyDateAttributeName().c_str()));
+  this->StudyTags.append(QString(vtkMRMLSubjectHierarchyConstants::GetDICOMStudyTimeAttributeName().c_str()));
 }
 
 //------------------------------------------------------------------------------
@@ -214,6 +229,17 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     return error;
   }
   std::vector<std::string> patientAttributes = patientNode->GetAttributeNames();
+  // Add missing patient tags with empty values to node
+  foreach (QString patientTag, d->PatientTags)
+  {
+    std::string tagAttributeName(patientTag.toLatin1().constData());
+    if (std::find(patientAttributes.begin(), patientAttributes.end(), tagAttributeName) == patientAttributes.end())
+    {
+      patientNode->SetAttribute(tagAttributeName.c_str(), "");
+    }
+  }
+  // Create a row in table widget for each tag
+  patientAttributes = patientNode->GetAttributeNames();
   for (std::vector<std::string>::iterator it = patientAttributes.begin();
     it != patientAttributes.end(); ++it)
   {
@@ -230,10 +256,22 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
       d->PatientTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));
     }
   }
+  // Set fixed height of patient section
   d->PatientTable->setFixedHeight(d->PatientTable->rowCount() * 30 + 26);
 
-  // Populate study section
+  // Populate study section (we already have the study node, no need to get it here)
+  // Add missing patient tags with empty values to node
   std::vector<std::string> studyAttributes = studyNode->GetAttributeNames();
+  foreach (QString studyTag, d->StudyTags)
+  {
+    std::string tagAttributeName(studyTag.toLatin1().constData());
+    if (std::find(studyAttributes.begin(), studyAttributes.end(), tagAttributeName) == studyAttributes.end())
+    {
+      studyNode->SetAttribute(tagAttributeName.c_str(), "");
+    }
+  }
+  // Create a row in table widget for each tag
+  studyAttributes = studyNode->GetAttributeNames();
   for (std::vector<std::string>::iterator it = studyAttributes.begin();
     it != studyAttributes.end(); ++it)
   {
@@ -250,6 +288,7 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
       d->StudyTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));
     }
   }
+  // Set fixed height of study section
   d->StudyTable->setFixedHeight(d->StudyTable->rowCount() * 30 + 26);
 
   // Create sections for each exportable
@@ -276,6 +315,8 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     seriesTable->setHorizontalHeaderLabels(seriesHeaderLabels);
 
     d->SeriesTables.append(seriesTable);
+
+    // TODO: get tags from exportable
   }
 
   return QString();
