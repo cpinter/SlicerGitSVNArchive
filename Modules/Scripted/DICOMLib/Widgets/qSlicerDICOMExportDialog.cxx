@@ -99,6 +99,7 @@ void qSlicerDICOMExportDialogPrivate::init()
   connect(this->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), q, SLOT(onCurrentNodeChanged(vtkMRMLNode*)));
   connect(this->ExportablesListWidget, SIGNAL(currentRowChanged(int)), q, SLOT(onExportableSelectedAtRow(int)));
   connect(this->ExportButton, SIGNAL(clicked()), q, SLOT(onExport()));
+  connect(this->ExportSeriesRadioButton, SIGNAL(toggled(bool)), q, SLOT(onExportSeriesRadioButtonToggled(bool)) );
 }
 
 //-----------------------------------------------------------------------------
@@ -306,7 +307,23 @@ void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
 }
 
 //-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::onExportSeriesRadioButtonToggled(bool seriesOn)
+{
+  Q_D(qSlicerDICOMExportDialog);
+  //TODO:
+}
+
+//-----------------------------------------------------------------------------
 void qSlicerDICOMExportDialog::onExport()
 {
+  Q_D(qSlicerDICOMExportDialog);
+
   //TODO:
+
+  // Commit changes to exported series node and their study and patient
+  // parents after successful export if user requested it
+  if (d->SaveTagsCheckBox->isChecked())
+  {
+    d->DICOMTagEditorWidget->commitChangesToNodes();
+  }
 }

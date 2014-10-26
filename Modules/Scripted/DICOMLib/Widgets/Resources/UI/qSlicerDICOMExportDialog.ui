@@ -32,7 +32,7 @@
       <number>4</number>
      </property>
      <item>
-      <widget class="QRadioButton" name="radioButton_Series">
+      <widget class="QRadioButton" name="ExportSeriesRadioButton">
        <property name="text">
         <string>Series</string>
        </property>
@@ -42,7 +42,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="radioButton_EntireScene">
+      <widget class="QRadioButton" name="ExportEntireSceneRadioButton">
        <property name="text">
         <string>Entire scene</string>
        </property>
@@ -203,6 +203,30 @@
        </property>
        <property name="toolTip">
         <string>Choose folder where the selected node is exported to DICOM. Leave unchanged to add it to the Slicer DICOM database folder</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <spacer name="horizontalSpacer_3">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QCheckBox" name="SaveTagsCheckBox">
+       <property name="text">
+        <string>Save tags on export</string>
        </property>
       </widget>
      </item>

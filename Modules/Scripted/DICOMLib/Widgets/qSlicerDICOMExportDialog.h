@@ -61,6 +61,9 @@ public:
   Q_INVOKABLE void selectNode(vtkMRMLSubjectHierarchyNode* node);
 
 protected slots:
+  /// Handles change of export series or entire scene radio button selection
+  void onExportSeriesRadioButtonToggled(bool);
+
   /// Triggers examining node when selection changes
   void onCurrentNodeChanged(vtkMRMLNode*);
 

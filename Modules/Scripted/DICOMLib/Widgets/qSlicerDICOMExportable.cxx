@@ -110,8 +110,15 @@ QMap<QString,QString> qSlicerDICOMExportable::tags()const
   Q_D(const qSlicerDICOMExportable);
   return d->Tags;
 }
+//-----------------------------------------------------------------------------
 void qSlicerDICOMExportable::setTags(const QMap<QString,QString>& var)
 {
   Q_D(qSlicerDICOMExportable);
   d->Tags = var;
+}
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportable::addTag(QString tagName, QString tagDefaultValue)
+{
+  Q_D(qSlicerDICOMExportable);
+  d->Tags[tagName] = tagDefaultValue;;
 }

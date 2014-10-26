@@ -342,12 +342,20 @@ class DICOMScalarVolumePluginClass(DICOMPlugin):
     if node.GetAssociatedNode() == None or not node.GetAssociatedNode().IsA('vtkMRMLScalarVolumeNode'):
       return []
 
+    # Define basic properties of the exportable
     exportable = qSlicerDICOMExportable()
     exportable.name = self.loadType
     exportable.tooltip = "Creates a series of DICOM files from scalar volumes"
     exportable.nodeID = node.GetID()
     exportable.pluginClass = self.__module__
     exportable.confidence = 0.5 # There could be more specialized volume types
+
+    # Define required tags and default values
+    exportable.addTag('SeriesDescription', 'No series description')
+    exportable.addTag('Manufacturer', 'Unknown manufacturer')
+    exportable.addTag('Model', 'Unknown model')
+    exportable.addTag('SeriesNumber', '1')
+
     return [exportable]
 
   def export(self,node):

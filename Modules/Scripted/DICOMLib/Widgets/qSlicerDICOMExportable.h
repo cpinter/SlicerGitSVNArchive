@@ -84,6 +84,9 @@ public:
   virtual QMap<QString,QString> tags()const;
   void setTags(const QMap<QString,QString>& newTags);
 
+  /// Add one tag to tags list
+  Q_INVOKABLE void addTag(QString tagName, QString tagDefaultValue);
+
 protected:
   QScopedPointer<qSlicerDICOMExportablePrivate> d_ptr;
 
