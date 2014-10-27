@@ -46,6 +46,12 @@
 // MRML includes
 #include <vtkMRMLScene.h>
 
+// SlicerApp includes
+#include "qSlicerApplication.h"
+
+// CTK includes
+#include "ctkDICOMDatabase.h"
+
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Widgets
 class qSlicerDICOMExportDialogPrivate : public Ui_qSlicerDICOMExportDialog, public QDialog
@@ -94,6 +100,9 @@ void qSlicerDICOMExportDialogPrivate::init()
 
   // Empty error label (was not empty to indicate its purpose in designer)
   this->ErrorLabel->setText(QString());
+
+  // Set Slicer DICOM database folder as default output folder
+  this->DirectoryButton_OutputFolder->setDirectory(qSlicerApplication::application()->dicomDatabase()->databaseDirectory());
 
   // Make connections
   connect(this->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), q, SLOT(onCurrentNodeChanged(vtkMRMLNode*)));
@@ -318,6 +327,23 @@ void qSlicerDICOMExportDialog::onExport()
 {
   Q_D(qSlicerDICOMExportDialog);
 
+  // Determine whether output directory is a Slicer DICOM database
+  QDir outputFolder(d->DirectoryButton_OutputFolder->directory());
+  bool dicomDatabaseFolder = outputFolder.entryList().contains("ctkDICOM.sql");
+
+  // Add exported data to DICOM database if the output directory is one
+  if (dicomDatabaseFolder)
+  {
+    // Switch to folder named dicom, because that is where the files are
+    // stored in a database folder. Create if does not exist
+    if (!outputFolder.entryList().contains("dicom"))
+    {
+      outputFolder.mkdir("dicom");
+    }
+    outputFolder.cd("dicom");
+  }
+
+  // Export to output folder
   //TODO:
 
   // Commit changes to exported series node and their study and patient
