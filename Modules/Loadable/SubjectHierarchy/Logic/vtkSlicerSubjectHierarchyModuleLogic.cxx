@@ -240,3 +240,35 @@ vtkMRMLSubjectHierarchyNode* vtkSlicerSubjectHierarchyModuleLogic::AreNodesInSam
 
   return (hierarchyNode1 == hierarchyNode2 ? hierarchyNode1 : NULL);
 }
+
+//---------------------------------------------------------------------------
+bool vtkSlicerSubjectHierarchyModuleLogic::IsPatientTag(std::string tagName)
+{
+  std::vector<std::string> patientTagNames = vtkMRMLSubjectHierarchyConstants::GetDICOMPatientTagNames();
+  for ( std::vector<std::string>::iterator patientTagIt = patientTagNames.begin();
+    patientTagIt != patientTagNames.end(); ++patientTagIt )
+    {
+    if (!tagName.compare(*patientTagIt))
+      {
+      // Argument was found in patient tag names list, so given tag is a patient tag
+      return true;
+      }
+    }
+  return false;
+}
+
+//---------------------------------------------------------------------------
+bool vtkSlicerSubjectHierarchyModuleLogic::IsStudyTag(std::string tagName)
+{
+  std::vector<std::string> studyTagNames = vtkMRMLSubjectHierarchyConstants::GetDICOMStudyTagNames();
+  for ( std::vector<std::string>::iterator studyTagIt = studyTagNames.begin();
+    studyTagIt != studyTagNames.end(); ++studyTagIt )
+    {
+    if (!tagName.compare(*studyTagIt))
+      {
+      // Argument was found in study tag names list, so given tag is a study tag
+      return true;
+      }
+    }
+  return false;
+}

@@ -122,6 +122,13 @@ class DICOMPlugin(object):
     """
     return []
 
+  def export(self,exportable):
+    """Export an exportable (one series) to file(s)
+    Return error message, empty if success
+    Virtual: should be overridden by the subclass
+    """
+    return ""
+
   def addSeriesInSubjectHierarchy(self,loadable,dataNode):
     """Add loaded DICOM series into subject hierarchy.
     The DICOM tags are read from the first file referenced by the

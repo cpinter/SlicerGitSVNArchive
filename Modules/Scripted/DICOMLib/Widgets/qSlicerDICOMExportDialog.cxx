@@ -29,6 +29,7 @@
 
 // SubjectHierarchy includes
 #include "vtkMRMLSubjectHierarchyNode.h"
+#include "vtkMRMLSubjectHierarchyConstants.h"
 
 // DICOMLib includes
 #include "qSlicerDICOMExportable.h"
@@ -39,6 +40,7 @@
 #include <QDebug>
 #include <QItemSelection>
 #include <QListWidgetItem>
+#include <QDateTime>
 
 // PythonQt includes
 #include "PythonQt.h"
@@ -51,6 +53,7 @@
 
 // CTK includes
 #include "ctkDICOMDatabase.h"
+#include "ctkDICOMIndexer.h"
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_SubjectHierarchy_Widgets
@@ -186,28 +189,60 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
 {
   Q_D(qSlicerDICOMExportDialog);
 
-  vtkMRMLSubjectHierarchyNode* selectedNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+  // Get current node (single-selection)
+  vtkMRMLSubjectHierarchyNode* currentNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
     d->SubjectHierarchyTreeView->currentNode() );
-  if (!selectedNode)
+  if (!currentNode)
   {
-    qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Unable to get selected subject hierarchy node!";
+    qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Unable to get current subject hierarchy node!";
     return;
   }
 
-  // Get exportables from DICOM plugins
-  PythonQt::init();
-  PythonQtObjectPtr context = PythonQt::self()->getMainModule();
-  context.evalScript( QString(
-    "exportables = []\n"
-    "selectedNode = slicer.mrmlScene.GetNodeByID('%1')\n"
-    "for pluginClass in slicer.modules.dicomPlugins:\n"
-    "  plugin = slicer.modules.dicomPlugins[pluginClass]()\n"
-    "  exportables.extend(plugin.examineForExport(selectedNode))\n" )
-    .arg(selectedNode->GetID()) );
+  // Get child series nodes if selected node is study
+  QList<vtkMRMLSubjectHierarchyNode*> selectedSeriesNodes;
+  if (currentNode->IsLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelStudy()))
+  {
+    std::vector<vtkMRMLHierarchyNode*> childrenNodes = currentNode->GetChildrenNodes();
+    for ( std::vector<vtkMRMLHierarchyNode*>::iterator childIt = childrenNodes.begin();
+      childIt != childrenNodes.end(); ++childIt)
+    {
+      vtkMRMLSubjectHierarchyNode* subjectHierarchySeriesNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(*childIt);
+      if (subjectHierarchySeriesNode)
+      {
+        selectedSeriesNodes.append(subjectHierarchySeriesNode);
+      }
+    }
+  }
+  else if (currentNode->IsLevel(vtkMRMLSubjectHierarchyConstants::GetDICOMLevelSeries()))
+  {
+    selectedSeriesNodes.append(currentNode);
+  }
+  else
+  {
+    qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Can only export series or study!";
+    return;
+  }
 
-  // Extract resulting exportables from python
+  // Get exportables from DICOM plugins for selection
+  QList<QVariant> exportablesVariantList;
+  foreach (vtkMRMLSubjectHierarchyNode* selectedSeriesNode, selectedSeriesNodes)
+  {
+    PythonQt::init();
+    PythonQtObjectPtr context = PythonQt::self()->getMainModule();
+    context.evalScript( QString(
+      "exportables = []\n"
+      "selectedNode = slicer.mrmlScene.GetNodeByID('%1')\n"
+      "for pluginClass in slicer.modules.dicomPlugins:\n"
+      "  plugin = slicer.modules.dicomPlugins[pluginClass]()\n"
+      "  exportables.extend(plugin.examineForExport(selectedNode))\n" )
+      .arg(selectedSeriesNode->GetID()) );
+
+    // Extract resulting exportables from python
+    exportablesVariantList.append(context.getVariable("exportables").toList());
+  }
+
+  // Clear exportables list
   d->ExportablesListWidget->clear();
-  QList<QVariant> exportablesVariantList = context.getVariable("exportables").toList();
 
   // Group exportables by provider plugin
   QMap<QString,QList<qSlicerDICOMExportable*>> exportablesByPlugin;
@@ -218,7 +253,7 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
       exportableVariant.value<QObject*>() );
     if (!exportable)
     {
-      qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Invalid exportable returned by DICOM plugin for node " << selectedNode->GetNameWithoutPostfix().c_str();
+      qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Invalid exportable returned by DICOM plugin for " << currentNode->GetNameWithoutPostfix().c_str();
       continue;
     }
 
@@ -327,24 +362,21 @@ void qSlicerDICOMExportDialog::onExport()
 {
   Q_D(qSlicerDICOMExportDialog);
 
-  // Determine whether output directory is a Slicer DICOM database
+  // Get output directory
   QDir outputFolder(d->DirectoryButton_OutputFolder->directory());
-  bool dicomDatabaseFolder = outputFolder.entryList().contains("ctkDICOM.sql");
 
-  // Add exported data to DICOM database if the output directory is one
-  if (dicomDatabaseFolder)
+  // Determine whether output directory is a Slicer DICOM database
+  bool isDicomDatabaseFolder = outputFolder.entryList().contains("ctkDICOM.sql");
+
+  // Set output folder to a temporary location if the output directory is a DICOM database
+  if (isDicomDatabaseFolder)
   {
-    // Switch to folder named dicom, because that is where the files are
-    // stored in a database folder. Create if does not exist
-    if (!outputFolder.entryList().contains("dicom"))
-    {
-      outputFolder.mkdir("dicom");
-    }
-    outputFolder.cd("dicom");
+    // Save to temporary folder and store files in database directory when adding
+    outputFolder.setPath(qSlicerApplication::application()->temporaryPath());
+    QString tempSubDirName = QString("DICOMExportTemp_%1").arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
+    outputFolder.mkdir(tempSubDirName);
+    outputFolder.cd(tempSubDirName);
   }
-
-  // Export to output folder
-  //TODO:
 
   // Commit changes to exported series node and their study and patient
   // parents after successful export if user requested it
@@ -352,4 +384,61 @@ void qSlicerDICOMExportDialog::onExport()
   {
     d->DICOMTagEditorWidget->commitChangesToNodes();
   }
+
+  // Export to output folder
+  foreach (qSlicerDICOMExportable* exportable, d->DICOMTagEditorWidget->exportables())
+  {
+    // Set directory to exportable
+    exportable->setDirectory(outputFolder.absolutePath());
+
+    // Call export function of python DICOM plugin
+    PythonQt::init();
+    PythonQtObjectPtr context = PythonQt::self()->getMainModule();
+    context.addVariable("exportable", QVariant::fromValue<QObject*>(exportable));
+    context.evalScript( QString(
+      "plugin = slicer.modules.dicomPlugins['%1']()\n"
+      "errorMessage = plugin.export(exportable)\n" )
+      .arg(exportable->pluginClass()));
+
+    // Extract error message from python
+    QString errorMessage = context.getVariable("errorMessage").toString();
+    if (errorMessage.isNull())
+    {
+      // Invalid return value from DICOM exporter
+      //TODO: Show error
+    }
+    else if (!errorMessage.isEmpty())
+    {
+      // Exporter encountered error
+      //TODO: Show error
+      return;
+    }
+  }
+
+  // Add exported files to DICOM database
+  ctkDICOMIndexer* indexer = new ctkDICOMIndexer();
+  ctkDICOMDatabase* dicomDatabase = qSlicerApplication::application()->dicomDatabase();
+  QString destinationFolderPath("");
+  if (isDicomDatabaseFolder)
+  {
+    // If we export to the DICOM database folder, then we need a non-empty destination path
+    destinationFolderPath = qSlicerApplication::application()->dicomDatabase()->databaseDirectory();
+  }
+  indexer->addDirectory(*dicomDatabase, outputFolder.absolutePath(), destinationFolderPath);
+  delete indexer;
+
+  // Remove temporary DICOM folder if exported to the DICOM database folder
+  if (isDicomDatabaseFolder)
+  {
+    foreach(QString file, outputFolder.entryList())
+    {
+      outputFolder.remove(file);
+    }
+    QString tempSubDirName = outputFolder.dirName();
+    outputFolder.cdUp();
+    outputFolder.rmdir(tempSubDirName);
+  }
+
+  // Show DICOM browser to indicate success
+  //TODO: Show browser + update (the just added data does not show up)
 }

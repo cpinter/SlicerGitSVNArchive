@@ -64,12 +64,19 @@ public:
   /// Clear exportables and tables
   void clear();
 
-  /// Write added or edited tags into the MRML node attributes
+  /// Write edited tags into the MRML node attributes
   void commitChangesToNodes();
 
 public slots:
   /// Set MRML scene
   virtual void setMRMLScene(vtkMRMLScene* scene);
+
+  /// Sets new patient tag value in each exportable
+  void patientTableCellChanged(int row, int column);
+  /// Sets new study tag value in each exportable
+  void studyTableCellChanged(int row, int column);
+  /// Sets new series tag value in corresponding exportable
+  void seriesTableCellChanged(int row, int column);
 
 protected:
   QScopedPointer<qSlicerDICOMTagEditorWidgetPrivate> d_ptr;

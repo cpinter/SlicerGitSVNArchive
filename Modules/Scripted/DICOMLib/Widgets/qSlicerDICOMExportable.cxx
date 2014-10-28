@@ -41,6 +41,8 @@ public:
   QString NodeID;
   /// Class of the plugin that created this exportable
   QString PluginClass;
+  /// Target directory to export this exportable
+  QString Directory;
   /// Confidence - from 0 to 1 where 0 means that the plugin
   /// cannot export the given node, up to 1 that means that the
   /// plugin considers itself the best plugin to export the node
@@ -48,7 +50,8 @@ public:
   double Confidence;
   /// Pseudo-tags offered by the plugin that are to be filled out for export.
   /// The pseudo-tags are translated into real DICOM tags at the time of export.
-  /// It tag is a pair of strings (name, defaultValue)
+  /// It tag is a pair of strings (name, value). When the exportable is created
+  /// by the DICOM plugin, value is the default value that is set in the editor widget
   QMap<QString,QString> Tags;
 };
 
@@ -101,6 +104,10 @@ CTK_SET_CPP(qSlicerDICOMExportable, const QString&, setPluginClass, PluginClass)
 CTK_GET_CPP(qSlicerDICOMExportable, QString, pluginClass, PluginClass)
 
 //-----------------------------------------------------------------------------
+CTK_SET_CPP(qSlicerDICOMExportable, const QString&, setDirectory, Directory)
+CTK_GET_CPP(qSlicerDICOMExportable, QString, directory, Directory)
+
+//-----------------------------------------------------------------------------
 CTK_SET_CPP(qSlicerDICOMExportable, const double, setConfidence, Confidence)
 CTK_GET_CPP(qSlicerDICOMExportable, double, confidence, Confidence)
 
@@ -116,9 +123,17 @@ void qSlicerDICOMExportable::setTags(const QMap<QString,QString>& var)
   Q_D(qSlicerDICOMExportable);
   d->Tags = var;
 }
+
 //-----------------------------------------------------------------------------
-void qSlicerDICOMExportable::addTag(QString tagName, QString tagDefaultValue)
+QString qSlicerDICOMExportable::tag(QString tagName)
 {
   Q_D(qSlicerDICOMExportable);
-  d->Tags[tagName] = tagDefaultValue;;
+  // Returns QString() if tagName is not in the tags map, which contains Null value for QString
+  return d->Tags[tagName];
+}
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportable::setTag(QString tagName, QString tagValue)
+{
+  Q_D(qSlicerDICOMExportable);
+  d->Tags[tagName] = tagValue;
 }

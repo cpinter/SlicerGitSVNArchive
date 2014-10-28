@@ -12,7 +12,8 @@ set(MODULE_PYTHON_SCRIPTS
   __init__
   DICOMPlugin
   DICOMProcesses
-  DICOMDataExchange
+  DICOMExportScalarVolume
+  DICOMExportScene
   DICOMWidgets
   )
 

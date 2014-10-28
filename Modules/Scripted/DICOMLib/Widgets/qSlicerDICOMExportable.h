@@ -50,6 +50,8 @@ class Q_SLICER_MODULE_DICOMLIB_WIDGETS_EXPORT qSlicerDICOMExportable : public QO
   Q_PROPERTY(QString nodeID READ nodeID WRITE setNodeID)
   /// Class of the plugin that created this exportable
   Q_PROPERTY(QString pluginClass READ pluginClass WRITE setPluginClass)
+  /// Target directory to export this exportable
+  Q_PROPERTY(QString directory READ directory WRITE setDirectory)
   /// Confidence - from 0 to 1 where 0 means that the plugin
   /// cannot export the given node, up to 1 that means that the
   /// plugin considers itself the best plugin to export the node
@@ -57,7 +59,8 @@ class Q_SLICER_MODULE_DICOMLIB_WIDGETS_EXPORT qSlicerDICOMExportable : public QO
   Q_PROPERTY(double confidence READ confidence WRITE setConfidence)
   /// Pseudo-tags offered by the plugin that are to be filled out for export.
   /// The pseudo-tags are translated into real DICOM tags at the time of export.
-  /// It tag is a pair of strings (name, defaultValue)
+  /// It tag is a pair of strings (name, value). When the exportable is created
+  /// by the DICOM plugin, value is the default value that is set in the editor widget
   typedef QMap<QString,QString> TagsMap;
   Q_PROPERTY(TagsMap tags READ tags WRITE setTags);
 
@@ -75,6 +78,9 @@ public:
   virtual QString nodeID()const;
   void setNodeID(const QString& newNodeID);
 
+  virtual QString directory()const;
+  void setDirectory(const QString& newDirectory);
+
   virtual QString pluginClass()const;
   void setPluginClass(const QString& newPluginClass);
 
@@ -84,8 +90,11 @@ public:
   virtual QMap<QString,QString> tags()const;
   void setTags(const QMap<QString,QString>& newTags);
 
-  /// Add one tag to tags list
-  Q_INVOKABLE void addTag(QString tagName, QString tagDefaultValue);
+  /// Get one tag from tags list
+  /// \return Null QString if tag is absent, otherwise tag value
+  Q_INVOKABLE QString tag(QString tagName);
+  /// Set one tag to tags list
+  Q_INVOKABLE void setTag(QString tagName, QString tagValue);
 
 protected:
   QScopedPointer<qSlicerDICOMExportablePrivate> d_ptr;
