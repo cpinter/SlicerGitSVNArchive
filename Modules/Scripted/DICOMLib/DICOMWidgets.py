@@ -150,6 +150,11 @@ class DICOMDetailsPopup(object):
     self.tableDensityComboBox.visible = False
     self.settingsButton.connect('toggled(bool)', self.onSettingsButton)
 
+    # enable export button and make new connection
+    self.actionExport = self.dicomBrowser.findChildren('QAction', 'ActionExport')[0]
+    self.actionExport.enabled = 1
+    self.actionExport.connect('triggered()', self.onExportAction)
+
     # search row
     self.searchFrame = qt.QWidget()
     self.searchFrame.setMaximumHeight(40)
@@ -338,6 +343,13 @@ class DICOMDetailsPopup(object):
 
   def onViewHeaderButton(self):
     self.headerPopup.setFileLists(self.fileLists)
+
+  def onExportAction(self):
+    from qSlicerDICOMLibModuleWidgetsPythonQt import qSlicerDICOMExportDialog
+    self.exportDialog = qSlicerDICOMExportDialog()
+    self.exportDialog.setMRMLScene(slicer.mrmlScene)
+    self.close()
+    self.exportDialog.execDialog()
 
   def open(self):
     if not self.window.isVisible():
@@ -821,7 +833,6 @@ class DICOMRecentActivityWidget(object):
     recentSeries.sort(self.compareSeriesTimes)
     return recentSeries
 
-
   def update(self):
     """Load the table widget with header values for the file
     """
@@ -845,107 +856,6 @@ class DICOMRecentActivityWidget(object):
     if self.detailsPopup:
       self.detailsPopup.open()
       self.detailsPopup.offerLoadables(series.series,"Series")
-
-class DICOMExportDialog(object):
-  """Implement the Qt dialog for selecting slicer data to be exported
-  to be part of a DICOM study (e.g. a slicer volume as a new dicom series).
-  """
-
-  def __init__(self,studyUID,onExportFinished=None):
-    self.studyUID = studyUID
-    self.onExportFinished = onExportFinished
-
-  def open(self):
-
-    # main dialog
-    self.dialog = qt.QDialog(slicer.util.mainWindow())
-    self.dialog.setWindowTitle('Export to DICOM Study')
-    self.dialog.setWindowModality(1)
-    layout = qt.QVBoxLayout()
-    self.dialog.setLayout(layout)
-
-    self.studyLabel = qt.QLabel('Attach Data to Study: %s' % self.studyUID)
-    layout.addWidget(self.studyLabel)
-
-    # scene or volume option
-    self.selectFrame = qt.QFrame(self.dialog)
-    layout.addWidget(self.selectFrame)
-    self.selectLayout = qt.QGridLayout()
-    self.selectFrame.setLayout(self.selectLayout)
-    self.exportScene = qt.QRadioButton("Export Entire Scene", self.selectFrame)
-    self.exportScene.setToolTip( "Create a Slicer Data Bundle in a DICOM Private Creator\n(Only compatible with Slicer)" )
-    self.exportVolume = qt.QRadioButton("Export Selected Volume", self.selectFrame)
-    self.exportVolume.setToolTip( "Create a compatible DICOM series of slice images" )
-    self.exportVolume.checked = True
-    self.selectLayout.addWidget(self.exportScene, 0, 0)
-    self.selectLayout.addWidget(self.exportVolume, 1, 0)
-    self.exportScene.connect('toggled(bool)', self.onExportRadio)
-    self.exportVolume.connect('toggled(bool)', self.onExportRadio)
-
-    # select volume
-    self.volumeSelector = slicer.qMRMLNodeComboBox(self.dialog)
-    self.volumeSelector.nodeTypes = ( "vtkMRMLScalarVolumeNode", "" )
-    self.volumeSelector.selectNodeUponCreation = False
-    self.volumeSelector.addEnabled = False
-    self.volumeSelector.noneEnabled = False
-    self.volumeSelector.removeEnabled = False
-    self.volumeSelector.showHidden = False
-    self.volumeSelector.showChildNodeTypes = False
-    self.volumeSelector.setMRMLScene( slicer.mrmlScene )
-    self.volumeSelector.setToolTip( "Pick the label map to edit" )
-    self.selectLayout.addWidget( self.volumeSelector, 1, 1 )
-
-    # DICOM Parameters
-    self.dicomFrame = qt.QFrame(self.dialog)
-    self.dicomFormLayout = qt.QFormLayout()
-    self.dicomFrame.setLayout(self.dicomFormLayout)
-    self.dicomEntries = {}
-    exporter = DICOMLib.DICOMExporter(self.studyUID)
-    self.dicomParameters = exporter.parametersFromStudy()
-    self.dicomParameters['Series Description'] = '3D Slicer Export'
-    for label in self.dicomParameters.keys():
-      self.dicomEntries[label] = qt.QLineEdit()
-      self.dicomEntries[label].text = self.dicomParameters[label]
-      self.dicomFormLayout.addRow(label+": ", self.dicomEntries[label])
-    layout.addWidget(self.dicomFrame)
-
-    # button box
-    bbox = qt.QDialogButtonBox(self.dialog)
-    bbox.addButton(bbox.Ok)
-    bbox.addButton(bbox.Cancel)
-    bbox.connect('accepted()', self.onOk)
-    bbox.connect('rejected()', self.onCancel)
-    layout.addWidget(bbox)
-
-    self.dialog.open()
-
-  def onExportRadio(self,toggled):
-    self.volumeSelector.enabled = self.exportVolume.checked
-
-  def onOk(self):
-    """Run the export process for either the scene or the selected volume"""
-    if self.exportScene.checked:
-      volumeNode = None
-    else:
-      volumeNode = self.volumeSelector.currentNode()
-    if volumeNode or self.exportScene.checked:
-      parameters = {}
-      for label in self.dicomParameters.keys():
-        parameters[label] = self.dicomEntries[label].text
-      try:
-        exporter = DICOMLib.DICOMExporter(self.studyUID,volumeNode,parameters)
-        exporter.export()
-      except Exception as result:
-        import traceback
-        qt.QMessageBox.warning(self.dialog, 'DICOM Export', 'Could not export data: %s\n\n%s' % (result, traceback.format_exception(*sys.exc_info())))
-    if self.onExportFinished:
-      self.onExportFinished()
-    self.dialog.close()
-
-  def onCancel(self):
-    if self.onExportFinished:
-      self.onExportFinished()
-    self.dialog.close()
 
 class DICOMSendDialog(object):
   """Implement the Qt dialog for doing a DICOM Send (storage SCU)

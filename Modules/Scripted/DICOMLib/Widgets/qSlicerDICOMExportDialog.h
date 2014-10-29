@@ -55,7 +55,7 @@ public:
   Q_INVOKABLE void setMRMLScene(vtkMRMLScene* scene);
 
   /// Python compatibility function for showing dialog (calls \a exec)
-  Q_INVOKABLE bool execDialog() { return this->exec(); };
+  Q_INVOKABLE bool execDialog(vtkMRMLSubjectHierarchyNode* nodeToSelect=NULL) { return this->exec(nodeToSelect); };
 
   /// Set specific node selected in subject hierarchy tree
   Q_INVOKABLE void selectNode(vtkMRMLSubjectHierarchyNode* node);
