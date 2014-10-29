@@ -179,8 +179,11 @@ void qSlicerDICOMExportDialog::selectNode(vtkMRMLSubjectHierarchyNode* node)
 void qSlicerDICOMExportDialog::onCurrentNodeChanged(vtkMRMLNode* node)
 {
   Q_D(qSlicerDICOMExportDialog);
+
+  // Clear error label
   d->ErrorLabel->setText(QString());
 
+  // Get exportables from DICOM plugins
   this->examineSelectedNode();
 }
 
@@ -293,8 +296,8 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
     QList<qSlicerDICOMExportable*> exportables = exportableIterator.value();
     // Set exportable name as the first one in the list, giving also the
     // confidence number and plugin name in parentheses
-    QString itemText = QString("%1 (%2%, %3)").arg(exportables[0]->name())
-      .arg(exportableIterator.key()*100.0, 0, 'f', 0).arg(exportables[0]->pluginClass());
+    QString itemText = QString("%1 (%2%, %3 series) (%4)").arg(exportables[0]->name())
+      .arg(exportableIterator.key()*100.0, 0, 'f', 0).arg(exportables.count()).arg(exportables[0]->pluginClass());
     QListWidgetItem* exportableItem = new QListWidgetItem(itemText, d->ExportablesListWidget);
     exportableItem->setToolTip(exportables[0]->tooltip());
     // Construct data variant object
@@ -315,6 +318,7 @@ void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
 {
   Q_D(qSlicerDICOMExportDialog);
 
+  // Clear error label
   d->ErrorLabel->setText(QString());
 
   // Get exportable item from row number
@@ -362,6 +366,9 @@ void qSlicerDICOMExportDialog::onExport()
 {
   Q_D(qSlicerDICOMExportDialog);
 
+  // Clear error label
+  d->ErrorLabel->setText(QString());
+
   // Get output directory
   QDir outputFolder(d->DirectoryButton_OutputFolder->directory());
 
@@ -388,8 +395,11 @@ void qSlicerDICOMExportDialog::onExport()
   // Export to output folder
   foreach (qSlicerDICOMExportable* exportable, d->DICOMTagEditorWidget->exportables())
   {
-    // Set directory to exportable
-    exportable->setDirectory(outputFolder.absolutePath());
+    // Export each series in a different directory
+    QDir seriesOutputFolder = outputFolder;
+    seriesOutputFolder.mkdir(exportable->nodeID());
+    seriesOutputFolder.cd(exportable->nodeID());
+    exportable->setDirectory(seriesOutputFolder.absolutePath());
 
     // Call export function of python DICOM plugin
     PythonQt::init();
@@ -398,19 +408,19 @@ void qSlicerDICOMExportDialog::onExport()
     context.evalScript( QString(
       "plugin = slicer.modules.dicomPlugins['%1']()\n"
       "errorMessage = plugin.export(exportable)\n" )
-      .arg(exportable->pluginClass()));
+      .arg(exportable->pluginClass()) );
 
     // Extract error message from python
     QString errorMessage = context.getVariable("errorMessage").toString();
     if (errorMessage.isNull())
     {
       // Invalid return value from DICOM exporter
-      //TODO: Show error
+      d->ErrorLabel->setText("Exporter returned with invalid value");
     }
     else if (!errorMessage.isEmpty())
     {
       // Exporter encountered error
-      //TODO: Show error
+      d->ErrorLabel->setText(errorMessage);
       return;
     }
   }
@@ -440,5 +450,15 @@ void qSlicerDICOMExportDialog::onExport()
   }
 
   // Show DICOM browser to indicate success
-  //TODO: Show browser + update (the just added data does not show up)
+  // Update DICOM database (no direct function for it, so re-set the folder)
+  PythonQt::init();
+  PythonQtObjectPtr context = PythonQt::self()->getMainModule();
+  context.evalScript( QString(
+    "dicomWidget = slicer.modules.dicom.widgetRepresentation().self()\n"
+    "dicomWidget.dicomBrowser.databaseDirectory = '%1'\n"
+    "dicomWidget.detailsPopup.open()\n" )
+    .arg(qSlicerApplication::application()->dicomDatabase()->databaseDirectory()) );
+
+  // Close the export dialog after successful export
+  d->done(0);
 }
