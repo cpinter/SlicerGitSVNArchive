@@ -227,6 +227,8 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
   }
 
   // Get exportables from DICOM plugins for selection
+  // One plugin should return one exportable for one series, but nevertheless
+  // a list is returned for convenient concatenation (without type check etc.)
   QList<QVariant> exportablesVariantList;
   foreach (vtkMRMLSubjectHierarchyNode* selectedSeriesNode, selectedSeriesNodes)
   {
@@ -392,37 +394,38 @@ void qSlicerDICOMExportDialog::onExport()
     d->DICOMTagEditorWidget->commitChangesToNodes();
   }
 
-  // Export to output folder
+  // Assemble list of exportables to pass to the DICOM plugin.
+  // Pass whole list of exportables to plugins instead of one by one, in case it is
+  // a composite export where the series are referenced from each other, or if the
+  // file naming is static (to avoid overwrite)
+  QList<QVariant> exportableList;
   foreach (qSlicerDICOMExportable* exportable, d->DICOMTagEditorWidget->exportables())
   {
-    // Export each series in a different directory
-    QDir seriesOutputFolder = outputFolder;
-    seriesOutputFolder.mkdir(exportable->nodeID());
-    seriesOutputFolder.cd(exportable->nodeID());
-    exportable->setDirectory(seriesOutputFolder.absolutePath());
+    exportableList.append(QVariant::fromValue<QObject*>(exportable));
+  }
 
-    // Call export function of python DICOM plugin
-    PythonQt::init();
-    PythonQtObjectPtr context = PythonQt::self()->getMainModule();
-    context.addVariable("exportable", QVariant::fromValue<QObject*>(exportable));
-    context.evalScript( QString(
-      "plugin = slicer.modules.dicomPlugins['%1']()\n"
-      "errorMessage = plugin.export(exportable)\n" )
-      .arg(exportable->pluginClass()) );
+  // Call export function of python DICOM plugin to save DICOM files to output folder
+  // (The user ultimately selects a DICOM plugin, so all exportables belong to the same one)
+  PythonQt::init();
+  PythonQtObjectPtr exportContext = PythonQt::self()->getMainModule();
+  exportContext.addVariable("exportables", exportableList);
+  exportContext.evalScript( QString(
+    "plugin = slicer.modules.dicomPlugins['%1']()\n"
+    "errorMessage = plugin.export(exportables)\n" )
+    .arg(d->DICOMTagEditorWidget->exportables()[0]->pluginClass()) );
 
-    // Extract error message from python
-    QString errorMessage = context.getVariable("errorMessage").toString();
-    if (errorMessage.isNull())
-    {
-      // Invalid return value from DICOM exporter
-      d->ErrorLabel->setText("Exporter returned with invalid value");
-    }
-    else if (!errorMessage.isEmpty())
-    {
-      // Exporter encountered error
-      d->ErrorLabel->setText(errorMessage);
-      return;
-    }
+  // Extract error message from python
+  QString errorMessage = exportContext.getVariable("errorMessage").toString();
+  if (errorMessage.isNull())
+  {
+    // Invalid return value from DICOM exporter
+    d->ErrorLabel->setText("Exporter returned with invalid value");
+  }
+  else if (!errorMessage.isEmpty())
+  {
+    // Exporter encountered error
+    d->ErrorLabel->setText(errorMessage);
+    return;
   }
 
   // Add exported files to DICOM database
@@ -452,8 +455,8 @@ void qSlicerDICOMExportDialog::onExport()
   // Show DICOM browser to indicate success
   // Update DICOM database (no direct function for it, so re-set the folder)
   PythonQt::init();
-  PythonQtObjectPtr context = PythonQt::self()->getMainModule();
-  context.evalScript( QString(
+  PythonQtObjectPtr openBrowserContext = PythonQt::self()->getMainModule();
+  openBrowserContext.evalScript( QString(
     "dicomWidget = slicer.modules.dicom.widgetRepresentation().self()\n"
     "dicomWidget.dicomBrowser.databaseDirectory = '%1'\n"
     "dicomWidget.detailsPopup.open()\n" )

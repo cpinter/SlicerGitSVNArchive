@@ -100,12 +100,18 @@ class DICOMPlugin(object):
     key = self.hashFiles(files)
     self.loadableCache[key] = loadables
 
-  def examine(self,fileList):
+  def examineForImport(self,fileList):
     """Look at the list of lists of filenames and return
     a list of DICOMLoadables that are options for loading
     Virtual: should be overridden by the subclass
     """
     return []
+
+  def examine(self,fileList):
+    """Backwards compatibility function for examineForImport
+    (renamed on introducing examineForExport to avoid confusion)
+    """
+    return self.examineForImport(fileList)
 
   def load(self,loadable):
     """Accept a DICOMLoadable and perform the operation to convert

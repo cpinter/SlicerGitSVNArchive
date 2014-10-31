@@ -345,7 +345,7 @@ class DICOMDetailsPopup(object):
     self.headerPopup.setFileLists(self.fileLists)
 
   def onExportAction(self):
-    from qSlicerDICOMLibModuleWidgetsPythonQt import qSlicerDICOMExportDialog
+    from slicer import qSlicerDICOMExportDialog
     self.exportDialog = qSlicerDICOMExportDialog()
     self.exportDialog.setMRMLScene(slicer.mrmlScene)
     self.close()
@@ -478,7 +478,10 @@ class DICOMDetailsPopup(object):
       self.progress.setValue(step)
       slicer.app.processEvents()
       try:
-        self.loadablesByPlugin[plugin] = plugin.examine(self.fileLists)
+        if hasattr(plugin, 'examineForImport'):
+          self.loadablesByPlugin[plugin] = plugin.examineForImport(self.fileLists)
+        else: # Ensuring backwards compatibility (examineForImport used to be called examine)
+          self.loadablesByPlugin[plugin] = plugin.examine(self.fileLists)
         loadEnabled = loadEnabled or self.loadablesByPlugin[plugin] != []
       except Exception,e:
         import traceback
