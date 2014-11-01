@@ -22,6 +22,7 @@
 
 // DICOMLib includes
 #include "qSlicerDICOMExportable.h"
+#include "vtkSlicerDICOMExportable.h"
 
 // CTK includes
 #include <ctkPimpl.h>
@@ -136,4 +137,46 @@ void qSlicerDICOMExportable::setTag(QString tagName, QString tagValue)
 {
   Q_D(qSlicerDICOMExportable);
   d->Tags[tagName] = tagValue;
+}
+
+//-----------------------------------------------------------------------------
+vtkSlicerDICOMExportable* qSlicerDICOMExportable::convertToVtkExportable()
+{
+  Q_D(qSlicerDICOMExportable);
+
+  vtkSlicerDICOMExportable* vtkExportable = vtkSlicerDICOMExportable::New();
+  vtkExportable->SetName(d->Name.toLatin1().constData());
+  vtkExportable->SetTooltip(d->Tooltip.toLatin1().constData());
+  vtkExportable->SetNodeID(d->NodeID.toLatin1().constData());
+  vtkExportable->SetPluginClass(d->PluginClass.toLatin1().constData());
+  vtkExportable->SetDirectory(d->Directory.toLatin1().constData());
+  vtkExportable->SetConfidence(d->Confidence);
+
+  QMapIterator<QString,QString> tagsIt(d->Tags);
+  while (tagsIt.hasNext())
+  {
+    tagsIt.next();
+    vtkExportable->SetTag(tagsIt.key().toLatin1().constData(), tagsIt.value().toLatin1().constData());
+  }
+
+  return vtkExportable;
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportable::copyFromVtkExportable(vtkSlicerDICOMExportable* vtkExportable)
+{
+  Q_D(qSlicerDICOMExportable);
+
+  d->Name = QString(vtkExportable->GetName());
+  d->Tooltip = QString(vtkExportable->GetTooltip());
+  d->NodeID = QString(vtkExportable->GetNodeID());
+  d->PluginClass = QString(vtkExportable->GetPluginClass());
+  d->Directory = QString(vtkExportable->GetDirectory());
+  d->Confidence = vtkExportable->GetConfidence();
+
+  std::map<std::string, std::string> vtkTags = vtkExportable->GetTags();
+  for ( std::map<std::string, std::string>::iterator it=vtkTags.begin(); it != vtkTags.end(); ++it )
+  {
+    this->setTag(it->first.c_str(), it->second.c_str());
+  }
 }

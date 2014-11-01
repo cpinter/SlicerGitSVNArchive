@@ -22,6 +22,7 @@
 
 // DICOMLib includes
 #include "qSlicerDICOMLoadable.h"
+#include "vtkSlicerDICOMLoadable.h"
 
 // CTK includes
 #include <ctkPimpl.h>
@@ -111,3 +112,41 @@ CTK_GET_CPP(qSlicerDICOMLoadable, bool, selected, Selected)
 //-----------------------------------------------------------------------------
 CTK_SET_CPP(qSlicerDICOMLoadable, const double, setConfidence, Confidence)
 CTK_GET_CPP(qSlicerDICOMLoadable, double, confidence, Confidence)
+
+//-----------------------------------------------------------------------------
+vtkSlicerDICOMLoadable* qSlicerDICOMLoadable::convertToVtkLoadable()
+{
+  Q_D(qSlicerDICOMLoadable);
+
+  vtkSlicerDICOMLoadable* vtkLoadable = vtkSlicerDICOMLoadable::New();
+  vtkLoadable->SetName(d->Name.toLatin1().constData());
+  vtkLoadable->SetTooltip(d->Tooltip.toLatin1().constData());
+  vtkLoadable->SetWarning(d->Warning.toLatin1().constData());
+  vtkLoadable->SetSelected(d->Selected);
+  vtkLoadable->SetConfidence(d->Confidence);
+
+  foreach(QString file, d->Files)
+  {
+    vtkLoadable->AddFile(file.toLatin1().constData());
+  }
+
+  return vtkLoadable;
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMLoadable::copyFromVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadable)
+{
+  Q_D(qSlicerDICOMLoadable);
+
+  d->Name = QString(vtkLoadable->GetName());
+  d->Tooltip = QString(vtkLoadable->GetTooltip());
+  d->Warning = QString(vtkLoadable->GetWarning());
+  d->Selected = vtkLoadable->GetSelected();
+  d->Confidence = vtkLoadable->GetConfidence();
+
+  vtkStringArray* filesArray = vtkLoadable->GetFiles();
+  for (int fileIndex = 0; fileIndex < filesArray->GetNumberOfValues(); ++fileIndex)
+  {
+    d->Files.append(QString(filesArray->GetValue(fileIndex)));
+  }
+}

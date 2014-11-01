@@ -33,6 +33,7 @@
 
 class qSlicerDICOMExportablePrivate;
 class vtkMRMLSubjectHierarchyNode;
+class vtkSlicerDICOMExportable;
 
 /// Container class for things that can be loaded from DICOM files into Slicer.
 /// Each plugin returns a list of instances from its evaluate method and accepts
@@ -95,6 +96,12 @@ public:
   Q_INVOKABLE QString tag(QString tagName);
   /// Set one tag to tags list
   Q_INVOKABLE void setTag(QString tagName, QString tagValue);
+
+  /// Get a VTK container for this exportable
+  Q_INVOKABLE vtkSlicerDICOMExportable* convertToVtkExportable();
+
+  /// Copy values from VTK exportable
+  Q_INVOKABLE void copyFromVtkExportable(vtkSlicerDICOMExportable* vtkExportable);
 
 protected:
   QScopedPointer<qSlicerDICOMExportablePrivate> d_ptr;

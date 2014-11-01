@@ -31,8 +31,9 @@
 #include "qSlicerDICOMLibModuleWidgetsExport.h"
 
 class qSlicerDICOMLoadablePrivate;
+class vtkSlicerDICOMLoadable;
 
-/// Container class for things that can be loaded from DICOM files into Slicer.
+/// Container class for objects that can be loaded from DICOM files into Slicer.
 /// Each plugin returns a list of instances from its evaluate method and accepts
 /// a list of these in its load method corresponding to the things the user has
 /// selected for loading
@@ -82,6 +83,12 @@ public:
 
   virtual double confidence()const;
   void setConfidence(const double newConfidence);
+
+  /// Get a VTK container for this loadable
+  Q_INVOKABLE vtkSlicerDICOMLoadable* convertToVtkLoadable();
+
+  /// Copy values from VTK loadable
+  Q_INVOKABLE void copyFromVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadable);
 
 protected:
   QScopedPointer<qSlicerDICOMLoadablePrivate> d_ptr;

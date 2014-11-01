@@ -2,7 +2,6 @@ import os
 from __main__ import vtk, qt, ctk, slicer
 from DICOMLib import DICOMPlugin
 from DICOMLib import DICOMLoadable
-from slicer import qSlicerDICOMExportable
 
 #
 # This is the plugin to handle translation of scalar volumes
