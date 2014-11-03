@@ -312,9 +312,6 @@ class DICOMWidget:
 
     # TODO: populate context menu
     self.contextMenu = qt.QMenu(self.tables)
-    self.exportAction = qt.QAction("Export to Study", self.contextMenu)
-    self.contextMenu.addAction(self.exportAction)
-    self.exportAction.enabled = False
     self.deleteAction = qt.QAction("Delete", self.contextMenu)
     self.contextMenu.addAction(self.deleteAction)
     self.deleteAction.enabled = False
@@ -438,10 +435,6 @@ class DICOMWidget:
       #self.sendButton.enabled = True
     #else:
       #self.sendButton.enabled = False
-    #if typeRole:
-      #self.exportAction.enabled = self.dicomModelTypes[typeRole] == "Study"
-    #else:
-      #self.exportAction.enabled = False
     self.detailsPopup.open()
     #uid = self.selection.data(self.dicomModelUIDRole)
     #role = self.dicomModelTypes[self.selection.data(self.dicomModelTypeRole)]
@@ -468,17 +461,6 @@ class DICOMWidget:
           removeWorked = slicer.dicomDatabase.removeSeries(uid)
         if not removeWorked:
           self.messageBox(self,"Could not remove %s" % role,title='DICOM')
-    elif action == self.exportAction:
-      self.onExportClicked()
-
-  def onExportClicked(self):
-    """Associate a slicer volume as a series in the selected dicom study"""
-    uid = self.selection.data(self.dicomModelUIDRole)
-    exportDialog = DICOMLib.DICOMExportDialog(uid,onExportFinished=self.onExportFinished)
-    exportDialog.open()
-
-  def onExportFinished(self):
-    pass
 
   def onSendClicked(self):
     """Perform a dicom store of slicer data to a peer"""

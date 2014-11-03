@@ -29,6 +29,8 @@ class DICOMLoadable(object):
   evaluate method and accepts a list of these
   in its load method corresponding to the things
   the user has selected for loading
+  NOTE: This class is deprecated, use qSlicerDICOMLoadable
+  instead.
   """
 
   def __init__(self):

@@ -119,7 +119,7 @@ void qSlicerDICOMTagEditorWidgetPrivate::setupUi(QWidget *qSlicerDICOMTagEditorW
   this->PatientTable->verticalHeader()->setVisible(false);
   this->PatientTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
   this->PatientTable->horizontalHeader()->setStretchLastSection(true);
-  this->PatientTable->setColumnWidth(0, 200);
+  this->PatientTable->setColumnWidth(0, 250);
   this->PatientTable->setSelectionMode(QAbstractItemView::NoSelection);
   this->PatientTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
   this->PatientTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -134,7 +134,7 @@ void qSlicerDICOMTagEditorWidgetPrivate::setupUi(QWidget *qSlicerDICOMTagEditorW
   this->StudyTable->verticalHeader()->setVisible(false);
   this->StudyTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
   this->StudyTable->horizontalHeader()->setStretchLastSection(true);
-  this->StudyTable->setColumnWidth(0, 200);
+  this->StudyTable->setColumnWidth(0, 250);
   this->StudyTable->setSelectionMode(QAbstractItemView::NoSelection);
   this->StudyTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
   this->StudyTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -329,7 +329,7 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     seriesTable->verticalHeader()->setVisible(false);
     seriesTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
     seriesTable->horizontalHeader()->setStretchLastSection(true);
-    seriesTable->setColumnWidth(0, 200);
+    seriesTable->setColumnWidth(0, 250);
     seriesTable->setSelectionMode(QAbstractItemView::NoSelection);
     seriesTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
     seriesTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);

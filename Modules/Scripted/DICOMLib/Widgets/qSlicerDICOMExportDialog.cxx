@@ -279,6 +279,7 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
   QMap<double,QList<qSlicerDICOMExportable*>> exportablesByConfidence;
   foreach(QList<qSlicerDICOMExportable*> exportablesForPlugin, exportablesByPlugin)
   {
+    // Geometric mean to emphasize larger values
     double meanConfidenceForPlugin = 0.0;
     foreach (qSlicerDICOMExportable* exportable, exportablesForPlugin)
     {
@@ -292,24 +293,26 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
   }
 
   // Populate the exportables list widget
-  QMapIterator<double,QList<qSlicerDICOMExportable*>> exportableIterator(exportablesByConfidence);
-  while (exportableIterator.hasNext())
+  foreach (double inverseConfidence, exportablesByConfidence.keys())
   {
-    exportableIterator.next();
-    QList<qSlicerDICOMExportable*> exportables = exportableIterator.value();
-    // Set exportable name as the first one in the list, giving also the
-    // confidence number and plugin name in parentheses
-    QString itemText = QString("%1 (%2%, %3 series) (%4)").arg(exportables[0]->name())
-      .arg(exportableIterator.key()*100.0, 0, 'f', 0).arg(exportables.count()).arg(exportables[0]->pluginClass());
-    QListWidgetItem* exportableItem = new QListWidgetItem(itemText, d->ExportablesListWidget);
-    exportableItem->setToolTip(exportables[0]->tooltip());
-    // Construct data variant object
-    QList<QVariant> itemData;
-    foreach (qSlicerDICOMExportable* exportable, exportables)
+    // Get exportable lists for the confidence number (there might be equality!)
+    QList<QList<qSlicerDICOMExportable*> > exportableLists = exportablesByConfidence.values(inverseConfidence);
+    foreach(QList<qSlicerDICOMExportable*> exportables, exportableLists)
     {
-      itemData.append(QVariant::fromValue<QObject*>(exportable));
+      // Set exportable name as the first one in the list, giving also the
+      // confidence number and plugin name in parentheses
+      QString itemText = QString("%1 (%2%, %3 series) (%4)").arg(exportables[0]->name())
+        .arg((1.0-inverseConfidence)*100.0, 0, 'f', 0).arg(exportables.count()).arg(exportables[0]->pluginClass());
+      QListWidgetItem* exportableItem = new QListWidgetItem(itemText, d->ExportablesListWidget);
+      exportableItem->setToolTip(exportables[0]->tooltip());
+      // Construct data variant object
+      QList<QVariant> itemData;
+      foreach (qSlicerDICOMExportable* exportable, exportables)
+      {
+        itemData.append(QVariant::fromValue<QObject*>(exportable));
+      }
+      exportableItem->setData(Qt::UserRole, itemData);
     }
-    exportableItem->setData(Qt::UserRole, itemData);
   }
 
   // Select exportable with highest confidence (top one)
@@ -402,11 +405,14 @@ void qSlicerDICOMExportDialog::onExport()
   QList<QVariant> exportableList;
   foreach (qSlicerDICOMExportable* exportable, d->DICOMTagEditorWidget->exportables())
   {
+    // Set output directory
+    exportable->setDirectory(outputFolder.absolutePath());
     exportableList.append(QVariant::fromValue<QObject*>(exportable));
   }
 
   // Call export function of python DICOM plugin to save DICOM files to output folder
   // (The user ultimately selects a DICOM plugin, so all exportables belong to the same one)
+  QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
   PythonQt::init();
   PythonQtObjectPtr exportContext = PythonQt::self()->getMainModule();
   exportContext.addVariable("exportables", exportableList);
@@ -414,6 +420,7 @@ void qSlicerDICOMExportDialog::onExport()
     "plugin = slicer.modules.dicomPlugins['%1']()\n"
     "errorMessage = plugin.export(exportables)\n" )
     .arg(d->DICOMTagEditorWidget->exportables()[0]->pluginClass()) );
+  QApplication::restoreOverrideCursor();
 
   // Extract error message from python
   QString errorMessage = exportContext.getVariable("errorMessage").toString();

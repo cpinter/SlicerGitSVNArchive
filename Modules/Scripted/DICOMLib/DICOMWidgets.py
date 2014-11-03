@@ -498,8 +498,8 @@ class DICOMDetailsPopup(object):
     self.progress = None
 
   def loadCheckedLoadables(self):
-    """Invoke the load method on each plugin for the DICOMLoadable
-    instances that are selected"""
+    """Invoke the load method on each plugin for the loadable
+    (DICOMLoadable or qSlicerDICOMLoadable) instances that are selected"""
     if self.advancedViewButton.checkState() == 0:
       self.examineForLoading()
 
