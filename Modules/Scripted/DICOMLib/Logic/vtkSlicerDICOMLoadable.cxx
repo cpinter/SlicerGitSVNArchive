@@ -58,12 +58,12 @@ void vtkSlicerDICOMLoadable::PrintSelf(ostream& os, vtkIndent indent)
   os << indent << "Warning:   " << (this->Warning?this->Warning:"NULL") << "\n";
   os << indent << "Files:   " << (this->Files?"":"NULL") << "\n";
   if (this->Files)
-  {
-    for (int fileIndex=0; fileIndex<this->Files->GetNumberOfValues(); ++fileIndex)
     {
+    for (int fileIndex=0; fileIndex<this->Files->GetNumberOfValues(); ++fileIndex)
+      {
       os << indent << "  " << this->Files->GetValue(fileIndex) << "\n";
+      }
     }
-  }
   os << indent << "Selected:   " << (this->Selected?"true":"false") << "\n";
   os << indent << "Confidence:   " << this->Confidence << "\n";
 }
@@ -72,9 +72,9 @@ void vtkSlicerDICOMLoadable::PrintSelf(ostream& os, vtkIndent indent)
 void vtkSlicerDICOMLoadable::AddFile(const char* file)
 {
   if (!this->Files)
-  {
+    {
     this->Files = vtkStringArray::New();
-  }
+    }
 
   this->Files->InsertNextValue(file);
 }

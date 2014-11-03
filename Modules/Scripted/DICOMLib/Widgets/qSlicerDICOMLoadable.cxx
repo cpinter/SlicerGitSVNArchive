@@ -126,9 +126,9 @@ vtkSlicerDICOMLoadable* qSlicerDICOMLoadable::convertToVtkLoadable()
   vtkLoadable->SetConfidence(d->Confidence);
 
   foreach(QString file, d->Files)
-  {
+    {
     vtkLoadable->AddFile(file.toLatin1().constData());
-  }
+    }
 
   return vtkLoadable;
 }
@@ -146,7 +146,7 @@ void qSlicerDICOMLoadable::copyFromVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadab
 
   vtkStringArray* filesArray = vtkLoadable->GetFiles();
   for (int fileIndex = 0; fileIndex < filesArray->GetNumberOfValues(); ++fileIndex)
-  {
+    {
     d->Files.append(QString(filesArray->GetValue(fileIndex)));
-  }
+    }
 }

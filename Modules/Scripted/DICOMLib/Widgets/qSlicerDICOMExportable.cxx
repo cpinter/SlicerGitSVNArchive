@@ -154,10 +154,10 @@ vtkSlicerDICOMExportable* qSlicerDICOMExportable::convertToVtkExportable()
 
   QMapIterator<QString,QString> tagsIt(d->Tags);
   while (tagsIt.hasNext())
-  {
+    {
     tagsIt.next();
     vtkExportable->SetTag(tagsIt.key().toLatin1().constData(), tagsIt.value().toLatin1().constData());
-  }
+    }
 
   return vtkExportable;
 }
@@ -176,7 +176,7 @@ void qSlicerDICOMExportable::copyFromVtkExportable(vtkSlicerDICOMExportable* vtk
 
   std::map<std::string, std::string> vtkTags = vtkExportable->GetTags();
   for ( std::map<std::string, std::string>::iterator it=vtkTags.begin(); it != vtkTags.end(); ++it )
-  {
+    {
     this->setTag(it->first.c_str(), it->second.c_str());
-  }
+    }
 }

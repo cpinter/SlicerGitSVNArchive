@@ -142,17 +142,17 @@ bool qSlicerDICOMExportDialog::exec(vtkMRMLSubjectHierarchyNode* nodeToSelect/*=
 
   // Make selection if requested
   if (nodeToSelect)
-  {
+    {
     QApplication::processEvents();
     this->selectNode(nodeToSelect);
-  }
+    }
 
   // Show dialog
   bool result = false;
   if (d->exec() != QDialog::Accepted)
-  {
+    {
     return result;
-  }
+    }
 
   // Perform actions after clean exit
   result = true;
@@ -197,42 +197,42 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
   vtkMRMLSubjectHierarchyNode* currentNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
     d->SubjectHierarchyTreeView->currentNode() );
   if (!currentNode)
-  {
+    {
     qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Unable to get current subject hierarchy node!";
     return;
-  }
+    }
 
   // Get child series nodes if selected node is study
   QList<vtkMRMLSubjectHierarchyNode*> selectedSeriesNodes;
   if (currentNode->IsLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelStudy()))
-  {
+    {
     std::vector<vtkMRMLHierarchyNode*> childrenNodes = currentNode->GetChildrenNodes();
     for ( std::vector<vtkMRMLHierarchyNode*>::iterator childIt = childrenNodes.begin();
       childIt != childrenNodes.end(); ++childIt)
-    {
+      {
       vtkMRMLSubjectHierarchyNode* subjectHierarchySeriesNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(*childIt);
       if (subjectHierarchySeriesNode)
-      {
+        {
         selectedSeriesNodes.append(subjectHierarchySeriesNode);
+        }
       }
     }
-  }
   else if (currentNode->IsLevel(vtkMRMLSubjectHierarchyConstants::GetDICOMLevelSeries()))
-  {
+    {
     selectedSeriesNodes.append(currentNode);
-  }
+    }
   else
-  {
+    {
     qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Can only export series or study!";
     return;
-  }
+    }
 
   // Get exportables from DICOM plugins for selection
   // One plugin should return one exportable for one series, but nevertheless
   // a list is returned for convenient concatenation (without type check etc.)
   QList<QVariant> exportablesVariantList;
   foreach (vtkMRMLSubjectHierarchyNode* selectedSeriesNode, selectedSeriesNodes)
-  {
+    {
     PythonQt::init();
     PythonQtObjectPtr context = PythonQt::self()->getMainModule();
     context.evalScript( QString(
@@ -245,7 +245,7 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
 
     // Extract resulting exportables from python
     exportablesVariantList.append(context.getVariable("exportables").toList());
-  }
+    }
 
   // Clear exportables list
   d->ExportablesListWidget->clear();
@@ -253,52 +253,52 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
   // Group exportables by provider plugin
   QMap<QString,QList<qSlicerDICOMExportable*>> exportablesByPlugin;
   foreach(QVariant exportableVariant, exportablesVariantList)
-  {
+    {
     // Get exportable object (to compose item text)
     qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
       exportableVariant.value<QObject*>() );
     if (!exportable)
-    {
+      {
       qCritical() << "qSlicerDICOMExportDialog::examineSelectedNode: Invalid exportable returned by DICOM plugin for " << currentNode->GetNameWithoutPostfix().c_str();
       continue;
-    }
+      }
 
     QString plugin = exportable->pluginClass();
     if (!exportablesByPlugin.contains(plugin))
-    {
+      {
       QList<qSlicerDICOMExportable*> firstExportableForPlugin;
       firstExportableForPlugin.append(exportable);
       exportablesByPlugin[plugin] = firstExportableForPlugin;
-    }
+      }
     else
-    {
+      {
       exportablesByPlugin[plugin].append(exportable);
+      }
     }
-  }
   // Map the grouped exportables by confidence values so that the highest confidence is on top
   QMap<double,QList<qSlicerDICOMExportable*>> exportablesByConfidence;
   foreach(QList<qSlicerDICOMExportable*> exportablesForPlugin, exportablesByPlugin)
-  {
+    {
     // Geometric mean to emphasize larger values
     double meanConfidenceForPlugin = 0.0;
     foreach (qSlicerDICOMExportable* exportable, exportablesForPlugin)
-    {
+      {
       meanConfidenceForPlugin += exportable->confidence();
-    }
+      }
     meanConfidenceForPlugin /= exportablesForPlugin.count();
 
     // Add exportable to map with confidence as key. Confidence value is subtracted
     // from 1 so that iterating through the map automatically orders the exportables.
     exportablesByConfidence[1.0 - meanConfidenceForPlugin] = exportablesForPlugin;
-  }
+    }
 
   // Populate the exportables list widget
   foreach (double inverseConfidence, exportablesByConfidence.keys())
-  {
+    {
     // Get exportable lists for the confidence number (there might be equality!)
     QList<QList<qSlicerDICOMExportable*> > exportableLists = exportablesByConfidence.values(inverseConfidence);
     foreach(QList<qSlicerDICOMExportable*> exportables, exportableLists)
-    {
+      {
       // Set exportable name as the first one in the list, giving also the
       // confidence number and plugin name in parentheses
       QString itemText = QString("%1 (%2%, %3 series) (%4)").arg(exportables[0]->name())
@@ -308,12 +308,12 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
       // Construct data variant object
       QList<QVariant> itemData;
       foreach (qSlicerDICOMExportable* exportable, exportables)
-      {
+        {
         itemData.append(QVariant::fromValue<QObject*>(exportable));
-      }
+        }
       exportableItem->setData(Qt::UserRole, itemData);
+      }
     }
-  }
 
   // Select exportable with highest confidence (top one)
   d->ExportablesListWidget->setCurrentRow(0);
@@ -330,34 +330,34 @@ void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
   // Get exportable item from row number
   QListWidgetItem* exportableItem = d->ExportablesListWidget->item(row);
   if (!exportableItem)
-  {
+    {
     return;
-  }
+    }
 
   // Get exportable object from list item
   QList<qSlicerDICOMExportable*> exportableList;
   QList<QVariant> itemData = exportableItem->data(Qt::UserRole).toList();
   foreach (QVariant exportableVariant, itemData)
-  {
+    {
     qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
       exportableVariant.value<QObject*>() );
     if (!exportable)
-    {
+      {
       QString errorMessage("Unable to extract exportable");
       qCritical() << "qSlicerDICOMExportDialog::onExportableSelectedAtRow: " << errorMessage;
       d->ErrorLabel->setText(errorMessage);
       return;
-    }
+      }
     exportableList.append(exportable);
-  }
+    }
 
   // Populate DICOM tag editor from exportable
   d->DICOMTagEditorWidget->setMRMLScene(d->Scene);
   QString error = d->DICOMTagEditorWidget->setExportables(exportableList);
   if (!error.isEmpty())
-  {
+    {
     d->ErrorLabel->setText(error);
-  }
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -383,20 +383,20 @@ void qSlicerDICOMExportDialog::onExport()
 
   // Set output folder to a temporary location if the output directory is a DICOM database
   if (isDicomDatabaseFolder)
-  {
+    {
     // Save to temporary folder and store files in database directory when adding
     outputFolder.setPath(qSlicerApplication::application()->temporaryPath());
     QString tempSubDirName = QString("DICOMExportTemp_%1").arg(QDateTime::currentDateTime().toString("yyyyMMdd_hhmmss"));
     outputFolder.mkdir(tempSubDirName);
     outputFolder.cd(tempSubDirName);
-  }
+    }
 
   // Commit changes to exported series node and their study and patient
   // parents after successful export if user requested it
   if (d->SaveTagsCheckBox->isChecked())
-  {
+    {
     d->DICOMTagEditorWidget->commitChangesToNodes();
-  }
+    }
 
   // Assemble list of exportables to pass to the DICOM plugin.
   // Pass whole list of exportables to plugins instead of one by one, in case it is
@@ -404,11 +404,11 @@ void qSlicerDICOMExportDialog::onExport()
   // file naming is static (to avoid overwrite)
   QList<QVariant> exportableList;
   foreach (qSlicerDICOMExportable* exportable, d->DICOMTagEditorWidget->exportables())
-  {
+    {
     // Set output directory
     exportable->setDirectory(outputFolder.absolutePath());
     exportableList.append(QVariant::fromValue<QObject*>(exportable));
-  }
+    }
 
   // Call export function of python DICOM plugin to save DICOM files to output folder
   // (The user ultimately selects a DICOM plugin, so all exportables belong to the same one)
@@ -425,40 +425,40 @@ void qSlicerDICOMExportDialog::onExport()
   // Extract error message from python
   QString errorMessage = exportContext.getVariable("errorMessage").toString();
   if (errorMessage.isNull())
-  {
+    {
     // Invalid return value from DICOM exporter
     d->ErrorLabel->setText("Exporter returned with invalid value");
-  }
+    }
   else if (!errorMessage.isEmpty())
-  {
+    {
     // Exporter encountered error
     d->ErrorLabel->setText(errorMessage);
     return;
-  }
+    }
 
   // Add exported files to DICOM database
   ctkDICOMIndexer* indexer = new ctkDICOMIndexer();
   ctkDICOMDatabase* dicomDatabase = qSlicerApplication::application()->dicomDatabase();
   QString destinationFolderPath("");
   if (isDicomDatabaseFolder)
-  {
+    {
     // If we export to the DICOM database folder, then we need a non-empty destination path
     destinationFolderPath = qSlicerApplication::application()->dicomDatabase()->databaseDirectory();
-  }
+    }
   indexer->addDirectory(*dicomDatabase, outputFolder.absolutePath(), destinationFolderPath);
   delete indexer;
 
   // Remove temporary DICOM folder if exported to the DICOM database folder
   if (isDicomDatabaseFolder)
-  {
-    foreach(QString file, outputFolder.entryList())
     {
+    foreach(QString file, outputFolder.entryList())
+      {
       outputFolder.remove(file);
-    }
+      }
     QString tempSubDirName = outputFolder.dirName();
     outputFolder.cdUp();
     outputFolder.rmdir(tempSubDirName);
-  }
+    }
 
   // Show DICOM browser to indicate success
   // Update DICOM database (no direct function for it, so re-set the folder)
