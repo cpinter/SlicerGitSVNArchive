@@ -48,7 +48,6 @@ public:
   vtkSetStringMacro(Warning);
 
   vtkGetObjectMacro(Files, vtkStringArray);
-  vtkSetObjectMacro(Files, vtkStringArray);
 
   vtkGetMacro(Selected, bool);
   vtkSetMacro(Selected, bool);
@@ -59,6 +58,9 @@ public:
 
   /// Add file to file list \sa Files
   void AddFile(const char* file);
+
+protected:
+  vtkSetObjectMacro(Files, vtkStringArray);
 
 protected:
   vtkSlicerDICOMLoadable();

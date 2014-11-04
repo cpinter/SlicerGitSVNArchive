@@ -24,6 +24,7 @@
 #include "vtkSlicerDICOMLoadable.h"
 
 // VTK includes
+#include <vtkSmartPointer.h>
 #include <vtkObjectFactory.h>
 
 //------------------------------------------------------------------------------
@@ -39,7 +40,10 @@ vtkSlicerDICOMLoadable::vtkSlicerDICOMLoadable()
   this->Warning = NULL;
   this->Selected = false;
   this->Confidence = 0.5;
+
   this->Files = NULL;
+  vtkSmartPointer<vtkStringArray> files = vtkSmartPointer<vtkStringArray>::New();
+  this->SetFiles(files);
 }
 
 //----------------------------------------------------------------------------
@@ -71,10 +75,5 @@ void vtkSlicerDICOMLoadable::PrintSelf(ostream& os, vtkIndent indent)
 //----------------------------------------------------------------------------
 void vtkSlicerDICOMLoadable::AddFile(const char* file)
 {
-  if (!this->Files)
-    {
-    this->Files = vtkStringArray::New();
-    }
-
   this->Files->InsertNextValue(file);
 }

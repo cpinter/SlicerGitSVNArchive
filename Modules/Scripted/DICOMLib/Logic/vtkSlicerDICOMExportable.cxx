@@ -68,9 +68,9 @@ void vtkSlicerDICOMExportable::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //----------------------------------------------------------------------------
-std::string vtkSlicerDICOMExportable::GetTag(std::string tagName)
+const char* vtkSlicerDICOMExportable::GetTag(std::string tagName)
 {
-  return this->Tags[tagName];
+  return this->Tags[tagName].c_str();
 }
 
 //----------------------------------------------------------------------------

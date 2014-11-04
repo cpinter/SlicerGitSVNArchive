@@ -97,8 +97,8 @@ public:
   /// Set one tag to tags list
   Q_INVOKABLE void setTag(QString tagName, QString tagValue);
 
-  /// Get a VTK container for this exportable
-  Q_INVOKABLE vtkSlicerDICOMExportable* convertToVtkExportable();
+  /// Copy values to VTK exportable
+  Q_INVOKABLE void copyToVtkExportable(vtkSlicerDICOMExportable* vtkExportable);
 
   /// Copy values from VTK exportable
   Q_INVOKABLE void copyFromVtkExportable(vtkSlicerDICOMExportable* vtkExportable);

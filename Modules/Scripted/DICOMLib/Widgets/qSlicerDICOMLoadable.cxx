@@ -114,11 +114,15 @@ CTK_SET_CPP(qSlicerDICOMLoadable, const double, setConfidence, Confidence)
 CTK_GET_CPP(qSlicerDICOMLoadable, double, confidence, Confidence)
 
 //-----------------------------------------------------------------------------
-vtkSlicerDICOMLoadable* qSlicerDICOMLoadable::convertToVtkLoadable()
+void qSlicerDICOMLoadable::copyToVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadable)
 {
   Q_D(qSlicerDICOMLoadable);
 
-  vtkSlicerDICOMLoadable* vtkLoadable = vtkSlicerDICOMLoadable::New();
+  if (!vtkLoadable)
+    {
+    return;
+    }
+
   vtkLoadable->SetName(d->Name.toLatin1().constData());
   vtkLoadable->SetTooltip(d->Tooltip.toLatin1().constData());
   vtkLoadable->SetWarning(d->Warning.toLatin1().constData());
@@ -129,14 +133,17 @@ vtkSlicerDICOMLoadable* qSlicerDICOMLoadable::convertToVtkLoadable()
     {
     vtkLoadable->AddFile(file.toLatin1().constData());
     }
-
-  return vtkLoadable;
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerDICOMLoadable::copyFromVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadable)
 {
   Q_D(qSlicerDICOMLoadable);
+
+  if (!vtkLoadable)
+    {
+    return;
+    }
 
   d->Name = QString(vtkLoadable->GetName());
   d->Tooltip = QString(vtkLoadable->GetTooltip());
@@ -145,8 +152,11 @@ void qSlicerDICOMLoadable::copyFromVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadab
   d->Confidence = vtkLoadable->GetConfidence();
 
   vtkStringArray* filesArray = vtkLoadable->GetFiles();
-  for (int fileIndex = 0; fileIndex < filesArray->GetNumberOfValues(); ++fileIndex)
+  if (filesArray)
     {
-    d->Files.append(QString(filesArray->GetValue(fileIndex)));
+    for (int fileIndex = 0; fileIndex < filesArray->GetNumberOfValues(); ++fileIndex)
+      {
+      d->Files.append(QString(filesArray->GetValue(fileIndex)));
+      }
     }
 }

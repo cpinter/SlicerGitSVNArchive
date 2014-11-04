@@ -140,11 +140,15 @@ void qSlicerDICOMExportable::setTag(QString tagName, QString tagValue)
 }
 
 //-----------------------------------------------------------------------------
-vtkSlicerDICOMExportable* qSlicerDICOMExportable::convertToVtkExportable()
+void qSlicerDICOMExportable::copyToVtkExportable(vtkSlicerDICOMExportable* vtkExportable)
 {
   Q_D(qSlicerDICOMExportable);
 
-  vtkSlicerDICOMExportable* vtkExportable = vtkSlicerDICOMExportable::New();
+  if (!vtkExportable)
+    {
+    return;
+    }
+
   vtkExportable->SetName(d->Name.toLatin1().constData());
   vtkExportable->SetTooltip(d->Tooltip.toLatin1().constData());
   vtkExportable->SetNodeID(d->NodeID.toLatin1().constData());
@@ -158,14 +162,17 @@ vtkSlicerDICOMExportable* qSlicerDICOMExportable::convertToVtkExportable()
     tagsIt.next();
     vtkExportable->SetTag(tagsIt.key().toLatin1().constData(), tagsIt.value().toLatin1().constData());
     }
-
-  return vtkExportable;
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerDICOMExportable::copyFromVtkExportable(vtkSlicerDICOMExportable* vtkExportable)
 {
   Q_D(qSlicerDICOMExportable);
+
+  if (!vtkExportable)
+    {
+    return;
+    }
 
   d->Name = QString(vtkExportable->GetName());
   d->Tooltip = QString(vtkExportable->GetTooltip());

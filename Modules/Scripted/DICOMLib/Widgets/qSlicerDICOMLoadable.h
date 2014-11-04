@@ -84,8 +84,8 @@ public:
   virtual double confidence()const;
   void setConfidence(const double newConfidence);
 
-  /// Get a VTK container for this loadable
-  Q_INVOKABLE vtkSlicerDICOMLoadable* convertToVtkLoadable();
+  /// Copy values to VTK loadable
+  Q_INVOKABLE void copyToVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadable);
 
   /// Copy values from VTK loadable
   Q_INVOKABLE void copyFromVtkLoadable(vtkSlicerDICOMLoadable* vtkLoadable);

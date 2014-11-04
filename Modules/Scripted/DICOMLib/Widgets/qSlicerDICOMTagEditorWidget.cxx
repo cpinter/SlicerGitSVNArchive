@@ -239,6 +239,8 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
       patientNode->SetAttribute(tagAttributeName.c_str(), "");
       }
     }
+  // Get attribute names again in case some were missing
+  patientNodeAttributeNames = patientNode->GetAttributeNames();
   // Create a row in table widget for each tag and populate exportables with patient tags
   // (all tags are acquired from the exportable on export)
   for (std::vector<std::string>::iterator it = patientNodeAttributeNames.begin();
@@ -284,6 +286,8 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
       studyNode->SetAttribute(tagAttributeName.c_str(), "");
       }
     }
+  // Get attribute names again in case some were missing
+  studyNodeAttributeNames = studyNode->GetAttributeNames();
   // Create a row in table widget for each tag and populate exportables with study tags
   // (all tags are acquired from the exportable on export)
   for (std::vector<std::string>::iterator it = studyNodeAttributeNames.begin();

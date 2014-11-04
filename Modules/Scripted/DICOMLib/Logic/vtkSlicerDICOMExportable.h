@@ -62,7 +62,7 @@ public:
 
   std::map<std::string, std::string> GetTags() { return this->Tags; };
   void SetTags(std::map<std::string, std::string> tags) { this->Tags = tags; };
-  std::string GetTag(std::string tagName);
+  const char* GetTag(std::string tagName);
   void SetTag(std::string tagName, std::string tagValue);
 
 protected:
