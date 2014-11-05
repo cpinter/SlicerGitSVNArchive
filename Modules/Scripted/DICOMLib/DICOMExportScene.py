@@ -30,7 +30,7 @@ class DICOMExportScene(object):
   TODO: delete temp directories and files
   """
 
-  def __init__(self,referenceFile):
+  def __init__(self,referenceFile=None):
     self.referenceFile = referenceFile
     self.sdbFile = None
 
@@ -43,6 +43,21 @@ class DICOMExportScene(object):
     if success:
       self.addFilesToDatabase()
     return success
+
+  def getFirstFileInDatabase(self):
+    for patient in slicer.dicomDatabase.patients():
+      studies = slicer.dicomDatabase.studiesForPatient(patient)
+      if len(studies) == 0:
+        continue
+      for study in studies:
+        series = slicer.dicomDatabase.seriesForStudy(study)
+        if len(series) == 0:
+          continue
+        for serie in series:
+          files = slicer.dicomDatabase.filesForSeries(serie)
+          if len(files):
+            self.referenceFile = files[0]
+          return
 
   def createDICOMFileForScene(self):
     """
@@ -65,6 +80,13 @@ class DICOMExportScene(object):
     self.zipFile = os.path.join(self.dicomDirectory, "scene.zip")
     self.dumpFile = os.path.join(self.dicomDirectory, "dicom.dump")
     self.sdbFile = os.path.join(self.dicomDirectory, "SlicerDataBundle.dcm")
+    # Clean up paths on Windows (some commands and operations are not performed properly with mixed slash and backslash)
+    self.dicomDirectory = self.dicomDirectory.replace('\\','/')
+    self.sceneDirectory = self.sceneDirectory.replace('\\','/') # otherwise invalid zip file is created on Windows (with the same size strangely)
+    self.imageFile = self.imageFile.replace('\\','/')
+    self.zipFile = self.zipFile.replace('\\','/')
+    self.dumpFile = self.dumpFile.replace('\\','/')
+    self.sdbFile = self.sdbFile.replace('\\','/')
 
     # get the screen image
     self.progress('Saving Image...')
@@ -81,6 +103,8 @@ class DICOMExportScene(object):
 
     # make the zip file
     self.progress('Making zip...')
+    print('TEST1 ' + self.sceneDirectory) #TODO
+    print('TEST2 ' + self.sceneDirectory) #TODO
     appLogic.Zip(self.zipFile, self.sceneDirectory)
     zipSize = os.path.getsize(self.zipFile)
 
@@ -89,8 +113,12 @@ class DICOMExportScene(object):
     # cmd = "dcmdump --print-all --write-pixel %s %s" % (self.dicomDirectory, self.referenceFile)
     self.progress('Making dicom reference file...')
     if not self.referenceFile:
-      print('ERROR: No reference file')
-      return
+      # set reference file the first file found in the DICOM database
+      self.getFirstFileInDatabase()
+      # if there is still no reference file, then there are no files in the database, cannot continue
+      if not self.referenceFile:
+        print('ERROR: No reference file! DICOM database is empty.')
+        return
     args = ['--print-all', '--write-pixel', self.dicomDirectory, self.referenceFile]
     dump = DICOMLib.DICOMCommand('dcmdump', args).start()
 
@@ -128,8 +156,8 @@ class DICOMExportScene(object):
     self.progress('Done')
     return True
 
-
   def addFilesToDatabase(self):
+    self.progress('Adding to DICOM Database...')
     indexer = ctk.ctkDICOMIndexer()
     destinationDir = os.path.dirname(slicer.dicomDatabase.databaseFilename)
     if self.sdbFile:

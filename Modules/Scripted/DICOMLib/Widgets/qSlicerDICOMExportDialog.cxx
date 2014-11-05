@@ -364,7 +364,27 @@ void qSlicerDICOMExportDialog::onExportableSelectedAtRow(int row)
 void qSlicerDICOMExportDialog::onExportSeriesRadioButtonToggled(bool seriesOn)
 {
   Q_D(qSlicerDICOMExportDialog);
-  //TODO:
+
+  // Export series
+  if (seriesOn)
+  {
+    d->groupBox_1SelectNode->setEnabled(true);
+    d->groupBox_2SelectExportType->setEnabled(true);
+    d->groupBox_3EditDICOMTags->setEnabled(true);
+    d->SaveTagsCheckBox->setEnabled(true);
+    d->DirectoryButton_OutputFolder->setEnabled(true);
+    d->ErrorLabel->setText(QString());
+  }
+  // Export entire scene
+  else
+  {
+    d->groupBox_1SelectNode->setEnabled(false);
+    d->groupBox_2SelectExportType->setEnabled(false);
+    d->groupBox_3EditDICOMTags->setEnabled(false);
+    d->SaveTagsCheckBox->setEnabled(false);
+    d->DirectoryButton_OutputFolder->setEnabled(false);
+    d->ErrorLabel->setText(QString());
+  }
 }
 
 //-----------------------------------------------------------------------------
@@ -374,6 +394,36 @@ void qSlicerDICOMExportDialog::onExport()
 
   // Clear error label
   d->ErrorLabel->setText(QString());
+
+  // Call export function based on radio button choice
+  if (d->ExportSeriesRadioButton->isChecked())
+  {
+    this->ExportSeries();
+  }
+  else
+  {
+    this->ExportEntireScene();
+  }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::showUpdatedDICOMBrowser()
+{
+  // Show DICOM browser and update DICOM database
+  // (no direct function for it, so re-set the folder)
+  PythonQt::init();
+  PythonQtObjectPtr openBrowserContext = PythonQt::self()->getMainModule();
+  openBrowserContext.evalScript( QString(
+    "dicomWidget = slicer.modules.dicom.widgetRepresentation().self()\n"
+    "dicomWidget.dicomBrowser.databaseDirectory = '%1'\n"
+    "dicomWidget.detailsPopup.open()\n" )
+    .arg(qSlicerApplication::application()->dicomDatabase()->databaseDirectory()) );
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::ExportSeries()
+{
+  Q_D(qSlicerDICOMExportDialog);
 
   // Get output directory
   QDir outputFolder(d->DirectoryButton_OutputFolder->directory());
@@ -460,15 +510,30 @@ void qSlicerDICOMExportDialog::onExport()
     outputFolder.rmdir(tempSubDirName);
     }
 
-  // Show DICOM browser to indicate success
-  // Update DICOM database (no direct function for it, so re-set the folder)
+  // Show and update DICOM browser to indicate success
+  this->showUpdatedDICOMBrowser();
+
+  // Close the export dialog after successful export
+  d->done(0);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerDICOMExportDialog::ExportEntireScene()
+{
+  Q_D(qSlicerDICOMExportDialog);
+
+  QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
+
   PythonQt::init();
-  PythonQtObjectPtr openBrowserContext = PythonQt::self()->getMainModule();
-  openBrowserContext.evalScript( QString(
-    "dicomWidget = slicer.modules.dicom.widgetRepresentation().self()\n"
-    "dicomWidget.dicomBrowser.databaseDirectory = '%1'\n"
-    "dicomWidget.detailsPopup.open()\n" )
-    .arg(qSlicerApplication::application()->dicomDatabase()->databaseDirectory()) );
+  PythonQtObjectPtr exportContext = PythonQt::self()->getMainModule();
+  exportContext.evalScript( QString(
+    "exporter = DICOMLib.DICOMExportScene()\n"
+    "exporter.export()\n") );
+
+  QApplication::restoreOverrideCursor();
+
+  // Show and update DICOM browser to indicate success
+  this->showUpdatedDICOMBrowser();
 
   // Close the export dialog after successful export
   d->done(0);

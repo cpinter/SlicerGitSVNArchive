@@ -60,6 +60,9 @@ public:
   /// Set specific node selected in subject hierarchy tree
   Q_INVOKABLE void selectNode(vtkMRMLSubjectHierarchyNode* node);
 
+  /// Show DICOM browser and update database to show new items
+  Q_INVOKABLE void showUpdatedDICOMBrowser();
+
 protected slots:
   /// Handles change of export series or entire scene radio button selection
   void onExportSeriesRadioButtonToggled(bool);
@@ -73,8 +76,15 @@ protected slots:
   /// Populates DICOM tags based on selection
   void onExportableSelectedAtRow(int);
 
-  /// Export selected node based on the selected exportable
+  /// Calls export series or entire scene based on radio button selection
   void onExport();
+
+protected:
+  /// Export selected node based on the selected exportable
+  void ExportSeries();
+
+  /// Export entire scene as a secondary capture containing an MRB
+  void ExportEntireScene();
 
 protected:
   QScopedPointer<qSlicerDICOMExportDialogPrivate> d_ptr;

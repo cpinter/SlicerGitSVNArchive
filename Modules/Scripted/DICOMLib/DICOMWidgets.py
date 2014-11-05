@@ -345,7 +345,7 @@ class DICOMDetailsPopup(object):
     self.headerPopup.setFileLists(self.fileLists)
 
   def onExportAction(self):
-    self.exportDialog = qSlicerDICOMExportDialog()
+    self.exportDialog = slicer.qSlicerDICOMExportDialog()
     self.exportDialog.setMRMLScene(slicer.mrmlScene)
     self.close()
     self.exportDialog.execDialog()
