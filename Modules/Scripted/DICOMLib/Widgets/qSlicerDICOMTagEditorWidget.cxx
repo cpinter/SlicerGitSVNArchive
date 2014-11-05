@@ -268,8 +268,10 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
         }
       }
     }
-  // Set fixed height of patient section
-  d->PatientTable->setFixedHeight(d->PatientTable->rowCount() * 30 + 26);
+  // Set fixed height of patient section (row height * number of rows + header height + padding for the frames)
+  d->PatientTable->setFixedHeight(
+    d->PatientTable->rowHeight(0) * d->PatientTable->rowCount()
+    + d->PatientTable->horizontalHeader()->height() + 5);
 
 
   // Populate study section (we already have the study node, no need to get it here)
@@ -315,8 +317,10 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
         }
       }
     }
-  // Set fixed height of study section
-  d->StudyTable->setFixedHeight(d->StudyTable->rowCount() * 30 + 26);
+  // Set fixed height of study section (row height * number of rows + header height + padding for the frames)
+  d->StudyTable->setFixedHeight(
+    d->StudyTable->rowHeight(0) * d->StudyTable->rowCount()
+    + d->StudyTable->horizontalHeader()->height() + 5);
 
 
   // Create sections for each exportable
@@ -380,8 +384,10 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
         }
       }
 
-    // Set fixed height of current series section
-    seriesTable->setFixedHeight(seriesTable->rowCount() * 30 + 26);
+    // Set fixed height of current series section (row height * number of rows + header height + padding for the frames)
+    seriesTable->setFixedHeight(
+      seriesTable->rowHeight(0) * seriesTable->rowCount()
+      + seriesTable->horizontalHeader()->height() + 5);
     }
 
   // Return empty error message indicating success
