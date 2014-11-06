@@ -202,6 +202,10 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
     return;
     }
 
+  // Clear exportables list
+  d->ExportablesListWidget->clear();
+  d->DICOMTagEditorWidget->clear();
+
   // Get child series nodes if selected node is study
   QList<vtkMRMLSubjectHierarchyNode*> selectedSeriesNodes;
   if (currentNode->IsLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelStudy()))
@@ -246,9 +250,6 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
     // Extract resulting exportables from python
     exportablesVariantList.append(context.getVariable("exportables").toList());
     }
-
-  // Clear exportables list
-  d->ExportablesListWidget->clear();
 
   // Group exportables by provider plugin
   QMap<QString,QList<qSlicerDICOMExportable*>> exportablesByPlugin;

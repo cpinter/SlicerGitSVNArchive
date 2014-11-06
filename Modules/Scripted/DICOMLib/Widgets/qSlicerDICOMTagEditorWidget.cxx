@@ -54,15 +54,36 @@ public:
   virtual void init();
   void setupUi(QWidget *qSlicerDICOMTagEditorWidget);
 
+  /// Clear tags table and add divider rows for patient and study
+  void initializeTagsTable();
+
+  /// Find header row index of the topmost series (to be able to insert study tags)
+  unsigned int topSeriesHeaderRow();
+
+  /// Find exportable for tags table row index
+  /// \return NULL if patient or study row, or if header row. The corresponding exportable otherwise.
+  qSlicerDICOMExportable* exportableForRowIndex(unsigned int row);
+
+  /// Insert empty row in tags table and make sure the header row indices are updated accordingly
+  void insertTagsTableRow(unsigned int row);
+
 public:
   QList<qSlicerDICOMExportable*> Exportables;
   vtkMRMLScene* Scene;
 
-  QWidget* ScrollWidget;
-  QVBoxLayout* TablesLayout;
-  QTableWidget* PatientTable;
-  QTableWidget* StudyTable;
-  QList<QTableWidget*> SeriesTables;
+  /// Table containing all the tags (patient, study, series)
+  QTableWidget* TagsTable;
+
+  /// Row index of the study tags header (to be able to insert patient tags). Patient header is always at row 0
+  unsigned int StudyTagsHeaderRow;
+  /// Row indices of the series tags headers (to be able to insert study and series tags),
+  /// associated with the corresponding exportable object
+  QMap<unsigned int, qSlicerDICOMExportable*> SeriesTagsHeaderRows;
+
+  /// Color of the header items
+  QColor HeaderItemColor;
+  /// Font of the header items
+  QFont HeaderItemFont;
 };
 
 //------------------------------------------------------------------------------
@@ -70,10 +91,12 @@ qSlicerDICOMTagEditorWidgetPrivate::qSlicerDICOMTagEditorWidgetPrivate(qSlicerDI
   : q_ptr(&object)
 {
   this->Scene = NULL;
-  this->ScrollWidget = NULL;
-  this->TablesLayout = NULL;
-  this->PatientTable = NULL;
-  this->StudyTable = NULL;
+  this->TagsTable = NULL;
+  this->StudyTagsHeaderRow = 0;
+
+  this->HeaderItemColor = QColor::fromRgb(240, 240, 240);
+  this->HeaderItemFont = QFont();
+  this->HeaderItemFont.setBold(true);
 }
 
 //------------------------------------------------------------------------------
@@ -81,12 +104,11 @@ void qSlicerDICOMTagEditorWidgetPrivate::init()
 {
   Q_Q(qSlicerDICOMTagEditorWidget);
 
-  // Clear tag editor tables and exportables
+  // Clear tag editor table and exportables
   q->clear();
 
   // Make connections for setting edited values for common tags
-  QObject::connect( this->PatientTable, SIGNAL(cellChanged(int,int)), q, SLOT(patientTableCellChanged(int,int)) );
-  QObject::connect( this->StudyTable, SIGNAL(cellChanged(int,int)), q, SLOT(studyTableCellChanged(int,int)) );
+  QObject::connect( this->TagsTable, SIGNAL(cellChanged(int,int)), q, SLOT(tagsTableCellChanged(int,int)) );
 }
 
 //------------------------------------------------------------------------------
@@ -97,53 +119,134 @@ void qSlicerDICOMTagEditorWidgetPrivate::setupUi(QWidget *qSlicerDICOMTagEditorW
     qSlicerDICOMTagEditorWidget->setObjectName(QString::fromUtf8("qSlicerDICOMTagEditorWidget"));
     }
 
-  // Create scroll area
-  QScrollArea* scrollArea = new QScrollArea(qSlicerDICOMTagEditorWidget);
-  scrollArea->setWidgetResizable(true);
-  scrollArea->setFrameShape(QFrame::NoFrame);
+  // Create layout
   QVBoxLayout* mainLayout = new QVBoxLayout(qSlicerDICOMTagEditorWidget);
   mainLayout->setSpacing(0);
   mainLayout->setContentsMargins(0, 0, 0, 0);
-  mainLayout->addWidget(scrollArea);
-  this->ScrollWidget = new QWidget(qSlicerDICOMTagEditorWidget);
 
-  // Create layout for the tables
-  this->TablesLayout = new QVBoxLayout(this->ScrollWidget);
-  this->TablesLayout->setSpacing(0);
-  this->TablesLayout->setContentsMargins(0, 0, 0, 0);
+  // Create tags table
+  this->TagsTable = new QTableWidget(qSlicerDICOMTagEditorWidget);
+  this->TagsTable->setColumnCount(2);
+  this->TagsTable->horizontalHeader()->setVisible(false);
+  this->TagsTable->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+  this->TagsTable->verticalHeader()->setVisible(false);
+  this->TagsTable->horizontalHeader()->setStretchLastSection(true);
+  this->TagsTable->setSelectionMode(QAbstractItemView::NoSelection);
+  this->TagsTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+  mainLayout->addWidget(this->TagsTable);
+}
 
-  // Create patient and study tables as they will be needed in any case
-  this->PatientTable = new QTableWidget(this->ScrollWidget);
-  this->PatientTable->setColumnCount(2);
-  this->PatientTable->horizontalHeader()->setVisible(true);
-  this->PatientTable->verticalHeader()->setVisible(false);
-  this->PatientTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
-  this->PatientTable->horizontalHeader()->setStretchLastSection(true);
-  this->PatientTable->setColumnWidth(0, 250);
-  this->PatientTable->setSelectionMode(QAbstractItemView::NoSelection);
-  this->PatientTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
-  this->PatientTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  QStringList patientHeaderLabels;
-  patientHeaderLabels << "Patient tag" << "Value";
-  this->PatientTable->setHorizontalHeaderLabels(patientHeaderLabels);
-  this->TablesLayout->addWidget(this->PatientTable);
+//------------------------------------------------------------------------------
+void qSlicerDICOMTagEditorWidgetPrivate::initializeTagsTable()
+{
+  // Reset study header
+  this->StudyTagsHeaderRow = 1;
+  // Clear series headers
+  this->SeriesTagsHeaderRows.clear();
 
-  this->StudyTable = new QTableWidget(this->ScrollWidget);
-  this->StudyTable->setColumnCount(2);
-  this->StudyTable->horizontalHeader()->setVisible(true);
-  this->StudyTable->verticalHeader()->setVisible(false);
-  this->StudyTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
-  this->StudyTable->horizontalHeader()->setStretchLastSection(true);
-  this->StudyTable->setColumnWidth(0, 250);
-  this->StudyTable->setSelectionMode(QAbstractItemView::NoSelection);
-  this->StudyTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
-  this->StudyTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  QStringList studyHeaderLabels;
-  studyHeaderLabels << "Study tag" << "Value";
-  this->StudyTable->setHorizontalHeaderLabels(studyHeaderLabels);
-  this->TablesLayout->addWidget(this->StudyTable);
+  // Empty tags table
+  this->TagsTable->setRowCount(2);
 
-  scrollArea->setWidget(this->ScrollWidget);
+  // Populate patient and study headers
+  QTableWidgetItem* patientHeaderNameItem = new QTableWidgetItem("Patient tag name", 1);
+  patientHeaderNameItem->setBackgroundColor(this->HeaderItemColor);
+  patientHeaderNameItem->setFont(this->HeaderItemFont);
+  patientHeaderNameItem->setFlags(Qt::ItemIsEnabled); // Non-editable
+  this->TagsTable->setItem(0,0,patientHeaderNameItem);
+
+  QTableWidgetItem* patientHeaderValueItem = new QTableWidgetItem("Value", 1);
+  patientHeaderValueItem->setBackgroundColor(this->HeaderItemColor);
+  patientHeaderValueItem->setFont(this->HeaderItemFont);
+  patientHeaderValueItem->setFlags(Qt::ItemIsEnabled); // Non-editable
+  this->TagsTable->setItem(0,1,patientHeaderValueItem);
+
+  QTableWidgetItem* studyHeaderNameItem = new QTableWidgetItem("Study tag name", 1);
+  studyHeaderNameItem->setBackgroundColor(this->HeaderItemColor);
+  studyHeaderNameItem->setFont(this->HeaderItemFont);
+  studyHeaderNameItem->setFlags(Qt::ItemIsEnabled); // Non-editable
+  this->TagsTable->setItem(1,0,studyHeaderNameItem);
+
+  QTableWidgetItem* studyHeaderValueItem = new QTableWidgetItem("Value", 1);
+  studyHeaderValueItem->setBackgroundColor(this->HeaderItemColor);
+  studyHeaderValueItem->setFont(this->HeaderItemFont);
+  studyHeaderValueItem->setFlags(Qt::ItemIsEnabled); // Non-editable
+  this->TagsTable->setItem(1,1,studyHeaderValueItem);
+}
+
+//------------------------------------------------------------------------------
+unsigned int qSlicerDICOMTagEditorWidgetPrivate::topSeriesHeaderRow()
+{
+  // Return number of rows if there are no series tables
+  if (this->SeriesTagsHeaderRows.isEmpty())
+    {
+    return this->TagsTable->rowCount();
+    }
+
+  // Get minimum of the series tags header row indices
+  return this->SeriesTagsHeaderRows.keys()[0];
+}
+
+//------------------------------------------------------------------------------
+qSlicerDICOMExportable* qSlicerDICOMTagEditorWidgetPrivate::exportableForRowIndex(unsigned int row)
+{
+  // If patient or study tag, then it corresponds to no exportable
+  if (row < this->topSeriesHeaderRow())
+    {
+    return NULL;
+    }
+
+  unsigned int foundSeriesHeaderRowIndex = 0; // 0 is invalid value as it is the patient header
+  QList<unsigned int> headerRowIndices = this->SeriesTagsHeaderRows.keys();
+  // Iterate through the series header indices from the bottom up
+  for (int headerRowIndexIndex = headerRowIndices.size()-1; headerRowIndexIndex >= 0 ; --headerRowIndexIndex)
+    {
+    // If edited row is greater than the current header index, but smaller than the
+    // previous ones, and it is not a header, then we found the series section
+    unsigned int currentHeaderRowIndex = headerRowIndices[headerRowIndexIndex];
+    if (row > currentHeaderRowIndex && !headerRowIndices.contains(row))
+      {
+      foundSeriesHeaderRowIndex = currentHeaderRowIndex;
+      break;
+      }
+    }
+  if (foundSeriesHeaderRowIndex == 0)
+    {
+    qCritical() << "qSlicerDICOMTagEditorWidgetPrivate::exportableForRowIndex: Failed to find series section for row index " << row;
+    return NULL;
+    }
+
+  return this->SeriesTagsHeaderRows[foundSeriesHeaderRowIndex];
+}
+
+//------------------------------------------------------------------------------
+void qSlicerDICOMTagEditorWidgetPrivate::insertTagsTableRow(unsigned int row)
+{
+  // Insert row in tags table
+  this->TagsTable->insertRow(row);
+
+  // Increase study tags header row index if row is inserted above it
+  if (row <= this->StudyTagsHeaderRow)
+    {
+    this->StudyTagsHeaderRow++;
+    }
+
+  // Update those series header row indices above which the row is inserted
+  QMap<unsigned int, qSlicerDICOMExportable*> updatedSeriesTagsHeaderRows;
+  foreach(unsigned int seriesHeaderRow, this->SeriesTagsHeaderRows.keys())
+    {
+    // If inserted above the series header then increase it
+    if (row <= seriesHeaderRow)
+      {
+      updatedSeriesTagsHeaderRows[seriesHeaderRow+1] = this->SeriesTagsHeaderRows[seriesHeaderRow];
+      }
+    // If below then keep the same
+    else
+      {
+      updatedSeriesTagsHeaderRows[seriesHeaderRow] = this->SeriesTagsHeaderRows[seriesHeaderRow];
+      }
+    }
+  // Replace series headers with updated one
+  this->SeriesTagsHeaderRows = updatedSeriesTagsHeaderRows;
 }
 
 //------------------------------------------------------------------------------
@@ -170,6 +273,23 @@ void qSlicerDICOMTagEditorWidget::setMRMLScene(vtkMRMLScene* scene)
 }
 
 //------------------------------------------------------------------------------
+void qSlicerDICOMTagEditorWidget::clear()
+{
+  Q_D(qSlicerDICOMTagEditorWidget);
+
+  // Reset study header
+  d->StudyTagsHeaderRow = 0;
+  // Clear series headers
+  d->SeriesTagsHeaderRows.clear();
+
+  // Empty tags table
+  d->TagsTable->setRowCount(0);
+
+  // Empty exportables list
+  d->Exportables.clear();
+}
+
+//------------------------------------------------------------------------------
 QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable*> exportables)
 {
   Q_D(qSlicerDICOMTagEditorWidget);
@@ -180,9 +300,6 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: " << error;
     return error;
     }
-
-  // Clear tables and inner state
-  this->clear();
 
   // Set exportable in class
   d->Exportables = exportables;
@@ -227,6 +344,14 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     qCritical() << "qSlicerDICOMTagEditorWidget::setExportables: " << error;
     return error;
     }
+
+  // Disconnect signal handling edited cells for the time of populating the table
+  // At this line, because there must not be return statements between disconnect and connect (unless connect is called before return!)
+  QObject::disconnect( d->TagsTable, SIGNAL(cellChanged(int,int)), this, SLOT(tagsTableCellChanged(int,int)) );
+
+  // Initialize header row containers and add patient and study headers
+  d->initializeTagsTable();
+
   // Add missing patient tags with empty values to patient node so that they are displayed in the table
   std::vector<std::string> patientNodeAttributeNames = patientNode->GetAttributeNames();
   std::vector<std::string> patientTagNames = vtkMRMLSubjectHierarchyConstants::GetDICOMPatientTagNames();
@@ -253,13 +378,13 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     // If DICOM tag attribute (i.e. has the prefix), then add to the table and exportable
     if (!attributePrefix.compare(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix()))
       {
-      // Add patient tag in a new row in the patient table
-      int rowCount = d->PatientTable->rowCount();
-      d->PatientTable->setRowCount(rowCount+1);
-      d->PatientTable->setItem(rowCount, 0, new QTableWidgetItem(tagName));
-      d->PatientTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));
+      // Add patient tag in a new row in the tags table
+      unsigned int row = d->StudyTagsHeaderRow;
+      d->insertTagsTableRow(row);
+      d->TagsTable->setItem(row, 0, new QTableWidgetItem(tagName));
+      d->TagsTable->setItem(row, 1, new QTableWidgetItem(tagValue));
       // Make sure tag name is not edited
-      d->PatientTable->item(rowCount, 0)->setFlags(Qt::ItemIsEnabled);
+      d->TagsTable->item(row, 0)->setFlags(Qt::ItemIsEnabled);
 
       // Also add it to the exportables (needed there for export)
       foreach (qSlicerDICOMExportable* exportable, d->Exportables)
@@ -268,10 +393,6 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
         }
       }
     }
-  // Set fixed height of patient section (row height * number of rows + header height + padding for the frames)
-  d->PatientTable->setFixedHeight(
-    d->PatientTable->rowHeight(0) * d->PatientTable->rowCount()
-    + d->PatientTable->horizontalHeader()->height() + 5);
 
 
   // Populate study section (we already have the study node, no need to get it here)
@@ -303,12 +424,12 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
     if (!attributePrefix.compare(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix()))
       {
       // Add study tag in a new row in the study table
-      int rowCount = d->StudyTable->rowCount();
-      d->StudyTable->setRowCount(rowCount+1);
-      d->StudyTable->setItem(rowCount, 0, new QTableWidgetItem(tagName));
-      d->StudyTable->setItem(rowCount, 1, new QTableWidgetItem(tagValue));
+      unsigned int row = d->topSeriesHeaderRow();
+      d->insertTagsTableRow(row);
+      d->TagsTable->setItem(row, 0, new QTableWidgetItem(tagName));
+      d->TagsTable->setItem(row, 1, new QTableWidgetItem(tagValue));
       // Make sure tag name is not edited
-      d->StudyTable->item(rowCount, 0)->setFlags(Qt::ItemIsEnabled);
+      d->TagsTable->item(row, 0)->setFlags(Qt::ItemIsEnabled);
 
       // Also add it to the exportables (needed there for export)
       foreach (qSlicerDICOMExportable* exportable, d->Exportables)
@@ -317,41 +438,32 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
         }
       }
     }
-  // Set fixed height of study section (row height * number of rows + header height + padding for the frames)
-  d->StudyTable->setFixedHeight(
-    d->StudyTable->rowHeight(0) * d->StudyTable->rowCount()
-    + d->StudyTable->horizontalHeader()->height() + 5);
 
 
-  // Create sections for each exportable
+  // Create series sections for each exportable
   foreach (qSlicerDICOMExportable* exportable, d->Exportables)
     {
     // Get exportable series node
     vtkMRMLSubjectHierarchyNode* seriesNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
       d->Scene->GetNodeByID(exportable->nodeID().toLatin1().constData()) );
 
-    // Create series table for exportable
-    QTableWidget* seriesTable = new QTableWidget(d->ScrollWidget);
-    seriesTable->setColumnCount(2);
-    seriesTable->horizontalHeader()->setVisible(true);
-    seriesTable->verticalHeader()->setVisible(false);
-    seriesTable->horizontalHeader()->setResizeMode(0, QHeaderView::Fixed);
-    seriesTable->horizontalHeader()->setStretchLastSection(true);
-    seriesTable->setColumnWidth(0, 250);
-    seriesTable->setSelectionMode(QAbstractItemView::NoSelection);
-    seriesTable->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed); // One scrollbar for all the tables
-    seriesTable->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    d->TablesLayout->addWidget(seriesTable);
-    QStringList seriesHeaderLabels;
-    seriesHeaderLabels << QString("'%1' series tag").arg(seriesNode->GetNameWithoutPostfix().c_str()) << "Value";
-    seriesTable->setHorizontalHeaderLabels(seriesHeaderLabels);
-    // Associate exportable object to series table
-    seriesTable->setProperty("Exportable", QVariant::fromValue<QObject*>(exportable));
-    // Make connection to set edited tag for series
-    QObject::connect( seriesTable, SIGNAL(cellChanged(int,int)), this, SLOT(seriesTableCellChanged(int,int)) );
+    // Add header row for new series
+    unsigned int row = d->TagsTable->rowCount();
+    d->insertTagsTableRow(row);
+    QTableWidgetItem* seriesHeaderNameItem = new QTableWidgetItem(
+      QString("'%1' series tag name").arg(seriesNode->GetNameWithoutPostfix().c_str()), 1 );
+    seriesHeaderNameItem->setBackgroundColor(d->HeaderItemColor);
+    seriesHeaderNameItem->setFont(d->HeaderItemFont);
+    seriesHeaderNameItem->setFlags(Qt::ItemIsEnabled); // Non-editable
+    d->TagsTable->setItem(row,0,seriesHeaderNameItem);
+    QTableWidgetItem* seriesHeaderValueItem = new QTableWidgetItem("Value", 1);
+    seriesHeaderValueItem->setBackgroundColor(d->HeaderItemColor);
+    seriesHeaderValueItem->setFont(d->HeaderItemFont);
+    seriesHeaderValueItem->setFlags(Qt::ItemIsEnabled); // Non-editable
+    d->TagsTable->setItem(row,1,seriesHeaderValueItem);
 
-    // Save series table to internal list
-    d->SeriesTables.append(seriesTable);
+    // Save series header row index and exportable
+    d->SeriesTagsHeaderRows[row] = exportable;
 
     // Get series tags from exportable and populate table with them
     QMap<QString,QString> exportableTagsMap = exportable->tags();
@@ -365,30 +477,31 @@ QString qSlicerDICOMTagEditorWidget::setExportables(QList<qSlicerDICOMExportable
         }
 
       // Add new row in series table for series tag
-      int rowCount = seriesTable->rowCount();
-      seriesTable->setRowCount(rowCount+1);
-      seriesTable->setItem(rowCount, 0, new QTableWidgetItem(tagName));
+      row = d->TagsTable->rowCount();
+      d->insertTagsTableRow(row);
+      d->TagsTable->setItem(row, 0, new QTableWidgetItem(tagName));
       // Make sure tag name is not edited
-      seriesTable->item(rowCount, 0)->setFlags(Qt::ItemIsEnabled);
+      d->TagsTable->item(row, 0)->setFlags(Qt::ItemIsEnabled);
 
       // If series node contains tag then use that value
       const char* tagAttributeValue = seriesNode->GetAttribute(tagName.toLatin1().constData());
       if (tagAttributeValue)
         {
-        seriesTable->setItem(rowCount, 1, new QTableWidgetItem(QString(tagAttributeValue)));
+        d->TagsTable->setItem(row, 1, new QTableWidgetItem(QString(tagAttributeValue)));
         }
       // Use default value from exportable otherwise
       else
         {
-        seriesTable->setItem(rowCount, 1, new QTableWidgetItem(exportableTagsMap[tagName]));
+        d->TagsTable->setItem(row, 1, new QTableWidgetItem(exportableTagsMap[tagName]));
         }
       }
-
-    // Set fixed height of current series section (row height * number of rows + header height + padding for the frames)
-    seriesTable->setFixedHeight(
-      seriesTable->rowHeight(0) * seriesTable->rowCount()
-      + seriesTable->horizontalHeader()->height() + 5);
     }
+
+  // Fit tag name column to contents
+  //d->TagsTable->resizeColumnToContents(0); //TODO
+
+  // Re-connect signal handling editing values
+  QObject::connect( d->TagsTable, SIGNAL(cellChanged(int,int)), this, SLOT(tagsTableCellChanged(int,int)) );
 
   // Return empty error message indicating success
   return QString();
@@ -402,60 +515,35 @@ QList<qSlicerDICOMExportable*> qSlicerDICOMTagEditorWidget::exportables()const
 }
 
 //------------------------------------------------------------------------------
-void qSlicerDICOMTagEditorWidget::clear()
-{
-  Q_D(qSlicerDICOMTagEditorWidget);
-
-  // Empty patient and study tables
-  d->PatientTable->setRowCount(0);
-  d->StudyTable->setRowCount(0);
-
-  // Remove series tables
-  foreach (QTableWidget* table, d->SeriesTables)
-    {
-    d->TablesLayout->removeWidget(table);
-    }
-  d->SeriesTables.clear();
-
-  // Empty exportables list
-  d->Exportables.clear();
-}
-
-//------------------------------------------------------------------------------
 void qSlicerDICOMTagEditorWidget::commitChangesToNodes()
 {
   Q_D(qSlicerDICOMTagEditorWidget);
 
-  // Commit changes to exported series
+  std::string dicomAttributePrefix = vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix();
   vtkMRMLSubjectHierarchyNode* studyNode = NULL;
-  foreach (QTableWidget* seriesTable, d->SeriesTables)
+
+  // Commit changes to series
+  for (unsigned int row=d->topSeriesHeaderRow(); row<d->TagsTable->rowCount(); ++row)
     {
-    // Get exportable for series table
-    QVariant exportableVariant = seriesTable->property("Exportable");
-    qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
-      exportableVariant.value<QObject*>() );
-    if (!exportable)
+    qSlicerDICOMExportable* exportable = d->exportableForRowIndex(row);
+    if (!exportable) // Header row
       {
-      qCritical() << "qSlicerDICOMTagEditorWidget::commitChangesToNodes: Failed to get exportable for series tags table!";
       continue;
       }
 
     // Get subject hierarchy series node from exportable
     vtkMRMLSubjectHierarchyNode* seriesNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
       d->Scene->GetNodeByID(exportable->nodeID().toLatin1().constData()) );
+    // Save study node if not set yet
     if (!studyNode)
       {
       studyNode = vtkMRMLSubjectHierarchyNode::SafeDownCast( seriesNode->GetParentNode() );
       }
 
-    // Write tags from table to subject hierarchy series node
-    for (int row=0; row<seriesTable->rowCount(); ++row)
-      {
-      QString tagName = seriesTable->item(row, 0)->text();
-      QString tagAttributeName = QString(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix().c_str()) + tagName;
-      QString tagValue = seriesTable->item(row, 1)->text();
-      seriesNode->SetAttribute(tagAttributeName.toLatin1().constData(), tagValue.toLatin1().constData());
-      }
+    QString tagName = d->TagsTable->item(row, 0)->text();
+    QString tagAttributeName = QString(dicomAttributePrefix.c_str()) + tagName;
+    QString tagValue = d->TagsTable->item(row, 1)->text();
+    seriesNode->SetAttribute(tagAttributeName.toLatin1().constData(), tagValue.toLatin1().constData());
     }
 
   // Commit changes to study
@@ -464,12 +552,12 @@ void qSlicerDICOMTagEditorWidget::commitChangesToNodes()
     qCritical() << "qSlicerDICOMTagEditorWidget::commitChangesToNodes: Failed to get study node!";
     return;
     }
-  // Write tags from study table to study node
-  for (int row=0; row<d->StudyTable->rowCount(); ++row)
+  // Write tags from study section to study node
+  for (int row=d->StudyTagsHeaderRow+1; row<d->topSeriesHeaderRow(); ++row)
     {
-    QString tagName = d->StudyTable->item(row, 0)->text();
-    QString tagAttributeName = QString(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix().c_str()) + tagName;
-    QString tagValue = d->StudyTable->item(row, 1)->text();
+    QString tagName = d->TagsTable->item(row, 0)->text();
+    QString tagAttributeName = QString(dicomAttributePrefix.c_str()) + tagName;
+    QString tagValue = d->TagsTable->item(row, 1)->text();
     studyNode->SetAttribute(tagAttributeName.toLatin1().constData(), tagValue.toLatin1().constData());
     }
 
@@ -481,67 +569,45 @@ void qSlicerDICOMTagEditorWidget::commitChangesToNodes()
     return;
     }
   // Write tags from patient table to patient node
-  for (int row=0; row<d->PatientTable->rowCount(); ++row)
+  for (int row=1; row<d->StudyTagsHeaderRow; ++row)
     {
-    QString tagName = d->PatientTable->item(row, 0)->text();
-    QString tagAttributeName = QString(vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix().c_str()) + tagName;
-    QString tagValue = d->PatientTable->item(row, 1)->text();
+    QString tagName = d->TagsTable->item(row, 0)->text();
+    QString tagAttributeName = QString(dicomAttributePrefix.c_str()) + tagName;
+    QString tagValue = d->TagsTable->item(row, 1)->text();
     patientNode->SetAttribute(tagAttributeName.toLatin1().constData(), tagValue.toLatin1().constData());
     }
 }
 
 //------------------------------------------------------------------------------
-void qSlicerDICOMTagEditorWidget::patientTableCellChanged(int row, int column)
+void qSlicerDICOMTagEditorWidget::tagsTableCellChanged(int row, int column)
 {
   Q_D(qSlicerDICOMTagEditorWidget);
-  if (column == 1)
+  if (column != 1)
     {
-    // Set new tag value in each exportable (patient tags are common)
+    // Only the value column is editable
+    return;
+    }
+
+  // If patient or study tag (need to set value to each exportable)
+  if (row < d->topSeriesHeaderRow())
+    {
+    // Set new tag value in each exportable
     foreach (qSlicerDICOMExportable* exportable, d->Exportables)
       {
-      exportable->setTag(d->PatientTable->item(row,0)->text(), d->PatientTable->item(row,1)->text());
+      exportable->setTag(d->TagsTable->item(row,0)->text(), d->TagsTable->item(row,1)->text());
       }
     }
-}
-
-//------------------------------------------------------------------------------
-void qSlicerDICOMTagEditorWidget::studyTableCellChanged(int row, int column)
-{
-  Q_D(qSlicerDICOMTagEditorWidget);
-  if (column == 1)
+  // Series tag edited. Find exportable and set value in only that one
+  else
     {
-    // Set new tag value in each exportable (study tags are common)
-    foreach (qSlicerDICOMExportable* exportable, d->Exportables)
-      {
-      exportable->setTag(d->StudyTable->item(row,0)->text(), d->StudyTable->item(row,1)->text());
-      }
-    }
-}
-
-//------------------------------------------------------------------------------
-void qSlicerDICOMTagEditorWidget::seriesTableCellChanged(int row, int column)
-{
-  if (column == 1)
-    {
-    // Get edited series table
-    QTableWidget* seriesTable = dynamic_cast<QTableWidget*>(sender());
-    if (!seriesTable)
-      {
-      qCritical() << "qSlicerDICOMTagEditorWidgetPrivate::seriesTableCellChanged: Unable to get edited series table widget!";
-      return;
-      }
-
-    // Get exportable for series table
-    QVariant exportableVariant = seriesTable->property("Exportable");
-    qSlicerDICOMExportable* exportable = qobject_cast<qSlicerDICOMExportable*>(
-      exportableVariant.value<QObject*>() );
+    qSlicerDICOMExportable* exportable = d->exportableForRowIndex(row);
     if (!exportable)
       {
-      qCritical() << "qSlicerDICOMTagEditorWidgetPrivate::seriesTableCellChanged: Failed to get exportable for series tags table!";
+      qCritical() << "qSlicerDICOMTagEditorWidget::tagsTableCellChanged: Failed to get exportable for row index " << row;
       return;
       }
 
     // Set tag in exportable
-    exportable->setTag(seriesTable->item(row,0)->text(), seriesTable->item(row,1)->text());
+    exportable->setTag(d->TagsTable->item(row,0)->text(), d->TagsTable->item(row,1)->text());
     }
 }
