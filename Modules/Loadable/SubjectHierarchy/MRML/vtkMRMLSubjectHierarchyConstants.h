@@ -125,7 +125,7 @@ public:
 
   // Series tags
   static const std::string GetDICOMSeriesModalityAttributeName()
-    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "SeriesModality"; };
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "Modality"; };
   static const std::string GetDICOMSeriesNumberAttributeName()
     { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "SeriesNumber"; };
 };
