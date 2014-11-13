@@ -103,8 +103,6 @@ class DICOMExportScene(object):
 
     # make the zip file
     self.progress('Making zip...')
-    print('TEST1 ' + self.sceneDirectory) #TODO
-    print('TEST2 ' + self.sceneDirectory) #TODO
     appLogic.Zip(self.zipFile, self.sceneDirectory)
     zipSize = os.path.getsize(self.zipFile)
 
