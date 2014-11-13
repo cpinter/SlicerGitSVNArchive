@@ -252,7 +252,7 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
     }
 
   // Group exportables by provider plugin
-  QMap<QString,QList<qSlicerDICOMExportable*>> exportablesByPlugin;
+  QMap<QString,QList<qSlicerDICOMExportable*> > exportablesByPlugin;
   foreach(QVariant exportableVariant, exportablesVariantList)
     {
     // Get exportable object (to compose item text)
@@ -277,7 +277,7 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
       }
     }
   // Map the grouped exportables by confidence values so that the highest confidence is on top
-  QMap<double,QList<qSlicerDICOMExportable*>> exportablesByConfidence;
+  QMap<double,QList<qSlicerDICOMExportable*> > exportablesByConfidence;
   foreach(QList<qSlicerDICOMExportable*> exportablesForPlugin, exportablesByPlugin)
     {
     // Geometric mean to emphasize larger values
