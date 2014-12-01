@@ -365,3 +365,20 @@ void qSlicerSubjectHierarchyDICOMPlugin::convertCurrentNodeToStudy()
 
   currentNode->SetLevel(vtkMRMLSubjectHierarchyConstants::GetDICOMLevelStudy());
 }
+
+//---------------------------------------------------------------------------
+void qSlicerSubjectHierarchyDICOMPlugin::openDICOMExportDialog()
+{
+  vtkMRMLSubjectHierarchyNode* currentNode = qSlicerSubjectHierarchyPluginHandler::instance()->currentNode();
+  if (!currentNode)
+    {
+    qCritical() << "qSlicerSubjectHierarchyDICOMPlugin::openDICOMExportDialog: Invalid current node!";
+    return;
+    }
+
+  qSlicerDICOMExportDialog* exportDialog = new qSlicerDICOMExportDialog(NULL);
+  exportDialog->setMRMLScene(qSlicerSubjectHierarchyPluginHandler::instance()->scene());
+  exportDialog->exec(currentNode);
+
+  delete exportDialog;
+}
