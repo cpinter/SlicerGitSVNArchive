@@ -148,7 +148,6 @@ class DICOMPlugin(object):
     """
     tags = {}
     tags['seriesInstanceUID'] = "0020,000E"
-    tags['seriesDescription'] = "0008,103E"
     tags['seriesModality'] = "0008,0060"
     tags['seriesNumber'] = "0020,0011"
     tags['studyInstanceUID'] = "0020,000D"
@@ -178,40 +177,20 @@ class DICOMPlugin(object):
       sys.stderr.write('Unable to create SubjectHierarchy nodes: invalid data node provided!')
       return
 
-    # Get first file to access DICOM tags form it
+    # Get first file to access DICOM tags from it
     firstFile = loadable.files[0]
 
-    # Get series description. Use data node name if empty
-    seriesDescription = slicer.dicomDatabase.fileValue(firstFile,tags['seriesDescription'])
-    if seriesDescription == '':
-      seriesDescription = dataNode.GetName()
-    seriesDescription = seriesDescription + slicer.vtkMRMLSubjectHierarchyConstants.GetSubjectHierarchyNodeNamePostfix()
-
+    # Set up subject hierarchy node
     seriesInstanceUid = slicer.dicomDatabase.fileValue(firstFile,tags['seriesInstanceUID'])
-    seriesNode = vtkMRMLSubjectHierarchyNode.GetSubjectHierarchyNodeByUID(slicer.mrmlScene, slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMUIDName(), seriesInstanceUid)
-    seriesNodeCreated = False
-    if seriesNode == None:
-      # Note: subject hierarchy nodes are typically created using vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode
-      #   In this case it is created like this so that plugin auto-reassignment does not run several times
-      #   when adding UID and setting attributes later on (plugin i auto-searched every time the subject hierarchy node is modified).
-      seriesNode = vtkMRMLSubjectHierarchyNode()
-      seriesNodeCreated = True
-    elif seriesNode.GetAttribute(slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMSeriesModalityAttributeName()) != None:
-      import sys
-      sys.stderr.write('Volume with the same UID has been already loaded!')
-      return
+    seriesNode = vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode(slicer.mrmlScene, None, slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelSeries(), loadable.name.encode('latin1', 'ignore'), dataNode)
 
     # Specify details of series node
-    seriesNode.SetName(seriesDescription.encode('latin1', 'ignore'))
-    seriesNode.SetAssociatedNodeID(dataNode.GetID())
-    seriesNode.SetLevel(slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelSeries())
-    seriesNode.AddUID(slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMUIDName(),seriesInstanceUid)
-    seriesNode.SetAttribute(slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMSeriesModalityAttributeName(),slicer.dicomDatabase.fileValue(firstFile, tags['seriesModality']))
-    seriesNode.SetAttribute(slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMSeriesNumberAttributeName(),slicer.dicomDatabase.fileValue(firstFile, tags['seriesNumber']))
-
-    if seriesNodeCreated:
-      # Add to the scene after setting level, UID and attributes so that the plugins have all the information to claim it
-      slicer.mrmlScene.AddNode(seriesNode)
+    seriesNode.AddUID('DICOM',seriesInstanceUid)
+    seriesNode.SetAttribute('DICOMHierarchy.SeriesModality',slicer.dicomDatabase.fileValue(firstFile, tags['seriesModality']))
+    seriesNode.SetAttribute('DICOMHierarchy.StudyDate',slicer.dicomDatabase.fileValue(firstFile, tags['studyDate']))
+    seriesNode.SetAttribute('DICOMHierarchy.StudyTime',slicer.dicomDatabase.fileValue(firstFile, tags['studyTime']))
+    seriesNode.SetAttribute('DICOMHierarchy.PatientSex',slicer.dicomDatabase.fileValue(firstFile, tags['patientSex']))
+    seriesNode.SetAttribute('DICOMHierarchy.PatientBirthDate',slicer.dicomDatabase.fileValue(firstFile, tags['patientBirthDate']))
 
     # Add series node to hierarchy under the right study and patient nodes. If they are present then used, if not, then created
     patientId = slicer.dicomDatabase.fileValue(firstFile,tags['patientID'])

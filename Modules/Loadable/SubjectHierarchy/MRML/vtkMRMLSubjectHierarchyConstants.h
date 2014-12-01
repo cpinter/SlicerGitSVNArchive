@@ -42,18 +42,20 @@ public:
     { return "_SubjectHierarchy"; };
   static const std::string GetSubjectHierarchyAttributePrefix()
     { return "SubjectHierarchy."; };
-  static const std::string GetSubjectHierarchyExcludeFromPotentialNodesListAttributeName()
+  static const std::string GetSubjectHierarchyExcludeFromTreeAttributeName()
     { return vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyAttributePrefix() + "ExcludeFromPotentialNodesList"; };
   static const std::string GetSubjectHierarchyNewNodeNamePrefix()
     { return "New"; };
 
-  // Subject hierarchy default levels
-  static const char* GetSubjectHierarchyLevelSubject()
-    { return "Subject"; };
-  static const char* GetSubjectHierarchyLevelStudy()
-    { return "Study"; };
+  // Non-DICOM levels
+  static const char* GetSubjectHierarchyLevelFolder()
+    { return "Folder"; };
 
   // DICOM levels
+  static const char* GetDICOMLevelPatient()
+    { return "Patient"; };
+  static const char* GetDICOMLevelStudy()
+    { return "Study"; };
   static const char* GetDICOMLevelSeries()
     { return "Series"; };
   static const char* GetDICOMLevelSubseries()
@@ -103,7 +105,7 @@ public:
   static const std::string  GetDICOMStudyDescriptionTagName()
     { return "StudyDescription"; };
   static const std::string  GetDICOMStudyDescriptionAttributeName()
-    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + vtkMRMLSubjectHierarchyConstants:: GetDICOMStudyDescriptionTagName(); };
+    { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + vtkMRMLSubjectHierarchyConstants::GetDICOMStudyDescriptionTagName(); };
   static const std::string GetDICOMStudyDateTagName()
     { return "StudyDate"; };
   static const std::string GetDICOMStudyDateAttributeName()
@@ -128,6 +130,7 @@ public:
     { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "Modality"; };
   static const std::string GetDICOMSeriesNumberAttributeName()
     { return vtkMRMLSubjectHierarchyConstants::GetDICOMAttributePrefix() + "SeriesNumber"; };
+
 };
 
 #endif

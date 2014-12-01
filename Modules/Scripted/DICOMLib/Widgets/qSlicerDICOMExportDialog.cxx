@@ -208,7 +208,7 @@ void qSlicerDICOMExportDialog::examineSelectedNode()
 
   // Get child series nodes if selected node is study
   QList<vtkMRMLSubjectHierarchyNode*> selectedSeriesNodes;
-  if (currentNode->IsLevel(vtkMRMLSubjectHierarchyConstants::GetSubjectHierarchyLevelStudy()))
+  if (currentNode->IsLevel(vtkMRMLSubjectHierarchyConstants::GetDICOMLevelStudy()))
     {
     std::vector<vtkMRMLHierarchyNode*> childrenNodes = currentNode->GetChildrenNodes();
     for ( std::vector<vtkMRMLHierarchyNode*>::iterator childIt = childrenNodes.begin();

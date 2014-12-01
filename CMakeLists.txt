@@ -404,8 +404,8 @@ set(Slicer_MAIN_PROJECT_APPLICATION_NAME ${${Slicer_MAIN_PROJECT}_APPLICATION_NA
 # Slicer version number.
 #-----------------------------------------------------------------------------
 set(Slicer_VERSION_MAJOR "4")
-set(Slicer_VERSION_MINOR "3")
-set(Slicer_VERSION_PATCH "1")
+set(Slicer_VERSION_MINOR "4")
+set(Slicer_VERSION_PATCH "0")
 # Releases define a tweak level
 #set(Slicer_VERSION_TWEAK 0)
 #set(Slicer_VERSION_RC 0)
@@ -512,10 +512,13 @@ if(${VTK_VERSION_MAJOR} GREATER 5)
       )
   endif()
   if(UNIX AND NOT APPLE)
-    list(APPEND Slicer_VTK_COMPONENTS
-      vtkRenderingFreeTypeFontConfig
-      vtkRenderingFreeTypeOpenGL
-      )
+    find_package(FontConfig QUIET)
+    if(FONTCONFIG_FOUND)
+      list(APPEND Slicer_VTK_COMPONENTS
+        vtkRenderingFreeTypeFontConfig
+        vtkRenderingFreeTypeOpenGL
+        )
+    endif()
   endif()
 endif()
 

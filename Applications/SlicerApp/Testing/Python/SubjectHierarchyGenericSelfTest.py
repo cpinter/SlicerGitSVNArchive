@@ -287,10 +287,10 @@ class SubjectHierarchyGenericSelfTestTest(unittest.TestCase):
     self.patientNodeName = studyNode.GetParentNode().GetName()
     self.studyNodeName = studyNode.GetName()
     self.ctVolumeShNodeName = ctVolumeShNode.GetName()
-    
+
     # Verify DICOM levels
-    self.assertTrue( studyNode.GetParentNode().GetLevel() == slicer.vtkMRMLSubjectHierarchyConstants.GetSubjectHierarchyLevelSubject() )
-    self.assertTrue( studyNode.GetLevel() == slicer.vtkMRMLSubjectHierarchyConstants.GetSubjectHierarchyLevelStudy() )
+    self.assertTrue( studyNode.GetParentNode().GetLevel() == slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelPatient() )
+    self.assertTrue( studyNode.GetLevel() == slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelStudy() )
     self.assertTrue( ctVolumeShNode.GetLevel() == slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelSeries() )
 
     # Add model and labelmap to the created study
@@ -313,8 +313,8 @@ class SubjectHierarchyGenericSelfTestTest(unittest.TestCase):
 
     from vtkSlicerSubjectHierarchyModuleMRML import vtkMRMLSubjectHierarchyNode
 
-    patient2Node = vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode(slicer.mrmlScene, None, slicer.vtkMRMLSubjectHierarchyConstants.GetSubjectHierarchyLevelSubject(), self.patient2Name)
-    study2Node = vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode(slicer.mrmlScene, patient2Node, slicer.vtkMRMLSubjectHierarchyConstants.GetSubjectHierarchyLevelStudy(), self.study2Name)
+    patient2Node = vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode(slicer.mrmlScene, None, slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelPatient(), self.patient2Name)
+    study2Node = vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode(slicer.mrmlScene, patient2Node, slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelStudy(), self.study2Name)
     seriesNode = vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode(slicer.mrmlScene, study2Node, slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelSeries(), self.testSeriesName)
     subseriesNode = vtkMRMLSubjectHierarchyNode.CreateSubjectHierarchyNode(slicer.mrmlScene, seriesNode, slicer.vtkMRMLSubjectHierarchyConstants.GetDICOMLevelSubseries(), self.testSubseriesName)
 

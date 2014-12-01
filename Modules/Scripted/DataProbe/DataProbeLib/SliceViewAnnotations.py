@@ -575,7 +575,7 @@ class SliceAnnotations(object):
 
   def createColorScalarBar(self, sliceViewName):
     scalarBar = slicer.vtkPVScalarBarActor()
-    scalarBar.SetTitle("")
+    scalarBar.SetTitle(" ")
     # adjust text property
     scalarBar.SetRangeLabelFormat('%.0f')
     lookupTable = vtk.vtkLookupTable()
@@ -592,6 +592,7 @@ class SliceAnnotations(object):
         self.sliceViewNames.append(sliceViewName)
         self.addObserver(sliceViewName)
         self.createActors(sliceViewName)
+        self.updateSliceViewFromGUI()
     self.makeAnnotationText(caller)
     self.makeScalingRuler(caller)
     self.makeColorScalarBar(caller)
@@ -875,28 +876,40 @@ class SliceAnnotations(object):
               for key in self.cornerTexts[2]:
                 self.cornerTexts[2][key]['text'] = ''
         else:
-          self.cornerTexts[2]['1-PatientName']['text'] = backgroundDicomDic['Patient Name'].replace('^',', ')
-          self.cornerTexts[2]['2-PatientID']['text'] = 'ID: ' + backgroundDicomDic['Patient ID']
+          if self.cornerTexts[2].has_key('1-PatientName'):
+            self.cornerTexts[2]['1-PatientName']['text'] = backgroundDicomDic['Patient Name'].replace('^',', ')
+          if self.cornerTexts[2].has_key('2-PatientID'):
+            self.cornerTexts[2]['2-PatientID']['text'] = 'ID: ' + backgroundDicomDic['Patient ID']
           backgroundDicomDic['Patient Birth Date'] = self.formatDICOMDate(backgroundDicomDic['Patient Birth Date'])
-          self.cornerTexts[2]['3-PatientInfo']['text'] = self.makePatientInfo(backgroundDicomDic)
+          if self.cornerTexts[2].has_key('3-PatientInfo'):
+            self.cornerTexts[2]['3-PatientInfo']['text'] = self.makePatientInfo(backgroundDicomDic)
 
           if (backgroundDicomDic['Study Date'] != foregroundDicomDic['Study Date']):
-            self.cornerTexts[2]['4-Bg-StudyDate']['text'] = 'B: ' + self.formatDICOMDate(backgroundDicomDic['Study Date'])
-            self.cornerTexts[2]['5-Fg-StudyDate']['text'] = 'F: ' + self.formatDICOMDate(foregroundDicomDic['Study Date'])
+            if self.cornerTexts[2].has_key('4-Bg-StudyDate'):
+              self.cornerTexts[2]['4-Bg-StudyDate']['text'] = 'B: ' + self.formatDICOMDate(backgroundDicomDic['Study Date'])
+            if self.cornerTexts[2].has_key('5-Fg-StudyDate'):
+              self.cornerTexts[2]['5-Fg-StudyDate']['text'] = 'F: ' + self.formatDICOMDate(foregroundDicomDic['Study Date'])
           else:
-            self.cornerTexts[2]['4-Bg-StudyDate']['text'] =  self.formatDICOMDate(backgroundDicomDic['Study Date'])
+            if self.cornerTexts[2].has_key('4-Bg-StudyDate'):
+              self.cornerTexts[2]['4-Bg-StudyDate']['text'] =  self.formatDICOMDate(backgroundDicomDic['Study Date'])
 
           if (backgroundDicomDic['Study Time'] != foregroundDicomDic['Study Time']):
-            self.cornerTexts[2]['6-Bg-StudyTime']['text'] = 'B: ' + self.formatDICOMTime(backgroundDicomDic['Study Time'])
-            self.cornerTexts[2]['7-Fg-StudyTime']['text'] = 'F: ' + self.formatDICOMTime(foregroundDicomDic['Study Time'])
+            if self.cornerTexts[2].has_key('6-Bg-StudyTime'):
+              self.cornerTexts[2]['6-Bg-StudyTime']['text'] = 'B: ' + self.formatDICOMTime(backgroundDicomDic['Study Time'])
+            if self.cornerTexts[2].has_key('7-Fg-StudyTime'):
+              self.cornerTexts[2]['7-Fg-StudyTime']['text'] = 'F: ' + self.formatDICOMTime(foregroundDicomDic['Study Time'])
           else:
-            self.cornerTexts[2]['6-Bg-StudyTime']['text'] = self.formatDICOMTime(backgroundDicomDic['Study Time'])
+            if self.cornerTexts[2].has_key('6-Bg-StudyTime'):
+              self.cornerTexts[2]['6-Bg-StudyTime']['text'] = self.formatDICOMTime(backgroundDicomDic['Study Time'])
 
           if (backgroundDicomDic['Series Description'] != foregroundDicomDic['Series Description']):
-            self.cornerTexts[2]['8-Bg-SeriesDescription']['text'] = 'B: ' + backgroundDicomDic['Series Description']
-            self.cornerTexts[2]['9-Fg-SeriesDescription']['text'] = 'F: ' + foregroundDicomDic['Series Description']
+            if self.cornerTexts[2].has_key('8-Bg-SeriesDescription'):
+              self.cornerTexts[2]['8-Bg-SeriesDescription']['text'] = 'B: ' + backgroundDicomDic['Series Description']
+            if self.cornerTexts[2].has_key('9-Fg-SeriesDescription'):
+              self.cornerTexts[2]['9-Fg-SeriesDescription']['text'] = 'F: ' + foregroundDicomDic['Series Description']
           else:
-            self.cornerTexts[2]['8-Bg-SeriesDescription']['text'] = backgroundDicomDic['Series Description']
+            if self.cornerTexts[2].has_key('8-Bg-SeriesDescription'):
+              self.cornerTexts[2]['8-Bg-SeriesDescription']['text'] = backgroundDicomDic['Series Description']
 
     # Only Background or Only Foreground
     else:
@@ -943,6 +956,9 @@ class SliceAnnotations(object):
 
 
   def formatDICOMTime(self, time):
+    if time == '':
+      # time field is empty
+      return ''
     studyH = time[:2]
     if int(studyH) > 12 :
       studyH = str (int(studyH) - 12)
@@ -962,6 +978,8 @@ class SliceAnnotations(object):
     return text
 
   def drawCornerAnnotations(self):
+    if not self.showSliceViewAnnotations:
+      return
     # Auto-Adjust
     # adjust maximum text length based on fontsize and view width
     viewWidth = self.sliceViews[self.currentSliceViewName].width

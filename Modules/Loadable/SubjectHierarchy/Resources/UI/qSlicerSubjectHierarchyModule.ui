@@ -79,16 +79,6 @@
         </widget>
        </item>
        <item>
-        <widget class="QCheckBox" name="PotentialNodesCheckBox">
-         <property name="text">
-          <string>Potential nodes</string>
-         </property>
-         <property name="checked">
-          <bool>true</bool>
-         </property>
-        </widget>
-       </item>
-       <item>
         <widget class="QCheckBox" name="DisplayMRMLIDsCheckBox">
          <property name="text">
           <string>ID's</string>
@@ -163,17 +153,6 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
-  <include location="../qSlicerSubjectHierarchyModule.qrc"/>
   <include location="../qSlicerSubjectHierarchyModule.qrc"/>
  </resources>
  <connections>
