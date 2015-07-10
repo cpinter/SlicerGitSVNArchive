@@ -75,10 +75,14 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
   MRMLCore
   MRMLLogic
-  MRMLCLI
   qMRMLWidgets
   ${QT_LIBRARIES}
   )
+if(Slicer_BUILD_CLI_SUPPORT)
+  list(APPEND ${KIT}_TARGET_LIBRARIES
+    MRMLCLI
+  )
+endif()
 
 #-----------------------------------------------------------------------------
 SlicerMacroBuildModuleWidgets(
