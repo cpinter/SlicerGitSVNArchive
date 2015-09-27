@@ -75,6 +75,19 @@ bool isPluginInstalledTest(int line, bool expectedResult,
   return res;
 }
 
+//-----------------------------------------------------------------------------
+bool isPluginBuiltInTest(int line, bool expectedResult,
+                           const QString& path, const QString& applicationHomeDir)
+{
+  bool res = qSlicerUtils::isPluginBuiltIn(path, applicationHomeDir);
+  if (res != expectedResult)
+    {
+    QString msg("Line %1 - Problem with isPluginBuiltIn()\n\tpath: %2\n\tapplicationHomeDir: %3");
+    throw std::runtime_error(qPrintable(msg.arg(line).arg(path).arg(applicationHomeDir)));
+    }
+  return res;
+}
+
 } // end of anonymous namespace
 
 int qSlicerUtilsTest1(int, char * [] )
@@ -269,7 +282,7 @@ int qSlicerUtilsTest1(int, char * [] )
     }
 
   //-----------------------------------------------------------------------------
-  // Test isPluginInstalled()
+  // Test isPluginInstalled() and isPluginBuiltIn()
   //-----------------------------------------------------------------------------
 
   QStringList directoriesToRemove;
@@ -318,6 +331,17 @@ int qSlicerUtilsTest1(int, char * [] )
   isPluginInstalledTest(__LINE__, false, tmp1.path() + "/" + fooBarDebug + "/plugin.txt", tmp1.path());
   isPluginInstalledTest(__LINE__, false, tmp1.path() + "/" + fooBarRelease + "/plugin.txt", tmp1.path());
 
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + debug + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + release + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + relWithDebInfo + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + minSizeRel + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + foo + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooDebug + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooRelease + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooBar + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooBarDebug + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooBarRelease + "/plugin.txt", tmp1.path());
+
   directoriesToRemove << tmp1.path();
 
   //
@@ -347,6 +371,17 @@ int qSlicerUtilsTest1(int, char * [] )
   isPluginInstalledTest(__LINE__, false, tmp1.path() + "/" + fooBarDebug + "/plugin.txt", tmp2.path());
   isPluginInstalledTest(__LINE__, false, tmp1.path() + "/" + fooBarRelease + "/plugin.txt", tmp2.path());
 
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + debug + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + release + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + relWithDebInfo + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + minSizeRel + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + foo + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + fooDebug + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + fooRelease + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + fooBar + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + fooBarDebug + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp1.path() + "/" + fooBarRelease + "/plugin.txt", tmp2.path());
+
   directoriesToRemove << tmp2.path();
 
   //
@@ -369,6 +404,9 @@ int qSlicerUtilsTest1(int, char * [] )
 
   isPluginInstalledTest(__LINE__, true, tmp3.path() + "/" + foo + "/plugin.txt", tmp2.path());
   isPluginInstalledTest(__LINE__, true, tmp3.path() + "/" + fooBar + "/plugin.txt", tmp2.path());
+
+  isPluginBuiltInTest(__LINE__, false, tmp3.path() + "/" + foo + "/plugin.txt", tmp2.path());
+  isPluginBuiltInTest(__LINE__, false, tmp3.path() + "/" + fooBar + "/plugin.txt", tmp2.path());
 
   directoriesToRemove << tmp3.path();
 
@@ -395,6 +433,17 @@ int qSlicerUtilsTest1(int, char * [] )
   isPluginInstalledTest(__LINE__, false, tmp1.path() + "/" + fooBar + "/plugin.txt", tmp1.path());
   isPluginInstalledTest(__LINE__, false, tmp1.path() + "/" + fooBarDebug + "/plugin.txt", tmp1.path());
   isPluginInstalledTest(__LINE__, false, tmp1.path() + "/" + fooBarRelease + "/plugin.txt", tmp1.path());
+
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + debug + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + release + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + relWithDebInfo + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + minSizeRel + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + foo + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooDebug + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooRelease + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooBar + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooBarDebug + "/plugin.txt", tmp1.path());
+  isPluginBuiltInTest(__LINE__, true, tmp1.path() + "/" + fooBarRelease + "/plugin.txt", tmp1.path());
 
   directoriesToRemove << tmp4.path();
 
