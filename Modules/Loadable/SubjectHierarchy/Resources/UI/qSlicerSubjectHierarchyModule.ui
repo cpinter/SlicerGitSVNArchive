@@ -73,6 +73,9 @@
        </property>
        <item>
         <widget class="QCheckBox" name="DisplayTransformsCheckBox">
+         <property name="toolTip">
+          <string>Show/hide transforms column</string>
+         </property>
          <property name="text">
           <string>Transforms</string>
          </property>
@@ -83,16 +86,107 @@
        </item>
        <item>
         <widget class="QCheckBox" name="DisplayMRMLIDsCheckBox">
+         <property name="toolTip">
+          <string>Show/hide node IDs column</string>
+         </property>
          <property name="text">
           <string>ID's</string>
          </property>
         </widget>
        </item>
        <item>
-        <spacer name="horizontalSpacer">
+        <spacer name="horizontalSpacer_2">
          <property name="orientation">
           <enum>Qt::Horizontal</enum>
          </property>
+         <property name="sizeType">
+          <enum>QSizePolicy::Fixed</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>16</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QPushButton" name="MoveDownButton">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="maximumSize">
+          <size>
+           <width>23</width>
+           <height>21</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Move selected node down within its parent.
+Keep pressed for continuous movement.</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../qSlicerSubjectHierarchyModule.qrc">
+           <normaloff>:/Icons/MoveDown.png</normaloff>:/Icons/MoveDown.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>21</width>
+           <height>21</height>
+          </size>
+         </property>
+         <property name="autoRepeat">
+          <bool>true</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="MoveUpButton">
+         <property name="maximumSize">
+          <size>
+           <width>23</width>
+           <height>21</height>
+          </size>
+         </property>
+         <property name="toolTip">
+          <string>Move selected node up within its parent.
+Keep pressed for continuous movement.</string>
+         </property>
+         <property name="text">
+          <string/>
+         </property>
+         <property name="icon">
+          <iconset resource="../qSlicerSubjectHierarchyModule.qrc">
+           <normaloff>:/Icons/MoveUp.png</normaloff>:/Icons/MoveUp.png</iconset>
+         </property>
+         <property name="iconSize">
+          <size>
+           <width>21</width>
+           <height>21</height>
+          </size>
+         </property>
+         <property name="autoRepeat">
+          <bool>true</bool>
+         </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+       <item>
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
          <property name="sizeHint" stdset="0">
           <size>
            <width>40</width>

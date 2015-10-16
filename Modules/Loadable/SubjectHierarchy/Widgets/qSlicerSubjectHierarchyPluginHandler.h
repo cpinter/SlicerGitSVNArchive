@@ -141,6 +141,9 @@ protected slots:
   /// slot to the \sa ownerPluginChanged signal.
   void reconnectOwnerPluginChanged(vtkObject* node, void* callData);
 
+signals:
+  void currentNodesChanged();
+
 protected:
   /// List of registered plugin instances
   QList<qSlicerSubjectHierarchyAbstractPlugin*> m_RegisteredPlugins;

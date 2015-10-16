@@ -382,6 +382,7 @@ vtkMRMLSubjectHierarchyNode* qSlicerSubjectHierarchyPluginHandler::currentNode()
 void qSlicerSubjectHierarchyPluginHandler::setCurrentNodes(QList<vtkMRMLSubjectHierarchyNode*> nodes)
 {
   this->m_CurrentNodes = nodes;
+  emit currentNodesChanged();
 }
 
 //-----------------------------------------------------------------------------

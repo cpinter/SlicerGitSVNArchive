@@ -28,6 +28,7 @@
 
 #include "qSlicerSubjectHierarchyModuleExport.h"
 
+class vtkMRMLNode;
 class vtkMRMLSubjectHierarchyNode;
 class qSlicerSubjectHierarchyModuleWidgetPrivate;
 class qMRMLSceneSubjectHierarchyModel;
@@ -61,6 +62,19 @@ protected slots:
 
   /// Show or hide transforms
   void setTransformsVisible(bool visible);
+
+  /// Enable/disable move selected nodes buttons based on node selection.
+  /// If the selected nodes are not in the same branch or there is no selected
+  /// node then the button is disabled.
+  /// If a selected node is already on the top/bottom then the corresponding
+  /// button is disabled.
+  void updateMoveSelectedNodesButtons();
+
+  /// Move selected nodes down in the tree within its parent
+  void moveSelectedNodesDown();
+
+  /// Move selected nodes up in the tree within its parent
+  void moveSelectedNodesUp();
 
 public:
   /// Assessor function for subject hierarchy scene model (for python)

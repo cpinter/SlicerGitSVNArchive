@@ -157,6 +157,8 @@ void qSlicerSubjectHierarchyModuleWidget::setup()
   // Make connections for the checkboxes and buttons
   connect( d->DisplayMRMLIDsCheckBox, SIGNAL(toggled(bool)), this, SLOT(setMRMLIDsVisible(bool)) );
   connect( d->DisplayTransformsCheckBox, SIGNAL(toggled(bool)), this, SLOT(setTransformsVisible(bool)) );
+  connect( d->MoveDownButton, SIGNAL(clicked()), this, SLOT(moveSelectedNodesDown()) );
+  connect( d->MoveUpButton, SIGNAL(clicked()), this, SLOT(moveSelectedNodesUp()) );
 
   // Make MRML connections
   // Connect scene node added event so that the new subject hierarchy nodes can be claimed by a plugin
@@ -172,6 +174,7 @@ void qSlicerSubjectHierarchyModuleWidget::setup()
 
   connect( d->SubjectHierarchyTreeView, SIGNAL(currentNodeChanged(vtkMRMLNode*)), d->MRMLNodeAttributeTableWidget, SLOT(setMRMLNode(vtkMRMLNode*)) );
   connect( d->SubjectHierarchyTreeView->sceneModel(), SIGNAL(invalidateFilter()), d->SubjectHierarchyTreeView->model(), SLOT(invalidate()) );
+  connect( qSlicerSubjectHierarchyPluginHandler::instance(), SIGNAL(currentNodesChanged()), this, SLOT(updateMoveSelectedNodesButtons()) );
 
   this->setMRMLIDsVisible(d->DisplayMRMLIDsCheckBox->isChecked());
   this->setTransformsVisible(d->DisplayTransformsCheckBox->isChecked());
@@ -224,6 +227,92 @@ void qSlicerSubjectHierarchyModuleWidget::setTransformsVisible(bool visible)
   d->DisplayTransformsCheckBox->blockSignals(true);
   d->DisplayTransformsCheckBox->setChecked(visible);
   d->DisplayTransformsCheckBox->blockSignals(false);
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSubjectHierarchyModuleWidget::updateMoveSelectedNodesButtons()
+{
+  Q_D(qSlicerSubjectHierarchyModuleWidget);
+
+  d->MoveDownButton->setEnabled(false);
+  d->MoveUpButton->setEnabled(false);
+
+  QSet<QString> parentNodes;
+  QSet<int> sortingValues;
+  QList<vtkMRMLSubjectHierarchyNode*> currentNodes = qSlicerSubjectHierarchyPluginHandler::instance()->currentNodes();
+  foreach(vtkMRMLSubjectHierarchyNode* node, currentNodes)
+    {
+    parentNodes.insert(node->GetParentNodeID());
+    sortingValues.insert(node->GetSortingValue());
+    }
+  // Do not allow moving if selected nodes are in different branches
+  if (parentNodes.size() != 1)
+    {
+    return;
+    }
+
+  // Get parent node
+  vtkMRMLSubjectHierarchyNode* parentNode = vtkMRMLSubjectHierarchyNode::SafeDownCast(
+    this->mrmlScene()->GetNodeByID( parentNodes.constBegin()->toLatin1().constData() ) );
+  if (!parentNode)
+    {
+    return;
+    }
+
+  // Enable down arrow if bottom node is not selected
+  int bottomSortingValue = parentNode->GetNthChildNode(parentNode->GetNumberOfChildrenNodes()-1)->GetSortingValue();
+  if (!sortingValues.contains(bottomSortingValue))
+    {
+    d->MoveDownButton->setEnabled(true);
+    }
+  // Enable up arrow if top node is not selected
+  int topSortingValue = parentNode->GetNthChildNode(0)->GetSortingValue();
+  if (!sortingValues.contains(topSortingValue))
+    {
+    d->MoveUpButton->setEnabled(true);
+    }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSubjectHierarchyModuleWidget::moveSelectedNodesDown()
+{
+  Q_D(qSlicerSubjectHierarchyModuleWidget);
+
+  // Move bottom node first
+  QMap<int,vtkMRMLSubjectHierarchyNode*> selectedNodesByAscendingSortingValue;
+  QList<vtkMRMLSubjectHierarchyNode*> currentNodes = qSlicerSubjectHierarchyPluginHandler::instance()->currentNodes();
+  foreach(vtkMRMLSubjectHierarchyNode* node, currentNodes)
+    {
+    selectedNodesByAscendingSortingValue[node->GetSortingValue()] = node;
+    }
+  foreach(vtkMRMLSubjectHierarchyNode* node, selectedNodesByAscendingSortingValue)
+    {
+    node->MoveInParent(1);
+    }
+  // Trigger update
+  qMRMLSortFilterSubjectHierarchyProxyModel* model = qobject_cast<qMRMLSortFilterSubjectHierarchyProxyModel*>(d->SubjectHierarchyTreeView->model());
+  model->invalidate();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerSubjectHierarchyModuleWidget::moveSelectedNodesUp()
+{
+  Q_D(qSlicerSubjectHierarchyModuleWidget);
+
+  // Move top node first
+  QMap<int,vtkMRMLSubjectHierarchyNode*> selectedNodesByDescendingSortingValue;
+  QList<vtkMRMLSubjectHierarchyNode*> currentNodes = qSlicerSubjectHierarchyPluginHandler::instance()->currentNodes();
+  foreach(vtkMRMLSubjectHierarchyNode* node, currentNodes)
+    {
+    selectedNodesByDescendingSortingValue[INT_MAX - node->GetSortingValue()] = node;
+    }
+  foreach(vtkMRMLSubjectHierarchyNode* node, selectedNodesByDescendingSortingValue)
+    {
+    node->MoveInParent(-1);
+    }
+  // Trigger update
+  qMRMLSortFilterSubjectHierarchyProxyModel* model = qobject_cast<qMRMLSortFilterSubjectHierarchyProxyModel*>(d->SubjectHierarchyTreeView->model());
+  model->invalidate();
 }
 
 //-----------------------------------------------------------------------------
