@@ -1,5 +1,7 @@
 /*==============================================================================
 
+  Program: 3D Slicer
+
   Copyright (c) Laboratory for Percutaneous Surgery (PerkLab)
   Queen's University, Kingston, ON, Canada. All Rights Reserved.
 
@@ -24,6 +26,9 @@
 // MRMLLogic includes
 #include <vtkMRMLScene.h>
 
+// Slicer includes
+#include "vtkLoggingMacros.h"
+
 // VTK includes
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
@@ -31,19 +36,54 @@
 #include <vtkIntArray.h>
 
 // JSON includes
-#include "vtkjsoncpp/json/json.h"
+#include <json/json.h>
 
 //----------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerTerminologiesModuleLogic);
 
+//---------------------------------------------------------------------------
+class vtkSlicerTerminologiesModuleLogic::vtkInternal
+{
+public:
+  vtkInternal(vtkSlicerTerminologiesModuleLogic* external);
+  ~vtkInternal();
+
+public:
+  Json::Value CurrentTerminologyRoot;
+
+private:
+  vtkSlicerTerminologiesModuleLogic* External;
+};
+
+//---------------------------------------------------------------------------
+// vtkInternal methods
+
+//---------------------------------------------------------------------------
+vtkSlicerTerminologiesModuleLogic::vtkInternal::vtkInternal(vtkSlicerTerminologiesModuleLogic* external)
+: External(external)
+{
+}
+
+//---------------------------------------------------------------------------
+vtkSlicerTerminologiesModuleLogic::vtkInternal::~vtkInternal()
+{
+}
+
+
+//---------------------------------------------------------------------------
+// vtkSlicerTerminologiesModuleLogic methods
+
 //----------------------------------------------------------------------------
 vtkSlicerTerminologiesModuleLogic::vtkSlicerTerminologiesModuleLogic()
 {
+  this->Internal = new vtkInternal(this);
 }
 
 //----------------------------------------------------------------------------
 vtkSlicerTerminologiesModuleLogic::~vtkSlicerTerminologiesModuleLogic()
 {
+  delete this->Internal;
+  this->Internal = NULL;
 }
 
 //----------------------------------------------------------------------------
@@ -53,7 +93,7 @@ void vtkSlicerTerminologiesModuleLogic::PrintSelf(ostream& os, vtkIndent indent)
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerTerminologiesModuleLogic::SetMRMLSceneInternal(vtkMRMLScene * newScene)
+void vtkSlicerTerminologiesModuleLogic::SetMRMLSceneInternal(vtkMRMLScene* newScene)
 {
   vtkSmartPointer<vtkIntArray> events = vtkSmartPointer<vtkIntArray>::New();
   events->InsertNextValue(vtkMRMLScene::EndCloseEvent);
@@ -68,4 +108,25 @@ void vtkSlicerTerminologiesModuleLogic::OnMRMLSceneEndClose()
     vtkErrorMacro("OnMRMLSceneEndClose: Invalid MRML scene!");
     return;
   }
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerTerminologiesModuleLogic::LoadDefaultTerminology()
+{
+  std::string defaultTerminologyFileName = this->GetModuleShareDirectory() + "/SegmentationCategoryTypeModifier-SlicerGeneralAnatomy.json";
+  std::ifstream terminologyStream(defaultTerminologyFileName.c_str(), std::ios_base::binary);
+
+  std::string contextName("");
+  try
+  {
+    terminologyStream >> this->Internal->CurrentTerminologyRoot;
+    contextName = this->Internal->CurrentTerminologyRoot["SegmentationCategoryTypeContextName"].asString();
+  }
+  catch (std::exception &e)
+  {
+    vtkErrorMacro("LoadDefaultTerminology: Failed to load default terminology - exception: " << e.what());
+    return;
+  }
+
+  vtkInfoMacro("Default terminology successfully loaded: " << contextName);
 }

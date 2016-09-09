@@ -5,6 +5,7 @@ set(KIT ${PROJECT_NAME})
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_LOGIC_EXPORT")
 
 set(${KIT}_INCLUDE_DIRECTORIES
+  ${JsonCpp_INCLUDE_DIR}
   )
 
 set(${KIT}_SRCS
@@ -13,6 +14,7 @@ set(${KIT}_SRCS
   )
 
 set(${KIT}_TARGET_LIBRARIES
+  ${JsonCpp_LIBRARY}
   )
 
 #-----------------------------------------------------------------------------
@@ -23,3 +25,20 @@ SlicerMacroBuildModuleLogic(
   SRCS ${${KIT}_SRCS}
   TARGET_LIBRARIES ${${KIT}_TARGET_LIBRARIES}
   )
+
+#-----------------------------------------------------------------------------
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Resources/SegmentationCategoryTypeModifier-DICOM-Master.json
+  ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/SegmentationCategoryTypeModifier-DICOM-Master.json
+  COPYONLY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/SegmentationCategoryTypeModifier-DICOM-Master.json
+  DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME} COMPONENT Runtime)
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Resources/SegmentationCategoryTypeModifier-SlicerGeneralAnatomy.json
+  ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/SegmentationCategoryTypeModifier-SlicerGeneralAnatomy.json
+  COPYONLY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/SegmentationCategoryTypeModifier-SlicerGeneralAnatomy.json
+  DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME} COMPONENT Runtime)

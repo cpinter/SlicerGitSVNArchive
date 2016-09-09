@@ -1,5 +1,7 @@
 /*==============================================================================
 
+  Program: 3D Slicer
+
   Copyright (c) Laboratory for Percutaneous Surgery (PerkLab)
   Queen's University, Kingston, ON, Canada. All Rights Reserved.
 
@@ -35,6 +37,9 @@ public:
   vtkTypeMacro(vtkSlicerTerminologiesModuleLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
+  /// Load default terminology dictionary from JSON
+  void LoadDefaultTerminology();
+
 protected:
   vtkSlicerTerminologiesModuleLogic();
   virtual ~vtkSlicerTerminologiesModuleLogic();
@@ -45,6 +50,10 @@ protected:
 private:
   vtkSlicerTerminologiesModuleLogic(const vtkSlicerTerminologiesModuleLogic&); // Not implemented
   void operator=(const vtkSlicerTerminologiesModuleLogic&);              // Not implemented
+
+  class vtkInternal;
+  vtkInternal* Internal;
+  friend class vtkInternal;
 };
 
 #endif

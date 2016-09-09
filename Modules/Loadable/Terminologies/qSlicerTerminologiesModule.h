@@ -1,5 +1,7 @@
 /*==============================================================================
 
+  Program: 3D Slicer
+
   Copyright (c) Laboratory for Percutaneous Surgery (PerkLab)
   Queen's University, Kingston, ON, Canada. All Rights Reserved.
 
