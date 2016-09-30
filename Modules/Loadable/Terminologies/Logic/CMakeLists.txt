@@ -15,6 +15,8 @@ set(${KIT}_SRCS
   vtkSlicerTerminologyCategory.h
   vtkSlicerTerminologyType.cxx
   vtkSlicerTerminologyType.h
+  vtkSlicerTerminologyEntry.cxx
+  vtkSlicerTerminologyEntry.h
   )
 
 set(${KIT}_TARGET_LIBRARIES
@@ -45,4 +47,12 @@ configure_file(
   COPYONLY)
 install(
   FILES ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/SegmentationCategoryTypeModifier-SlicerGeneralAnatomy.json
+  DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME} COMPONENT Runtime)
+
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/../Resources/AnatomicRegionModifier-Master.json
+  ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/AnatomicRegionModifier-Master.json
+  COPYONLY)
+install(
+  FILES ${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME}/AnatomicRegionModifier-Master.json
   DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_SHARE_DIR}/${MODULE_NAME} COMPONENT Runtime)

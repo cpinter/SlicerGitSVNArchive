@@ -36,14 +36,13 @@ class qSlicerTerminologyNavigatorWidgetPrivate;
 
 class QTableWidgetItem;
 
-/// \brief Qt widget for selecting a single segment from a segmentation.
-///   If multiple segments are needed, then use \sa qMRMLSegmentsTableView instead in SimpleListMode
-/// \ingroup SlicerRt_QtModules_Segmentations_Widgets
+/// \brief Qt widget for browsing a terminology dictionary.
+///   DICOM properties of the selected entry can also be set if enabled.
+/// \ingroup SlicerRt_QtModules_Terminologies_Widgets
 class Q_SLICER_MODULE_TERMINOLOGIES_WIDGETS_EXPORT qSlicerTerminologyNavigatorWidget : public qMRMLWidget
 {
   Q_OBJECT
-  Q_PROPERTY(bool optionalPropertiesVisible READ optionalPropertiesVisible WRITE setOptionalPropertiesVisible)
-  Q_PROPERTY(bool dicomPropertiesVisible READ dicomPropertiesVisible WRITE setDicomPropertiesVisible)
+  Q_PROPERTY(bool anatomicRegionSectionVisible READ anatomicRegionSectionVisible WRITE setAnatomicRegionSectionVisible)
 
 public:
   /// Constructor
@@ -51,16 +50,12 @@ public:
   /// Destructor
   virtual ~qSlicerTerminologyNavigatorWidget();
 
-  /// Get whether optional properties are visible
-  bool optionalPropertiesVisible() const;
-  /// Get whether DICOM properties are visible
-  bool dicomPropertiesVisible() const;
+  /// Get whether anatomic region section are visible
+  bool anatomicRegionSectionVisible() const;
 
 public slots:
-  /// Show/hide optional properties section
-  void setOptionalPropertiesVisible(bool);
-  /// Show/hide DICOM properties section
-  void setDicomPropertiesVisible(bool);
+  /// Show/hide anatomic region section section
+  void setAnatomicRegionSectionVisible(bool);
 
 protected:
   /// Populate terminology combobox from terminology logic
@@ -72,6 +67,13 @@ protected:
   /// Populate type modifier combobox from terminology logic
   void populateTypeModifierComboBox();
 
+  /// Populate anatomic region context combobox from terminology logic
+  void populateAnatomicContextComboBox();
+  /// Populate region table based on selected anatomic region context and type search term
+  void populateRegionTable();
+  /// Populate region modifier combobox from terminology logic
+  void populateRegionModifierComboBox();
+
   /// Update widget from current terminology and selections
   void updateWidgetFromCurrentTerminology();
 
@@ -82,6 +84,11 @@ protected slots:
   void onTypeModifierSelectionChanged(int);
   void onCategorySearchTextChanged(QString);
   void onTypeSearchTextChanged(QString);
+
+  void onAnatomicContextSelectionChanged(int);
+  void onRegionClicked(QTableWidgetItem*);
+  void onRegionModifierSelectionChanged(int);
+  void onRegionSearchTextChanged(QString);
 
 protected:
   QScopedPointer<qSlicerTerminologyNavigatorWidgetPrivate> d_ptr;

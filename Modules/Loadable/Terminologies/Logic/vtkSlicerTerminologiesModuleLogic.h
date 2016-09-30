@@ -43,15 +43,23 @@ public:
   vtkTypeMacro(vtkSlicerTerminologiesModuleLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream& os, vtkIndent indent);
 
-  /// Load default terminology dictionaries from JSON into \sa LoadedTerminologies
+  /// Load terminology dictionary from JSON into \sa LoadedTerminologies
   /// \param filePath File containing the terminology to load
   /// \return Context name (SegmentationCategoryTypeContextName) of the loaded terminology. Empty string on failure.
   std::string LoadTerminologyFromFile(std::string filePath);
+  /// Load anatomic context dictionaries from JSON into \sa LoadedAnatomicContexts
+  /// \param filePath File containing the anatomic context to load
+  /// \return Context name (AnatomicContextName) of the loaded anatomic context. Empty string on failure.
+  std::string LoadAnatomicContextFromFile(std::string filePath);
 
   /// Get context names of loaded terminologies
   void GetLoadedTerminologyNames(std::vector<std::string> &terminologyNames);
   /// Python accessor variant of \sa GetLoadedTerminologyNames
   void GetLoadedTerminologyNames(vtkStringArray* terminologyNames);
+  /// Get context names of loaded anatomic contexts
+  void GetLoadedAnatomicContextNames(std::vector<std::string> &anatomicContextNames);
+  /// Python accessor variant of \sa GetLoadedAnatomicContextNames
+  void GetLoadedAnatomicContextNames(vtkStringArray* anatomicContextNames);
 
   /// Get terminology categories from a terminology as collection of \sa vtkSlicerTerminologyCategory container objects
   /// \param categoryCollection Output argument containing all the \sa vtkSlicerTerminologyCategory objects created
@@ -101,6 +109,37 @@ public:
   bool GetTypeModifierInTerminologyType(std::string terminologyName,
     std::string categoryName, std::string typeName, std::string modifierName, vtkSlicerTerminologyType* typeModifier);
 
+  /// Get anatomic regions from an anatomic context as collection of \sa vtkSlicerTerminologyType container objects
+  /// \param regionCollection Output argument containing all the \sa vtkSlicerTerminologyType objects created
+  ///   from the regions found in the given anatomic context
+  /// \return Success flag
+  bool GetRegionsInAnatomicContext(std::string anatomicContextName, vtkCollection* regionCollection);
+  /// Get all region names (codeMeaning) in an anatomic context
+  /// Note: Separate function from \sa FindRegionNamesInAnatomicContext for python compatibility
+  /// \return Success flag
+  bool GetRegionNamesInAnatomicContext(std::string anatomicContextName, vtkStringArray* regionNames);
+  /// Find region names (codeMeaning) in an anatomic context containing a given string
+  /// \return Success flag
+  bool FindRegionNamesInAnatomicContext(std::string anatomicContextName, vtkStringArray* regionNames, std::string search);
+  /// Get a region with given name from an anatomic context
+  /// \param region Output argument containing the details of the found region if any (if return value is true)
+  /// \return Success flag
+  bool GetRegionInAnatomicContext(std::string anatomicContextName, std::string regionName, vtkSlicerTerminologyType* region);
+
+  /// Get region modifiers from an anatomic region as collection of \sa vtkSlicerTerminologyType container objects
+  /// \param regionModifierCollection Output argument containing all the \sa vtkSlicerTerminologyType objects created
+  ///   from the region modifiers found in the given anatomic region
+  /// \return Success flag
+  bool GetRegionModifiersInAnatomicRegion(std::string anatomicContextName, std::string regionName, vtkCollection* regionModifierCollection);
+  /// Get all region modifier names (codeMeaning) in an anatomic regions
+  /// \return Success flag
+  bool GetRegionModifierNamesInAnatomicRegion(std::string anatomicContextName, std::string regionName, vtkStringArray* regionModifierNames);
+  /// Get a region modifier with given name from an anatomic region
+  /// \param regionModifier Output argument containing the details of the found region modifier if any (if return value is true)
+  /// \return Success flag
+  bool GetRegionModifierInAnatomicRegion(std::string anatomicContextName,
+    std::string regionName, std::string modifierName, vtkSlicerTerminologyType* regionModifier);
+
 protected:
   vtkSlicerTerminologiesModuleLogic();
   virtual ~vtkSlicerTerminologiesModuleLogic();
@@ -110,6 +149,8 @@ protected:
 
   /// Load default terminology dictionaries from JSON into \sa LoadedTerminologies
   void LoadDefaultTerminologies();
+  /// Load default anatomic context dictionaries from JSON into \sa LoadedAnatomicContexts
+  void LoadDefaultAnatomicContexts();
 
 private:
   vtkSlicerTerminologiesModuleLogic(const vtkSlicerTerminologiesModuleLogic&); // Not implemented

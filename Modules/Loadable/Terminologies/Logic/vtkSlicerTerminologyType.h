@@ -87,7 +87,7 @@ protected:
   /// 'contextGroupName' member of the category object. Value example "Common Tissue Segmentation Types"
   char* ContextGroupName;
 
-  /// Flag indicating whether the type object has a 'Modifier' member array.
+  /// Flag indicating whether the type object has a 'Modifier' member array. False by default.
   /// A Type object EITHER has 'recommendedDisplayRGBValue' and '3dSlicerLabel' OR a 'Modifier' member
   /// array with the modifiers, so if this flag is true, then there is no valid color and Slicer label.
   bool HasModifiers;
