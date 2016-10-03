@@ -26,8 +26,7 @@
 #include "ui_qSlicerTerminologyNavigatorWidget.h"
 
 #include "vtkSlicerTerminologiesModuleLogic.h"
-#include "vtkSlicerTerminologyCategory.h"
-#include "vtkSlicerTerminologyType.h"
+#include "vtkSlicerTerminologyEntry.h"
 
 // Slicer includes
 #include <qSlicerCoreApplication.h>
@@ -316,7 +315,6 @@ qSlicerTerminologyNavigatorWidget::qSlicerTerminologyNavigatorWidget(QWidget* _p
 {
   Q_D(qSlicerTerminologyNavigatorWidget);
   d->init();
-  this->updateWidgetFromCurrentTerminology();
 }
 
 //-----------------------------------------------------------------------------
@@ -325,11 +323,382 @@ qSlicerTerminologyNavigatorWidget::~qSlicerTerminologyNavigatorWidget()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerTerminologyNavigatorWidget::updateWidgetFromCurrentTerminology()
+bool qSlicerTerminologyNavigatorWidget::terminologyEntry(vtkSlicerTerminologyEntry* entry)
 {
   Q_D(qSlicerTerminologyNavigatorWidget);
 
-  //TODO:
+  if (!entry)
+    {
+    qCritical() << Q_FUNC_INFO << ": Invalid terminology entry object";
+    return false;
+    }
+
+  // Terminology name
+  if (d->CurrentTerminologyName.isEmpty())
+    {
+    qCritical() << Q_FUNC_INFO << ": No terminology selected";
+    return false;
+    }
+  entry->SetTerminologyContextName(d->CurrentTerminologyName.toLatin1().constData());
+
+  // Get terminology logic
+  vtkSlicerTerminologiesModuleLogic* logic = d->terminologyLogic();
+  if (!logic)
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to access terminology logic";
+    return false;
+    }
+
+  // Terminology category
+  if (d->CurrentCategoryName.isEmpty())
+    {
+    qCritical() << Q_FUNC_INFO << ": No terminology category selected";
+    return false;
+    }
+  vtkSmartPointer<vtkSlicerTerminologyCategory> categoryObject = vtkSmartPointer<vtkSlicerTerminologyCategory>::New();
+  if ( !logic->GetCategoryInTerminology(
+       d->CurrentTerminologyName.toLatin1().constData(), d->CurrentCategoryName.toLatin1().constData(), categoryObject ) )
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to get terminology category";
+    return false;
+    }
+  entry->SetCategoryObject(categoryObject);
+
+  // Terminology type
+  if (d->CurrentTypeName.isEmpty())
+    {
+    qCritical() << Q_FUNC_INFO << ": No terminology type selected";
+    return false;
+    }
+  vtkSmartPointer<vtkSlicerTerminologyType> typeObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+  if ( !logic->GetTypeInTerminologyCategory(
+       d->CurrentTerminologyName.toLatin1().constData(), d->CurrentCategoryName.toLatin1().constData(),
+       d->CurrentTypeName.toLatin1().constData(), typeObject ) )
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to get terminology type";
+    return false;
+    }
+  entry->SetTypeObject(typeObject);
+
+  // Terminology type modifier
+  if (!d->CurrentTypeModifierName.isEmpty())
+    {
+    vtkSmartPointer<vtkSlicerTerminologyType> typeModifierObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+    if ( !logic->GetTypeModifierInTerminologyType(
+         d->CurrentTerminologyName.toLatin1().constData(), d->CurrentCategoryName.toLatin1().constData(),
+         d->CurrentTypeName.toLatin1().constData(), d->CurrentTypeName.toLatin1().constData(), typeModifierObject ) )
+      {
+      qCritical() << Q_FUNC_INFO << ": Failed to get terminology type modifier";
+      return false;
+      }
+    entry->SetTypeModifierObject(typeModifierObject);
+    }
+
+  // Anatomic context name
+  if (!d->CurrentAnatomicContextName.isEmpty())
+    {
+    entry->SetAnatomicContextName(d->CurrentAnatomicContextName.toLatin1().constData());
+    }
+
+  // Anatomic region
+  if (!d->CurrentRegionName.isEmpty())
+    {
+    vtkSmartPointer<vtkSlicerTerminologyType> regionObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+    if ( !logic->GetRegionInAnatomicContext(d->CurrentAnatomicContextName.toLatin1().constData(), d->CurrentRegionName.toLatin1().constData(),
+         regionObject))
+      {
+      qCritical() << Q_FUNC_INFO << ": Failed to get anatomic region";
+      return false;
+      }
+    entry->SetAnatomicRegionObject(regionObject);
+    }
+
+  // Anatomic region modifier
+  if (!d->CurrentRegionModifierName.isEmpty())
+    {
+    vtkSmartPointer<vtkSlicerTerminologyType> regionModifierObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+    if ( !logic->GetRegionModifierInAnatomicRegion(
+         d->CurrentAnatomicContextName.toLatin1().constData(), d->CurrentRegionName.toLatin1().constData(),
+         d->CurrentRegionModifierName.toLatin1().constData(), regionModifierObject ) )
+      {
+      qCritical() << Q_FUNC_INFO << ": Failed to get anatomic region modifier";
+      return false;
+      }
+    entry->SetAnatomicRegionModifierObject(regionModifierObject);
+    }
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+bool qSlicerTerminologyNavigatorWidget::setTerminologyEntry(vtkSlicerTerminologyEntry* entry)
+{
+  Q_D(qSlicerTerminologyNavigatorWidget);
+
+  if (!entry)
+    {
+    qCritical() << Q_FUNC_INFO << ": Invalid terminology entry object";
+    return false;
+    }
+
+  // Select terminology
+  char* terminologyContextName = entry->GetTerminologyContextName();
+  if (!terminologyContextName)
+    {
+    return false; // The terminology is not invalid but empty
+    }
+  int terminologyIndex = d->ComboBox_Terminology->findText(terminologyContextName);
+  if (terminologyIndex == -1)
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to find terminology with context name " << terminologyContextName;
+    return false;
+    }
+  d->ComboBox_Terminology->setCurrentIndex(terminologyIndex);
+
+  // Select category
+  vtkSlicerTerminologyCategory* categoryObject = entry->GetCategoryObject();
+  if (!categoryObject)
+    {
+    return false; // The terminology is not invalid but empty
+    }
+  QString categoryName(categoryObject->GetCodeMeaning());
+  Qt::MatchFlags flags = Qt::MatchExactly | Qt::MatchCaseSensitive;
+  QList<QTableWidgetItem*> items = d->tableWidget_Category->findItems(categoryName, flags);
+  if (items.count() != 1)
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to find category with name " << categoryName;
+    return false;
+    }
+  d->tableWidget_Category->setCurrentItem(items[0]);
+
+  // Select type
+  vtkSlicerTerminologyType* typeObject = entry->GetTypeObject();
+  if (!typeObject)
+    {
+    qCritical() << Q_FUNC_INFO << ": No type object in terminology entry";
+    return false;
+    }
+  QString typeName(typeObject->GetCodeMeaning());
+  items = d->tableWidget_Type->findItems(typeName, flags);
+  if (items.count() != 1)
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to find type with name " << typeName;
+    return false;
+    }
+  d->tableWidget_Type->setCurrentItem(items[0]);
+
+  // Select type modifier
+  vtkSlicerTerminologyType* typeModifierObject = entry->GetTypeModifierObject();
+  if (typeObject->GetHasModifiers() && typeModifierObject)
+    {
+    QString typeModifierName(typeModifierObject->GetCodeMeaning());
+    int typeModifierIndex = d->ComboBox_TypeModifier->findText(typeModifierName);
+    if (typeModifierIndex == -1)
+      {
+      qCritical() << Q_FUNC_INFO << ": Failed to find type modifier with name " << typeModifierName;
+      return false;
+      }
+    d->ComboBox_TypeModifier->setCurrentIndex(typeModifierIndex);
+    }
+
+  // Set anatomic context selection if category allows
+  if (categoryObject->GetShowAnatomy())
+    {
+    // Select anatomic context
+    char* anatomicContextName = entry->GetAnatomicContextName();
+    if (!anatomicContextName)
+      {
+      return true; // Optional
+      }
+    int anatomicContextIndex = d->ComboBox_AnatomicContext->findText(anatomicContextName);
+    if (anatomicContextIndex == -1)
+      {
+      qCritical() << Q_FUNC_INFO << ": Failed to find anatomic context with context name " << anatomicContextName;
+      return false;
+      }
+    d->ComboBox_AnatomicContext->setCurrentIndex(anatomicContextIndex);
+
+    // Select region
+    vtkSlicerTerminologyType* regionObject = entry->GetAnatomicRegionObject();
+    if (!regionObject)
+      {
+      return true; // Optional
+      }
+    QString regionName(regionObject->GetCodeMeaning());
+    items = d->tableWidget_AnatomicRegion->findItems(regionName, flags);
+    if (items.count() != 1)
+      {
+      qCritical() << Q_FUNC_INFO << ": Failed to find anatomic region with name " << regionName;
+      return false;
+      }
+    d->tableWidget_AnatomicRegion->setCurrentItem(items[0]);
+
+    // Select region modifier
+    vtkSlicerTerminologyType* regionModifierObject = entry->GetAnatomicRegionModifierObject();
+    if (regionObject->GetHasModifiers() && regionModifierObject)
+      {
+      QString regionModifierName(regionModifierObject->GetCodeMeaning());
+      int regionModifierIndex = d->ComboBox_AnatomicRegionModifier->findText(regionModifierName);
+      if (regionModifierIndex == -1)
+        {
+        qCritical() << Q_FUNC_INFO << ": Failed to find anatomic region modifier with name " << regionModifierName;
+        return false;
+        }
+      d->ComboBox_AnatomicRegionModifier->setCurrentIndex(regionModifierIndex);
+      }
+    } // If showAnatomy is true
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+QStringList qSlicerTerminologyNavigatorWidget::terminologyEntryToCodeMeanings(vtkSlicerTerminologyEntry* entry)
+{
+  QStringList returnList;
+  if (!entry)
+    {
+    qCritical() << Q_FUNC_INFO << ": Invalid terminology given";
+    return returnList;
+    }
+
+  /// The string list contains the following strings:
+  ///   [ terminologyContextName, categoryCodeMeaning, typeCodeMeaning, typeModifierCodeMeaning,
+  ///     anatomicContextName, anatomicRegionCodeMeaning, anatomicRegionModifierCodeMeaning ]
+  returnList << QString(entry->GetTerminologyContextName()); // Invalid string if NULL
+  returnList << QString(entry->GetCategoryObject() ? entry->GetCategoryObject()->GetCodeMeaning() : NULL);
+  returnList << QString(entry->GetTypeObject() ? entry->GetTypeObject()->GetCodeMeaning() : NULL);
+  returnList << QString(entry->GetTypeModifierObject() ? entry->GetTypeModifierObject()->GetCodeMeaning() : NULL);
+
+  returnList << QString(entry->GetAnatomicContextName());
+  returnList << QString(entry->GetAnatomicRegionObject() ? entry->GetAnatomicRegionObject()->GetCodeMeaning() : NULL);
+  returnList << QString(entry->GetAnatomicRegionModifierObject() ? entry->GetAnatomicRegionModifierObject()->GetCodeMeaning() : NULL);
+}
+
+//-----------------------------------------------------------------------------
+bool qSlicerTerminologyNavigatorWidget::terminologyEntryFromCodeMeanings(QStringList codeMeanings, vtkSlicerTerminologyEntry* entry)
+{
+  // Clear terminology entry object
+  entry->SetTerminologyContextName(NULL);
+  entry->SetCategoryObject(NULL);
+  entry->SetTypeObject(NULL);
+  entry->SetTypeModifierObject(NULL);
+  entry->SetAnatomicContextName(NULL);
+  entry->SetAnatomicRegionObject(NULL);
+  entry->SetAnatomicRegionModifierObject(NULL);
+
+  if (codeMeanings.count() < 3)
+    {
+    qCritical() << Q_FUNC_INFO << ": Input code meanings string list needs to contain at least three values to be valid: \n"
+      "[terminologyContextName, categoryCodeMeaning, typeCodeMeaning, anatomicContextName, anatomicRegionCodeMeaning, anatomicRegionModifierCodeMeaning]";
+    return false;
+    }
+
+  // Get terminology logic
+  vtkSlicerTerminologiesModuleLogic* terminologyLogic = NULL;
+  qSlicerAbstractCoreModule* terminologiesModule =
+    qSlicerCoreApplication::application()->moduleManager()->module("Terminologies");
+  if (terminologiesModule)
+    {
+    terminologyLogic = vtkSlicerTerminologiesModuleLogic::SafeDownCast(terminologiesModule->logic());
+    }
+  if (!terminologyLogic)
+    {
+    qCritical() << Q_FUNC_INFO << ": Unable to access terminology logic";
+    return false;
+    }
+
+  // Terminology context name
+  entry->SetTerminologyContextName(codeMeanings[0].toLatin1().constData());
+
+  // Terminology category
+  vtkSmartPointer<vtkSlicerTerminologyCategory> categoryObject = vtkSmartPointer<vtkSlicerTerminologyCategory>::New();
+  if ( !terminologyLogic->GetCategoryInTerminology(
+    codeMeanings[0].toLatin1().constData(), codeMeanings[1].toLatin1().constData(), categoryObject ) )
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to get terminology category";
+    return false;
+   }
+  entry->SetCategoryObject(categoryObject);
+
+  // Terminology type
+  vtkSmartPointer<vtkSlicerTerminologyType> typeObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+  if (!terminologyLogic->GetTypeInTerminologyCategory(
+    codeMeanings[0].toLatin1().constData(), codeMeanings[1].toLatin1().constData(),
+    codeMeanings[2].toLatin1().constData(), typeObject ) )
+    {
+    qCritical() << Q_FUNC_INFO << ": Failed to get terminology type";
+    return false;
+    }
+  entry->SetTypeObject(typeObject);
+
+  // Terminology type modifier (optional)
+  if (codeMeanings.count() == 3)
+    {
+    return true; // Already valid. Return because there are no more strings in string list
+    }
+  vtkSmartPointer<vtkSlicerTerminologyType> typeModifierObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+  if ( terminologyLogic->GetTypeModifierInTerminologyType(
+    codeMeanings[0].toLatin1().constData(), codeMeanings[1].toLatin1().constData(),
+    codeMeanings[2].toLatin1().constData(), codeMeanings[3].toLatin1().constData(), typeModifierObject ) )
+    {
+    entry->SetTypeModifierObject(typeModifierObject);
+    }
+
+  // Anatomic context name (optional)
+  if (codeMeanings.count() == 4)
+    {
+    return true; // Already valid. Return because there are no more strings in string list
+    }
+  entry->SetAnatomicContextName(codeMeanings[4].toLatin1().constData());
+
+  // Anatomic region (optional)
+  if (codeMeanings.count() == 5)
+    {
+    return true; // Already valid. Return because there are no more strings in string list
+    }
+  vtkSmartPointer<vtkSlicerTerminologyType> regionObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+  if ( terminologyLogic->GetRegionInAnatomicContext(
+    codeMeanings[4].toLatin1().constData(), codeMeanings[5].toLatin1().constData(), regionObject ) )
+    {
+    entry->SetAnatomicRegionObject(regionObject);
+    }
+
+  // Anatomic region modifier (optional)
+  if (codeMeanings.count() == 6)
+    {
+    return true; // Already valid. Return because there are no more strings in string list
+    }
+  vtkSmartPointer<vtkSlicerTerminologyType> regionModifierObject = vtkSmartPointer<vtkSlicerTerminologyType>::New();
+  if ( terminologyLogic->GetRegionModifierInAnatomicRegion(
+    codeMeanings[4].toLatin1().constData(), codeMeanings[5].toLatin1().constData(),
+    codeMeanings[6].toLatin1().constData(), regionModifierObject ) )
+    {
+    entry->SetAnatomicRegionModifierObject(regionModifierObject);
+    }
+
+  return true;
+}
+
+//-----------------------------------------------------------------------------
+QColor qSlicerTerminologyNavigatorWidget::recommendedColorFromTerminology(vtkSlicerTerminologyEntry* entry)
+{
+  QColor color;
+  if (!entry || !entry->GetTypeObject())
+    {
+    return color;
+    }
+
+  vtkSlicerTerminologyType* typeObject = entry->GetTypeObject();
+  if (typeObject->GetHasModifiers())
+    {
+    // Get color from modifier if any
+    typeObject = entry->GetTypeModifierObject();
+    }
+
+  unsigned char colorChar[3] = {0,0,0};
+  typeObject->GetRecommendedDisplayRGBValue(colorChar);
+  color.setRgb(colorChar[0], colorChar[1], colorChar[2]);
+  return color;
 }
 
 //-----------------------------------------------------------------------------

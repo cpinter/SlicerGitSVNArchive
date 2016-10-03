@@ -9,12 +9,21 @@ set(${KIT}_INCLUDE_DIRECTORIES
   )
 
 set(${KIT}_SRCS
+  qSlicerTerminologyItemDelegate.cxx
+  qSlicerTerminologyItemDelegate.h
   qSlicerTerminologyNavigatorWidget.cxx
   qSlicerTerminologyNavigatorWidget.h
+  qSlicerTerminologySelectorButton.cxx
+  qSlicerTerminologySelectorButton.h
+  qSlicerTerminologySelectorDialog.cxx
+  qSlicerTerminologySelectorDialog.h
   )
 
 set(${KIT}_MOC_SRCS
+  qSlicerTerminologyItemDelegate.h
   qSlicerTerminologyNavigatorWidget.h
+  qSlicerTerminologySelectorButton.h
+  qSlicerTerminologySelectorDialog.h
 )
 
 set(${KIT}_UI_SRCS

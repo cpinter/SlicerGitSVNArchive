@@ -25,7 +25,6 @@
 
 // VTK includes
 #include <vtkObject.h>
-#include <vtkStringArray.h>
 
 // Terminology includes
 #include "vtkSlicerTerminologiesModuleLogicExport.h"

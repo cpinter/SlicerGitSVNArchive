@@ -25,11 +25,6 @@
 
 // VTK includes
 #include <vtkObject.h>
-#include <vtkStringArray.h>
-
-// STD includes
-#include <map>
-#include <string>
 
 #include "vtkSlicerTerminologiesModuleLogicExport.h"
 

@@ -35,6 +35,7 @@
 class qSlicerTerminologyNavigatorWidgetPrivate;
 
 class QTableWidgetItem;
+class vtkSlicerTerminologyEntry;
 
 /// \brief Qt widget for browsing a terminology dictionary.
 ///   DICOM properties of the selected entry can also be set if enabled.
@@ -50,32 +51,53 @@ public:
   /// Destructor
   virtual ~qSlicerTerminologyNavigatorWidget();
 
+  /// Populate terminology entry from terminology and anatomy selection
+  /// \return Success flag (e.g. fail if no type is selected)
+  bool terminologyEntry(vtkSlicerTerminologyEntry* entry);
+
+  /// Update terminology and anatomy widgets and selections from terminology entry
+  /// \return Success flag (e.g. fail if no type is specified in entry)
+  bool setTerminologyEntry(vtkSlicerTerminologyEntry* entry);
+
   /// Get whether anatomic region section are visible
   bool anatomicRegionSectionVisible() const;
+
+  /// Convert terminology entry VTK object to string list with the contained code meanings.
+  /// The string list contains the following strings:
+  ///   [ terminologyContextName, categoryCodeMeaning, typeCodeMeaning, typeModifierCodeMeaning,
+  ///     anatomicContextName, anatomicRegionCodeMeaning, anatomicRegionModifierCodeMeaning ]
+  static QStringList terminologyEntryToCodeMeanings(vtkSlicerTerminologyEntry* entry);
+
+  /// Populate terminology entry VTK object with code meanings in a string list
+  /// The string list contains the following strings:
+  ///   [ terminologyContextName, categoryCodeMeaning, typeCodeMeaning, typeModifierCodeMeaning,
+  ///     anatomicContextName, anatomicRegionCodeMeaning, anatomicRegionModifierCodeMeaning ]
+  ///  \return Success flag
+  static bool terminologyEntryFromCodeMeanings(QStringList codeMeanings, vtkSlicerTerminologyEntry* entry);
+
+  /// Get recommended color from type (or type modifier if any) of the selected terminology entry
+  static QColor recommendedColorFromTerminology(vtkSlicerTerminologyEntry* entry);
 
 public slots:
   /// Show/hide anatomic region section section
   void setAnatomicRegionSectionVisible(bool);
 
 protected:
-  /// Populate terminology combobox from terminology logic
+  /// Populate terminology combobox based on current selection
   void populateTerminologyComboBox();
   /// Populate category table based on selected terminology and category search term
   void populateCategoryTable();
   /// Populate type table based on selected category and type search term
   void populateTypeTable();
-  /// Populate type modifier combobox from terminology logic
+  /// Populate type modifier combobox based on current selection
   void populateTypeModifierComboBox();
 
-  /// Populate anatomic region context combobox from terminology logic
+  /// Populate anatomic region context combobox based on current selection
   void populateAnatomicContextComboBox();
   /// Populate region table based on selected anatomic region context and type search term
   void populateRegionTable();
-  /// Populate region modifier combobox from terminology logic
+  /// Populate region modifier combobox based on current selection
   void populateRegionModifierComboBox();
-
-  /// Update widget from current terminology and selections
-  void updateWidgetFromCurrentTerminology();
 
 protected slots:
   void onTerminologySelectionChanged(int);
