@@ -46,6 +46,8 @@ public:
 
 protected slots:
   void commitSenderData();
+  void commitAndClose();
+  void close();
 };
 
 #endif

@@ -57,13 +57,9 @@ public:
   /// Current selected terminology
   vtkSlicerTerminologyEntry* terminologyEntry();
 
-  /// Reimplemented to return a toolbutton sizehint when no text is displayed
-  /// in the button.
-  virtual QSize sizeHint()const;
-
 public slots:
   /// Set a new current color without opening a dialog
-  void setTerminologyEntry(vtkSlicerTerminologyEntry* newTerminology);
+  void setTerminologyEntry(vtkSlicerTerminologyEntry* newTerminology, bool modifiedEvent=true);
 
   /// Opens a color dialog to select a new current color.
   /// If the CTK color dialog (\a UseCTKColorDialog) is used, then the color
@@ -71,13 +67,13 @@ public slots:
   /// \sa ctkColorDialog, color, colorName
   void changeTerminology();
 
-Q_SIGNALS:
+signals:
   /// terminologyChanged is fired anytime a new color is set. Programmatically or
   /// by the user when choosing a color from the color dialog
-  void terminologyChanged(vtkSlicerTerminologyEntry*);
+  void terminologyChanged();
 
-  /// This signaled is fired anytime a new color name is set.
-  void colorNameChanged(QString);
+  // Invoked when the shown dialog is canceled
+  void canceled();
 
 protected slots:
   void onToggled(bool change = true);

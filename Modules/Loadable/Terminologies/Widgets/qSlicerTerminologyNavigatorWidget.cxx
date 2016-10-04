@@ -552,7 +552,7 @@ bool qSlicerTerminologyNavigatorWidget::setTerminologyEntry(vtkSlicerTerminology
 }
 
 //-----------------------------------------------------------------------------
-QStringList qSlicerTerminologyNavigatorWidget::terminologyEntryToCodeMeanings(vtkSlicerTerminologyEntry* entry)
+QStringList qSlicerTerminologyNavigatorWidget::codeMeaningsFromTerminologyEntry(vtkSlicerTerminologyEntry* entry)
 {
   QStringList returnList;
   if (!entry)
@@ -572,6 +572,8 @@ QStringList qSlicerTerminologyNavigatorWidget::terminologyEntryToCodeMeanings(vt
   returnList << QString(entry->GetAnatomicContextName());
   returnList << QString(entry->GetAnatomicRegionObject() ? entry->GetAnatomicRegionObject()->GetCodeMeaning() : NULL);
   returnList << QString(entry->GetAnatomicRegionModifierObject() ? entry->GetAnatomicRegionModifierObject()->GetCodeMeaning() : NULL);
+
+  return returnList;
 }
 
 //-----------------------------------------------------------------------------
@@ -586,10 +588,10 @@ bool qSlicerTerminologyNavigatorWidget::terminologyEntryFromCodeMeanings(QString
   entry->SetAnatomicRegionObject(NULL);
   entry->SetAnatomicRegionModifierObject(NULL);
 
+  // A valid, fully set terminology code meanings string list looks like this:
+  // [terminologyContextName, categoryCodeMeaning, typeCodeMeaning, anatomicContextName, anatomicRegionCodeMeaning, anatomicRegionModifierCodeMeaning]
   if (codeMeanings.count() < 3)
     {
-    qCritical() << Q_FUNC_INFO << ": Input code meanings string list needs to contain at least three values to be valid: \n"
-      "[terminologyContextName, categoryCodeMeaning, typeCodeMeaning, anatomicContextName, anatomicRegionCodeMeaning, anatomicRegionModifierCodeMeaning]";
     return false;
     }
 
@@ -608,6 +610,10 @@ bool qSlicerTerminologyNavigatorWidget::terminologyEntryFromCodeMeanings(QString
     }
 
   // Terminology context name
+  if (codeMeanings[0].isEmpty())
+    {
+    return false;
+    }
   entry->SetTerminologyContextName(codeMeanings[0].toLatin1().constData());
 
   // Terminology category

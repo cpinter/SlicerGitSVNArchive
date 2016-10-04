@@ -66,7 +66,7 @@ public:
   /// The string list contains the following strings:
   ///   [ terminologyContextName, categoryCodeMeaning, typeCodeMeaning, typeModifierCodeMeaning,
   ///     anatomicContextName, anatomicRegionCodeMeaning, anatomicRegionModifierCodeMeaning ]
-  static QStringList terminologyEntryToCodeMeanings(vtkSlicerTerminologyEntry* entry);
+  static QStringList codeMeaningsFromTerminologyEntry(vtkSlicerTerminologyEntry* entry);
 
   /// Populate terminology entry VTK object with code meanings in a string list
   /// The string list contains the following strings:

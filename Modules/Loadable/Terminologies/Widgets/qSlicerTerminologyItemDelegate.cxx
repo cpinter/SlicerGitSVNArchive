@@ -41,10 +41,11 @@ qSlicerTerminologyItemDelegate::qSlicerTerminologyItemDelegate(QObject *parent)
 //-----------------------------------------------------------------------------
 QWidget* qSlicerTerminologyItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &/* option */, const QModelIndex &/* index */) const
 {
-  qSlicerTerminologySelectorButton* editor = new qSlicerTerminologySelectorButton(parent);
-  //connect(editor, SIGNAL(terminologyChanged()), this, SLOT(commitAndClose()), Qt::QueuedConnection); //TODO: Needed?
-  connect(editor, SIGNAL(terminologyChanged()), this, SLOT(commitSenderData()), Qt::QueuedConnection);
-  return editor;
+  qSlicerTerminologySelectorButton* terminologyButton = new qSlicerTerminologySelectorButton(parent);
+  terminologyButton->setProperty("changeColorOnSet", true);
+  connect(terminologyButton, SIGNAL(terminologyChanged()), this, SLOT(commitAndClose()), Qt::QueuedConnection);
+  connect(terminologyButton, SIGNAL(canceled()), this, SLOT(close()), Qt::QueuedConnection);
+  return terminologyButton;
 }
 
 //-----------------------------------------------------------------------------
@@ -52,29 +53,38 @@ void qSlicerTerminologyItemDelegate::setEditorData(QWidget *editor, const QModel
 {
   // Get string list value from model index
   QStringList value = index.model()->data(index, Qt::EditRole).toStringList();
-  // Convert string list to VTK terminology entry
+
+  // Convert string list to VTK terminology entry. Do not check success, as an empty terminology is also a valid starting point
   vtkSmartPointer<vtkSlicerTerminologyEntry> terminologyEntry = vtkSmartPointer<vtkSlicerTerminologyEntry>::New();
-  if (!qSlicerTerminologyNavigatorWidget::terminologyEntryFromCodeMeanings(value, terminologyEntry))
-    {
-    qCritical() << Q_FUNC_INFO << ": Failed to convert terminology entry from item";
-    return;
-    }
+  qSlicerTerminologyNavigatorWidget::terminologyEntryFromCodeMeanings(value, terminologyEntry);
 
   // Set terminology to button
-  qSlicerTerminologySelectorButton* editorButton = qobject_cast<qSlicerTerminologySelectorButton*>(editor);
-  editorButton->setTerminologyEntry(terminologyEntry);
+  qSlicerTerminologySelectorButton* terminologyButton = qobject_cast<qSlicerTerminologySelectorButton*>(editor);
+  terminologyButton->setTerminologyEntry(terminologyEntry, false);
+  if (terminologyButton->property("changeColorOnSet").toBool())
+    {
+    terminologyButton->setProperty("changeColorOnSet", false);
+    terminologyButton->changeTerminology();
+    }
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerTerminologyItemDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
   // Get terminology (changed by the user) from the terminology button
-  qSlicerTerminologySelectorButton* editorButton = qobject_cast<qSlicerTerminologySelectorButton*>(editor);
-  vtkSlicerTerminologyEntry* terminologyEntry = editorButton->terminologyEntry();
+  qSlicerTerminologySelectorButton* terminologyButton = qobject_cast<qSlicerTerminologySelectorButton*>(editor);
+  vtkSlicerTerminologyEntry* terminologyEntry = terminologyButton->terminologyEntry();
+
+  // Get color
+  QColor color = qSlicerTerminologyNavigatorWidget::recommendedColorFromTerminology(terminologyEntry);
+  // Set color to model
+  model->blockSignals(true); // To avoid widget update
+  model->setData(index, color, Qt::DecorationRole);
+  model->blockSignals(false);
 
   // Convert VTK terminology entry to string list
-  QStringList terminologyStringList = qSlicerTerminologyNavigatorWidget::terminologyEntryToCodeMeanings(terminologyEntry);
-
+  QStringList terminologyStringList = qSlicerTerminologyNavigatorWidget::codeMeaningsFromTerminologyEntry(terminologyEntry);
+  // Set terminology code meanings string list to model
   model->setData(index, terminologyStringList, Qt::EditRole);
 }
 
@@ -89,4 +99,19 @@ void qSlicerTerminologyItemDelegate::commitSenderData()
 {
   QWidget* editor = qobject_cast<QWidget*>(this->sender());
   emit commitData(editor);
+}
+
+//------------------------------------------------------------------------------
+void qSlicerTerminologyItemDelegate::commitAndClose()
+{
+  QWidget* editor = qobject_cast<QWidget*>(this->sender());
+  emit commitData(editor);
+  emit closeEditor(editor);
+}
+
+//------------------------------------------------------------------------------
+void qSlicerTerminologyItemDelegate::close()
+{
+  QWidget* editor = qobject_cast<QWidget*>(this->sender());
+  emit closeEditor(editor);
 }

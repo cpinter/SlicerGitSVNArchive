@@ -97,6 +97,7 @@ qSlicerTerminologySelectorButton::qSlicerTerminologySelectorButton(QWidget* _par
 //-----------------------------------------------------------------------------
 qSlicerTerminologySelectorButton::~qSlicerTerminologySelectorButton()
 {
+  this->setTerminologyEntry(NULL); // Release terminology entry object
 }
 
 //-----------------------------------------------------------------------------
@@ -107,12 +108,12 @@ void qSlicerTerminologySelectorButton::changeTerminology()
     {
     d->computeIcon();
     this->update();
-    emit terminologyChanged(d->TerminologyEntry);
+    emit terminologyChanged();
     }
-else
-{
-int i=0; ++i; //TODO: TEST
-}
+  else
+    {
+    emit canceled();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -126,7 +127,7 @@ void qSlicerTerminologySelectorButton::onToggled(bool change)
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerTerminologySelectorButton::setTerminologyEntry(vtkSlicerTerminologyEntry* newTerminology)
+void qSlicerTerminologySelectorButton::setTerminologyEntry(vtkSlicerTerminologyEntry* newTerminology, bool modifiedEvent/*=true*/)
 {
   Q_D(qSlicerTerminologySelectorButton);
   if (newTerminology == d->TerminologyEntry)
@@ -134,11 +135,26 @@ void qSlicerTerminologySelectorButton::setTerminologyEntry(vtkSlicerTerminologyE
     return;
     }
 
-  d->TerminologyEntry = newTerminology;
-  d->computeIcon();
+  // Release the previous terminology entry object
+  if (d->TerminologyEntry)
+    {
+    d->TerminologyEntry->UnRegister(NULL);
+    }
 
+  d->TerminologyEntry = newTerminology;
+
+  // Increase reference count for terminology entry object to make sure it stays valid
+  if (d->TerminologyEntry)
+    {
+    d->TerminologyEntry->Register(NULL);
+    }
+
+  d->computeIcon();
   this->update();
-  emit terminologyChanged(d->TerminologyEntry);
+  if (modifiedEvent)
+    {
+    emit terminologyChanged();
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -158,47 +174,4 @@ void qSlicerTerminologySelectorButton::paintEvent(QPaintEvent *)
   //option.text = d->text();
   option.icon = d->Icon;
   p.drawControl(QStyle::CE_PushButton, option);
-}
-
-//-----------------------------------------------------------------------------
-QSize qSlicerTerminologySelectorButton::sizeHint()const
-{
-  Q_D(const qSlicerTerminologySelectorButton);
-//  if (!d->ShowTerminologyTypeName && !this->text().isEmpty())
-//    {
-    return this->QPushButton::sizeHint(); //TODO:
-//    }
-  if (d->CachedSizeHint.isValid())
-    {
-    return d->CachedSizeHint;
-    }
-
-  // If no text, the sizehint is a QToolButton sizeHint
-  QStyleOptionButton pushButtonOpt;
-  this->initStyleOption(&pushButtonOpt);
-  //pushButtonOpt.text = d->text();
-  int iconSize = this->style()->pixelMetric(QStyle::PM_SmallIconSize);
-  if (pushButtonOpt.text == QString())
-    {
-    QStyleOptionToolButton opt;
-    (&opt)->QStyleOption::operator=(pushButtonOpt);
-    opt.arrowType = Qt::NoArrow;
-    opt.icon = d->Icon;
-    opt.iconSize = QSize(iconSize, iconSize);
-    opt.rect.setSize(opt.iconSize); // PM_MenuButtonIndicator depends on the height
-    d->CachedSizeHint = this->style()->sizeFromContents(
-      QStyle::CT_ToolButton, &opt, opt.iconSize, this).
-      expandedTo(QApplication::globalStrut());
-    }
-  else
-    {
-qCritical("ZZZ Non-empty text in button style. Cannot remove Private::text()"); //TODO:
-    pushButtonOpt.icon = d->Icon;
-    pushButtonOpt.iconSize = QSize(iconSize, iconSize);
-    pushButtonOpt.rect.setSize(pushButtonOpt.iconSize); // PM_MenuButtonIndicator depends on the height
-    d->CachedSizeHint = (style()->sizeFromContents(
-                           QStyle::CT_PushButton, &pushButtonOpt, pushButtonOpt.iconSize, this).
-                         expandedTo(QApplication::globalStrut()));
-    }
-  return d->CachedSizeHint;
 }

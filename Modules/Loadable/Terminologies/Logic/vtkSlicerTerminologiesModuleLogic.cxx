@@ -141,6 +141,10 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTerminologyRootBy
 //---------------------------------------------------------------------------
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetCategoryArrayInTerminology(std::string terminologyName)
 {
+  if (terminologyName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value root = this->GetTerminologyRootByName(terminologyName);
   if (root.isNull())
     {
@@ -167,6 +171,10 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetCategoryArrayInTe
 //---------------------------------------------------------------------------
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetCategoryInTerminology(std::string terminologyName, std::string categoryName)
 {
+  if (categoryName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value categoryArray = this->GetCategoryArrayInTerminology(terminologyName);
   if (categoryArray.isNull())
     {
@@ -244,6 +252,10 @@ bool vtkSlicerTerminologiesModuleLogic::vtkInternal::PopulateTerminologyCategory
 //---------------------------------------------------------------------------
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTypeArrayInTerminologyCategory(std::string terminologyName, std::string categoryName)
 {
+  if (categoryName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value categoryObject = this->GetCategoryInTerminology(terminologyName, categoryName);
   if (categoryObject.isNull())
     {
@@ -266,6 +278,10 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTypeArrayInTermin
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTypeInTerminologyCategory(
   std::string terminologyName, std::string categoryName, std::string typeName)
 {
+  if (typeName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value typeArray = this->GetTypeArrayInTerminologyCategory(terminologyName, categoryName);
   if (typeArray.isNull())
     {
@@ -350,6 +366,10 @@ bool vtkSlicerTerminologiesModuleLogic::vtkInternal::PopulateTerminologyTypeFrom
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTypeModifierArrayInTerminologyType(
   std::string terminologyName, std::string categoryName, std::string typeName)
 {
+  if (typeName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value categoryObject = this->GetCategoryInTerminology(terminologyName, categoryName);
   if (categoryObject.isNull())
     {
@@ -369,8 +389,6 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTypeModifierArray
   Json::Value typeModifierArray = typeObject["Modifier"];
   if (!typeModifierArray.isArray())
     {
-    vtkGenericWarningMacro("GetTypeModifierArrayInTerminologyType: Failed to find Modifier array member in type '" << typeName << "' in category '"
-      << categoryName << "' in terminology '" << terminologyName << "'");
     return Json::Value();
     }
 
@@ -381,6 +399,10 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTypeModifierArray
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetTypeModifierInTerminologyType(
   std::string terminologyName, std::string categoryName, std::string typeName, std::string modifierName)
 {
+  if (modifierName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value typeModifierArray = this->GetTypeModifierArrayInTerminologyType(terminologyName, categoryName, typeName);
   if (typeModifierArray.isNull())
     {
@@ -424,6 +446,10 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetAnatomicContextRo
 //---------------------------------------------------------------------------
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetRegionArrayInAnatomicContext(std::string anatomicContextName)
 {
+  if (anatomicContextName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value root = this->GetAnatomicContextRootByName(anatomicContextName);
   if (root.isNull())
     {
@@ -450,6 +476,10 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetRegionArrayInAnat
 //---------------------------------------------------------------------------
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetRegionInAnatomicContext(std::string anatomicContextName, std::string regionName)
 {
+  if (regionName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value regionArray = this->GetRegionArrayInAnatomicContext(anatomicContextName);
   if (regionArray.isNull())
     {
@@ -486,6 +516,10 @@ bool vtkSlicerTerminologiesModuleLogic::vtkInternal::PopulateRegionFromJson(Json
 //---------------------------------------------------------------------------
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetRegionModifierArrayInRegion(std::string anatomicContextName, std::string regionName)
 {
+  if (regionName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value regionObject = this->GetRegionInAnatomicContext(anatomicContextName, regionName);
   if (regionObject.isNull())
     {
@@ -509,6 +543,10 @@ Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetRegionModifierArr
 Json::Value vtkSlicerTerminologiesModuleLogic::vtkInternal::GetRegionModifierInRegion(
   std::string anatomicContextName, std::string regionName, std::string modifierName )
 {
+  if (modifierName.empty())
+    {
+    return Json::Value();
+    }
   Json::Value regionModifierArray = this->GetRegionModifierArrayInRegion(anatomicContextName, regionName);
   if (regionModifierArray.isNull())
     {
@@ -813,7 +851,7 @@ bool vtkSlicerTerminologiesModuleLogic::GetCategoryNamesInTerminology(std::strin
 //---------------------------------------------------------------------------
 bool vtkSlicerTerminologiesModuleLogic::GetCategoryInTerminology(std::string terminologyName, std::string categoryName, vtkSlicerTerminologyCategory* category)
 {
-  if (!category)
+  if (!category || categoryName.empty())
     {
     return false;
     }
@@ -832,7 +870,7 @@ bool vtkSlicerTerminologiesModuleLogic::GetCategoryInTerminology(std::string ter
 //---------------------------------------------------------------------------
 bool vtkSlicerTerminologiesModuleLogic::GetTypesInTerminologyCategory(std::string terminologyName, std::string categoryName, vtkCollection* typeCollection)
 {
-  if (!typeCollection)
+  if (!typeCollection || categoryName.empty())
     {
     return false;
     }
@@ -922,10 +960,10 @@ bool vtkSlicerTerminologiesModuleLogic::FindTypeNamesInTerminologyCategory(
 }
 
 //---------------------------------------------------------------------------
-bool vtkSlicerTerminologiesModuleLogic::GetTypeInTerminologyCategory
-(std::string terminologyName, std::string categoryName, std::string typeName, vtkSlicerTerminologyType* type)
+bool vtkSlicerTerminologiesModuleLogic::GetTypeInTerminologyCategory(
+  std::string terminologyName, std::string categoryName, std::string typeName, vtkSlicerTerminologyType* type)
 {
-  if (!type)
+  if (!type || typeName.empty())
     {
     return false;
     }
@@ -1024,7 +1062,7 @@ bool vtkSlicerTerminologiesModuleLogic::GetTypeModifierNamesInTerminologyType(
 bool vtkSlicerTerminologiesModuleLogic::GetTypeModifierInTerminologyType(
 std::string terminologyName, std::string categoryName, std::string typeName, std::string modifierName, vtkSlicerTerminologyType* typeModifier)
 {
-  if (!typeModifier)
+  if (!typeModifier || modifierName.empty())
     {
     return false;
     }
@@ -1133,7 +1171,7 @@ bool vtkSlicerTerminologiesModuleLogic::FindRegionNamesInAnatomicContext(std::st
 //---------------------------------------------------------------------------
 bool vtkSlicerTerminologiesModuleLogic::GetRegionInAnatomicContext(std::string anatomicContextName, std::string regionName, vtkSlicerTerminologyType* region)
 {
-  if (!region)
+  if (!region || regionName.empty())
     {
     return false;
     }
@@ -1141,7 +1179,7 @@ bool vtkSlicerTerminologiesModuleLogic::GetRegionInAnatomicContext(std::string a
   Json::Value regionObject = this->Internal->GetRegionInAnatomicContext(anatomicContextName, regionName);
   if (regionObject.isNull())
     {
-    vtkErrorMacro("GetRegionInAnatomicContext: Failed to find region '" << regionName << "' anatomic context '" << anatomicContextName << "'");
+    vtkErrorMacro("GetRegionInAnatomicContext: Failed to find region '" << regionName << "' in anatomic context '" << anatomicContextName << "'");
     return false;
     }
 
@@ -1153,7 +1191,7 @@ bool vtkSlicerTerminologiesModuleLogic::GetRegionInAnatomicContext(std::string a
 bool vtkSlicerTerminologiesModuleLogic::GetRegionModifiersInAnatomicRegion(
   std::string anatomicContextName, std::string regionName, vtkCollection* regionModifierCollection )
 {
-  if (!regionModifierCollection)
+  if (!regionModifierCollection || regionName.empty())
     {
     return false;
     }
@@ -1231,7 +1269,7 @@ bool vtkSlicerTerminologiesModuleLogic::GetRegionModifierNamesInAnatomicRegion(
 bool vtkSlicerTerminologiesModuleLogic::GetRegionModifierInAnatomicRegion(std::string anatomicContextName,
     std::string regionName, std::string modifierName, vtkSlicerTerminologyType* regionModifier)
 {
-  if (!regionModifier)
+  if (!regionModifier || modifierName.empty())
     {
     return false;
     }
