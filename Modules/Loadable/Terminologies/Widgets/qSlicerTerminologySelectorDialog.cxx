@@ -124,6 +124,7 @@ bool qSlicerTerminologySelectorDialog::exec()
 
   // Initialize dialog
   d->init();
+  d->NavigatorWidget->setTerminologyEntry(d->TerminologyEntry);
 
   // Show dialog
   bool result = false;

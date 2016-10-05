@@ -35,6 +35,7 @@
 class qSlicerTerminologyNavigatorWidgetPrivate;
 
 class QTableWidgetItem;
+class QColor;
 class vtkSlicerTerminologyEntry;
 
 /// \brief Qt widget for browsing a terminology dictionary.
@@ -111,6 +112,8 @@ protected slots:
   void onRegionClicked(QTableWidgetItem*);
   void onRegionModifierSelectionChanged(int);
   void onRegionSearchTextChanged(QString);
+
+  void onRecommendedColorChanged(QColor);
 
 protected:
   QScopedPointer<qSlicerTerminologyNavigatorWidgetPrivate> d_ptr;
