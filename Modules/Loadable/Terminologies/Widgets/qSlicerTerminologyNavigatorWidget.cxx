@@ -741,6 +741,7 @@ void qSlicerTerminologyNavigatorWidget::populateCategoryTable()
 
   if (d->CurrentTerminologyName.isEmpty())
     {
+    d->tableWidget_Category->setRowCount(0);
     return;
     }
 
@@ -786,6 +787,7 @@ void qSlicerTerminologyNavigatorWidget::populateTypeTable()
 
   if (d->CurrentTerminologyName.isEmpty() || d->CurrentCategoryName.isEmpty())
     {
+    d->tableWidget_Type->setRowCount(0);
     return;
     }
 
@@ -875,16 +877,22 @@ void qSlicerTerminologyNavigatorWidget::onTerminologySelectionChanged(int index)
   // Set current terminology
   d->CurrentTerminologyName = d->ComboBox_Terminology->itemText(index);
 
-  // Populate category table
+  // Populate category table, and reset type table and type modifier combobox
   QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
   this->populateCategoryTable();
+  this->populateTypeTable();
+  this->populateTypeModifierComboBox();
   QApplication::restoreOverrideCursor();
 
   // Only enable category table if there are items in it
   if (d->tableWidget_Category->rowCount() == 0)
     {
     d->tableWidget_Category->setEnabled(false);
-    d->SearchBox_Category->setEnabled(false);
+    if (d->SearchBox_Category->text().isEmpty())
+      {
+      // Table might be empty because of a search
+      d->SearchBox_Category->setEnabled(false);
+      }
     d->tableWidget_Type->setEnabled(false);
     d->SearchBox_Type->setEnabled(false);
     d->ComboBox_TypeModifier->setEnabled(false);
@@ -904,12 +912,9 @@ void qSlicerTerminologyNavigatorWidget::onCategoryClicked(QTableWidgetItem* item
   // Reset current type and type modifier
   d->resetCurrentType();
   d->resetCurrentTypeModifier();
-  this->populateTypeModifierComboBox();
   // Reset anatomic region information as well
   d->resetCurrentRegion();
   d->resetCurrentRegionModifier();
-  d->tableWidget_AnatomicRegion->setCurrentItem(NULL);
-  this->populateRegionModifierComboBox();
 
   QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
 
@@ -926,14 +931,21 @@ void qSlicerTerminologyNavigatorWidget::onCategoryClicked(QTableWidgetItem* item
     d->CurrentTerminologyName.toLatin1().constData(), d->CurrentCategoryName.toLatin1().constData(),
     d->CurrentCategoryObject );
 
-  // Populate type table
+  // Populate type table, and reset type modifier combobox and region widgets
   this->populateTypeTable();
+  this->populateTypeModifierComboBox();
+  d->tableWidget_AnatomicRegion->setCurrentItem(NULL);
+  this->populateRegionModifierComboBox();
 
   // Only enable type table if there are items in it
   if (d->tableWidget_Type->rowCount() == 0)
     {
     d->tableWidget_Type->setEnabled(false);
-    d->SearchBox_Type->setEnabled(false);
+    if (d->SearchBox_Type->text().isEmpty())
+      {
+      // Table might be empty because of a search
+      d->SearchBox_Type->setEnabled(false);
+      }
     d->ComboBox_TypeModifier->setEnabled(false);
     }
   else
@@ -946,7 +958,7 @@ void qSlicerTerminologyNavigatorWidget::onCategoryClicked(QTableWidgetItem* item
   d->ComboBox_AnatomicContext->setEnabled(d->CurrentCategoryObject->GetShowAnatomy());
   d->tableWidget_AnatomicRegion->setEnabled(d->CurrentCategoryObject->GetShowAnatomy());
   d->SearchBox_AnatomicRegion->setEnabled(d->CurrentCategoryObject->GetShowAnatomy());
-  d->ComboBox_AnatomicRegionModifier->setEnabled(d->CurrentCategoryObject->GetShowAnatomy());
+  d->ComboBox_AnatomicRegionModifier->setEnabled(false); // Disabled until valid region selection
 
   QApplication::restoreOverrideCursor();
 }
@@ -1093,6 +1105,7 @@ void qSlicerTerminologyNavigatorWidget::populateRegionTable()
 
   if (d->CurrentAnatomicContextName.isEmpty())
     {
+    d->tableWidget_AnatomicRegion->setRowCount(0);
     return;
     }
 
@@ -1180,16 +1193,21 @@ void qSlicerTerminologyNavigatorWidget::onAnatomicContextSelectionChanged(int in
   // Set current anatomic context
   d->CurrentAnatomicContextName = d->ComboBox_AnatomicContext->itemText(index);
 
-  // Populate region table
+  // Populate region table and reset region modifier combobox
   QApplication::setOverrideCursor(QCursor(Qt::BusyCursor));
   this->populateRegionTable();
+  this->populateRegionModifierComboBox();
   QApplication::restoreOverrideCursor();
 
   // Only enable region table if there are items in it
   if (d->tableWidget_AnatomicRegion->rowCount() == 0)
     {
     d->tableWidget_AnatomicRegion->setEnabled(false);
-    d->SearchBox_AnatomicRegion->setEnabled(false);
+    if (d->SearchBox_AnatomicRegion->text().isEmpty())
+      {
+      // Table might be empty because of a search
+      d->SearchBox_AnatomicRegion->setEnabled(false);
+      }
     d->ComboBox_AnatomicRegionModifier->setEnabled(false);
     }
   else if (d->CurrentCategoryObject->GetShowAnatomy())

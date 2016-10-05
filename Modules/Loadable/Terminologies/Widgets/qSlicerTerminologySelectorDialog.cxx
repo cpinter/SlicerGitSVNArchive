@@ -24,9 +24,10 @@
 #include "qSlicerTerminologySelectorDialog.h"
 
 #include "qSlicerTerminologyNavigatorWidget.h"
+#include "vtkSlicerTerminologyEntry.h"
 
 // VTK includes
-//#include <vtkWeakPointer.h> //TODO:
+#include <vtkWeakPointer.h>
 
 // Qt includes
 #include <QDialog>
@@ -53,8 +54,7 @@ private:
   QPushButton* CancelButton;
 
   /// Terminology entry object into which the selection is set
-  //TODO: Make this vtkWeakPointer (gave error telling there was no conversion to vtkObjectBase)
-  vtkSlicerTerminologyEntry* TerminologyEntry;
+  vtkWeakPointer<vtkSlicerTerminologyEntry> TerminologyEntry;
 };
 
 //-----------------------------------------------------------------------------

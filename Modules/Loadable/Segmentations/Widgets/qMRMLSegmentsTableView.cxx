@@ -543,12 +543,12 @@ void qMRMLSegmentsTableView::updateWidgetFromMRML()
     QTableWidgetItem* colorItem = d->SegmentsTable->item(row, d->columnIndex("Color"));
     if (colorItem)
       {
-      QColor color = QColor::fromRgbF(properties.Color[0], properties.Color[1], properties.Color[2]);
-      colorItem->setData(Qt::DecorationRole, color);
       // Set terminology information from segment to item
       colorItem->setData(Qt::EditRole, qMRMLSegmentsTableView::getCodeMeaningsFromTerminologySegmentTags(segmentIt->second));
-      // Set tooltip
       colorItem->setToolTip(qMRMLSegmentsTableView::terminologyInfoStringForSegment(segmentIt->second));
+      // Set color
+      QColor color = QColor::fromRgbF(properties.Color[0], properties.Color[1], properties.Color[2]);
+      colorItem->setData(Qt::DecorationRole, color);
       }
 
     // Opacity (show only 3D opacity; if the user changes it then it applies to all types of opacity)
@@ -1139,7 +1139,7 @@ QString qMRMLSegmentsTableView::terminologyInfoStringForSegment(vtkSegment* segm
     }
   if (anatomicRegionTagPresent && !anatomicRegion.empty())
     {
-    terminology = terminology + QString("\n  Anatomic region: %1").arg(tagValue.c_str());
+    terminology = terminology + QString("\n  Anatomic region: %1").arg(anatomicRegion.c_str());
     }
   if (segment->GetTag(vtkSegment::GetAnatomicRegionModifierTagName(), tagValue) && !tagValue.empty())
     {

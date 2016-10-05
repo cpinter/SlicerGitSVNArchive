@@ -23,6 +23,11 @@
 #include "qSlicerTerminologySelectorDialog.h"
 #include "qSlicerTerminologySelectorButton.h"
 
+#include "vtkSlicerTerminologyEntry.h"
+
+// VTK includes
+#include <vtkWeakPointer.h>
+
 // Qt includes
 #include <QApplication>
 #include <QDebug>
@@ -45,7 +50,7 @@ public:
   QString text()const;
 
   QIcon  Icon;
-  vtkSlicerTerminologyEntry* TerminologyEntry;
+  vtkWeakPointer<vtkSlicerTerminologyEntry> TerminologyEntry;
   mutable QSize CachedSizeHint;
 };
 
