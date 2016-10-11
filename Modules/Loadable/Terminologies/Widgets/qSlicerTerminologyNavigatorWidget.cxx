@@ -189,6 +189,10 @@ void qSlicerTerminologyNavigatorWidgetPrivate::init()
   this->tableWidget_AnatomicRegion->setEnabled(false);
   this->ComboBox_AnatomicRegionModifier->setEnabled(false);
 
+  // Use the CTK color picker
+  ctkColorPickerButton::ColorDialogOptions options = ctkColorPickerButton::UseCTKColorDialog;
+  this->ColorPickerButton_RecommendedRGB->setDialogOptions(options);
+
   // Populate terminology combobox with the loaded terminologies
   q->populateTerminologyComboBox();
   // Populate anatomic context combobox with the loaded anatomic contexts
