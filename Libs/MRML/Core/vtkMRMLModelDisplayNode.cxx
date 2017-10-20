@@ -45,6 +45,7 @@ vtkMRMLModelDisplayNode::vtkMRMLModelDisplayNode()
   this->ThresholdFilter = vtkThreshold::New();
   this->ThresholdEnabled = false;
   this->SliceDisplayMode = SliceDisplayIntersection;
+  this->SliceIntersectionLineStyle = SliceIntersectionLineSolid;
 
   // the default behavior for models is to use the scalar range of the data
   // to reset the display scalar range, so use the Data flag
@@ -69,6 +70,8 @@ void vtkMRMLModelDisplayNode::PrintSelf(ostream& os, vtkIndent indent)
   Superclass::PrintSelf(os, indent);
 
   os << indent << "Slice display mode: " << this->GetSliceDisplayModeAsString(this->SliceDisplayMode) << "\n";
+  os << indent << "Slice intersection line style: "
+     << this->GetSliceIntersectionLineStyleAsString(this->SliceIntersectionLineStyle) << "\n";
 }
 
 //----------------------------------------------------------------------------
@@ -80,6 +83,11 @@ void vtkMRMLModelDisplayNode::WriteXML(ostream& of, int nIndent)
   if (this->GetSliceDisplayMode() != SliceDisplayIntersection)
     {
     of << " sliceDisplayMode=\"" << this->GetSliceDisplayModeAsString(this->GetSliceDisplayMode()) << "\"";
+    }
+  if (this->GetSliceIntersectionLineStyle() != SliceIntersectionLineSolid)
+    {
+    of << " sliceIntersectionLineStyle=\""
+       << this->GetSliceIntersectionLineStyleAsString(this->GetSliceIntersectionLineStyle()) << "\"";
     }
 }
 
@@ -107,6 +115,18 @@ void vtkMRMLModelDisplayNode::ReadXMLAttributes(const char** atts)
         this->SetSliceDisplayMode(id);
         }
       }
+    else if (!strcmp(attName, "sliceIntersectionLineStyle"))
+      {
+      int id = this->GetSliceIntersectionLineStyleFromString(attValue);
+      if (id < 0)
+        {
+        vtkWarningMacro("Invalid sliceIntersectionLineStyle: " << (attValue ? attValue : "(none)"));
+        }
+      else
+        {
+        this->SetSliceIntersectionLineStyle(id);
+        }
+      }
     }
   this->EndModify(disabledModify);
 }
@@ -122,6 +142,7 @@ void vtkMRMLModelDisplayNode::Copy(vtkMRMLNode *anode)
   vtkMRMLModelDisplayNode *node = (vtkMRMLModelDisplayNode *)anode;
 
   this->SetSliceDisplayMode(node->GetSliceDisplayMode());
+  this->SetSliceIntersectionLineStyle(node->GetSliceIntersectionLineStyle());
 
   this->EndModify(disabledModify);
 }
@@ -473,6 +494,24 @@ void vtkMRMLModelDisplayNode::SetSliceDisplayModeToDistanceEncodedProjection()
 };
 
 //-----------------------------------------------------------
+void vtkMRMLModelDisplayNode::SetSliceIntersectionLineStyleToSolid()
+{
+  this->SetSliceIntersectionLineStyle(SliceIntersectionLineSolid);
+};
+
+//-----------------------------------------------------------
+void vtkMRMLModelDisplayNode::SetSliceIntersectionLineStyleToDashed()
+{
+  this->SetSliceIntersectionLineStyle(SliceIntersectionLineDashed);
+};
+
+//-----------------------------------------------------------
+void vtkMRMLModelDisplayNode::SetSliceIntersectionLineStyleToDotted()
+{
+  this->SetSliceIntersectionLineStyle(SliceIntersectionLineDotted);
+};
+
+//-----------------------------------------------------------
 const char* vtkMRMLModelDisplayNode::GetSliceDisplayModeAsString(int id)
 {
   switch (id)
@@ -497,6 +536,40 @@ int vtkMRMLModelDisplayNode::GetSliceDisplayModeFromString(const char* name)
   for (int i = 0; i<SliceDisplayMode_Last; i++)
     {
     if (strcmp(name, GetSliceDisplayModeAsString(i)) == 0)
+      {
+      // found a matching name
+      return i;
+      }
+    }
+  // unknown name
+  return -1;
+}
+
+//-----------------------------------------------------------
+const char* vtkMRMLModelDisplayNode::GetSliceIntersectionLineStyleAsString(int id)
+{
+  switch (id)
+    {
+    case SliceIntersectionLineSolid: return "solid";
+    case SliceIntersectionLineDashed: return "dashed";
+    case SliceIntersectionLineDotted: return "dotted";
+    default:
+      // invalid id
+      return "";
+    }
+}
+
+//-----------------------------------------------------------
+int vtkMRMLModelDisplayNode::GetSliceIntersectionLineStyleFromString(const char* name)
+{
+  if (name == NULL)
+    {
+    // invalid name
+    return -1;
+    }
+  for (int i = 0; i<SliceIntersectionLineStyle_Last; i++)
+    {
+    if (strcmp(name, GetSliceIntersectionLineStyleAsString(i)) == 0)
       {
       // found a matching name
       return i;

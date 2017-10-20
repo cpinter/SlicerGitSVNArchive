@@ -54,6 +54,9 @@
 #include <vtkWeakPointer.h>
 #include <vtkPointLocator.h>
 #include <vtkVersion.h>
+#include <vtkDoubleArray.h>
+#include <vtkImageData.h>
+#include <vtkTexture.h>
 
 // VTK includes: customization
 #include <vtkCutter.h>
@@ -113,8 +116,9 @@ public:
   // Helper functions
   bool IsVisible(vtkMRMLDisplayNode* displayNode);
   bool UseDisplayNode(vtkMRMLDisplayNode* displayNode);
-  bool UseDisplayableNode(vtkMRMLDisplayableNode* displayNode);
+  bool UseDisplayableNode(vtkMRMLDisplayableNode* displayableNode);
   void ClearDisplayableNodes();
+  void SetStippledLineStyle(vtkMRMLDisplayNode* displayNode, const Pipeline* pipeline);
 
   vtkInternal( vtkMRMLModelSliceDisplayableManager* external );
   ~vtkInternal();
@@ -483,7 +487,7 @@ void vtkMRMLModelSliceDisplayableManager::vtkInternal
     pipeline->TransformToSlice->SetMatrix(rasToSliceXY.GetPointer());
 
     // optimization for slice to slice intersections which are 1 quad polydatas
-    // no need for 50^3 default locator divisons
+    // no need for 50^3 default locator divisions
     if (pointSet->GetPoints() != NULL && pointSet->GetNumberOfPoints() <= 4)
       {
       vtkNew<vtkPointLocator> locator;
@@ -521,49 +525,55 @@ void vtkMRMLModelSliceDisplayableManager::vtkInternal
         mapper->SetScalarVisibility(false);
         }
       }
-    else if (modelDisplayNode->GetScalarVisibility())
+    else
       {
-      // Check if using point data or cell data
-      vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast(modelDisplayNode->GetDisplayableNode());
-      if (vtkMRMLModelDisplayableManager::IsCellScalarsActive(modelDisplayNode, modelNode))
+      // Apply line style
+      this->SetStippledLineStyle(displayNode, pipeline);
+
+      if (modelDisplayNode->GetScalarVisibility())
         {
-        mapper->SetScalarModeToUseCellData();
-        mapper->SetColorModeToDefault();
+        // Check if using point data or cell data
+        vtkMRMLModelNode* modelNode = vtkMRMLModelNode::SafeDownCast(modelDisplayNode->GetDisplayableNode());
+        if (vtkMRMLModelDisplayableManager::IsCellScalarsActive(modelDisplayNode, modelNode))
+          {
+          mapper->SetScalarModeToUseCellData();
+          mapper->SetColorModeToDefault();
+          }
+        else
+          {
+          mapper->SetScalarModeToUsePointData();
+          mapper->SetColorModeToMapScalars();
+        }
+
+        // The renderer uses the lookup table scalar range to
+        // render colors. By default, UseLookupTableScalarRange
+        // is set to false and SetScalarRange can be used on the
+        // mapper to map scalars into the lookup table. When set
+        // to true, SetScalarRange has no effect and it is necessary
+        // to force the scalarRange on the lookup table manually.
+        // Whichever way is used, the look up table range needs
+        // to be changed to render the correct scalar values, thus
+        // one lookup table can not be shared by multiple mappers
+        // if any of those mappers needs to map using its scalar
+        // values range. It is therefore necessary to make a copy
+        // of the colorNode vtkLookupTable in order not to impact
+        // that lookup table original range.
+        vtkLookupTable* dNodeLUT = modelDisplayNode->GetColorNode() ?
+                                   modelDisplayNode->GetColorNode()->GetLookupTable() : NULL;
+        vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::Take(
+          vtkMRMLModelDisplayableManager::CreateLookupTableCopy(dNodeLUT));
+        lut->SetAlpha(displayNode->GetSliceIntersectionOpacity());
+        mapper->SetLookupTable(lut.GetPointer());
+
+        // Set scalar range
+        mapper->SetScalarRange(modelDisplayNode->GetScalarRange());
+
+        mapper->SetScalarVisibility(true);
         }
       else
         {
-        mapper->SetScalarModeToUsePointData();
-        mapper->SetColorModeToMapScalars();
-      }
-
-      // The renderer uses the lookup table scalar range to
-      // render colors. By default, UseLookupTableScalarRange
-      // is set to false and SetScalarRange can be used on the
-      // mapper to map scalars into the lookup table. When set
-      // to true, SetScalarRange has no effect and it is necessary
-      // to force the scalarRange on the lookup table manually.
-      // Whichever way is used, the look up table range needs
-      // to be changed to render the correct scalar values, thus
-      // one lookup table can not be shared by multiple mappers
-      // if any of those mappers needs to map using its scalar
-      // values range. It is therefore necessary to make a copy
-      // of the colorNode vtkLookupTable in order not to impact
-      // that lookup table original range.
-      vtkLookupTable* dNodeLUT = modelDisplayNode->GetColorNode() ?
-                                 modelDisplayNode->GetColorNode()->GetLookupTable() : NULL;
-      vtkSmartPointer<vtkLookupTable> lut = vtkSmartPointer<vtkLookupTable>::Take(
-        vtkMRMLModelDisplayableManager::CreateLookupTableCopy(dNodeLUT));
-      lut->SetAlpha(displayNode->GetSliceIntersectionOpacity());
-      mapper->SetLookupTable(lut.GetPointer());
-
-      // Set scalar range
-      mapper->SetScalarRange(modelDisplayNode->GetScalarRange());
-
-      mapper->SetScalarVisibility(true);
-      }
-    else
-      {
-      mapper->SetScalarVisibility(false);
+        mapper->SetScalarVisibility(false);
+        }
       }
     }
 
@@ -672,6 +682,114 @@ bool vtkMRMLModelSliceDisplayableManager::vtkInternal
   show = show && ( cmpstr.compare(node->GetName()) );
 
   return show;
+}
+
+//---------------------------------------------------------------------------
+void vtkMRMLModelSliceDisplayableManager::vtkInternal
+::SetStippledLineStyle(vtkMRMLDisplayNode* displayNode, const Pipeline* pipeline)
+{
+  if (!pipeline)
+    {
+    vtkErrorWithObjectMacro(this->External, "vtkMRMLModelSliceDisplayableManager::"
+      "vtkInternal::SetStippledLineStyle failed: Pipeline is invalid");
+    return;
+    }
+
+  vtkMRMLModelDisplayNode* modelDisplayNode = vtkMRMLModelDisplayNode::SafeDownCast(displayNode);
+  if (!modelDisplayNode)
+    {
+    vtkErrorWithObjectMacro(this->External, "vtkMRMLModelSliceDisplayableManager::"
+      "vtkInternal::SetStippledLineStyle failed: vtkMRMLModelDisplayNode display node type is expected");
+    return;
+    }
+
+  // Translate line style to pattern
+  int lineStipplePattern = 0;
+  switch (modelDisplayNode->GetSliceIntersectionLineStyle())
+    {
+    case vtkMRMLModelDisplayNode::SliceIntersectionLineSolid:
+      // Default, no need for texture
+      return;
+    case vtkMRMLModelDisplayNode::SliceIntersectionLineDashed:
+      lineStipplePattern = 0xFF00;
+      break;
+    case vtkMRMLModelDisplayNode::SliceIntersectionLineDotted:
+      lineStipplePattern = 0xAAAA;
+      break;
+    default:
+      vtkErrorWithObjectMacro(this->External, "vtkMRMLModelSliceDisplayableManager::"
+        "vtkInternal::SetStippledLineStyle failed: Invalid line style");
+      return;
+    }
+
+  int lineStippleRepeat = 1;
+  vtkActor2D* actor = vtkActor2D::SafeDownCast(pipeline->Actor);
+
+  //
+  // From https://lorensen.github.io/VTKExamples/site/Cxx/Rendering/StippledLine/
+  //
+  vtkDoubleArray *tcoords = vtkDoubleArray::New();
+  vtkImageData *image = vtkImageData::New();
+  vtkTexture *texture = vtkTexture::New();
+
+  // Create texture
+  int dimension = 16 * lineStippleRepeat;
+
+  image->SetDimensions(dimension,1,1);
+  image->AllocateScalars(VTK_UNSIGNED_CHAR, 4);
+  image->SetExtent(0, dimension - 1, 0, 0, 0, 0);
+  unsigned char  *pixel;
+  pixel = static_cast<unsigned char *>(image->GetScalarPointer());
+  unsigned char on = 255;
+  unsigned char off = 0;
+  for (int i = 0; i < 16; ++i)
+  {
+    unsigned int mask = (1 << i);
+    unsigned int bit = (lineStipplePattern & mask) >> i;
+    unsigned char value = static_cast<unsigned char>(bit);
+    if (value == 0)
+    {
+      for (int j = 0; j < lineStippleRepeat; ++j)
+      {
+        *pixel       = on;
+        *(pixel + 1) = on;
+        *(pixel + 2 )= on;
+        *(pixel + 3) = off;
+        pixel += 4;
+      }
+    }
+    else
+    {
+      for (int j = 0; j < lineStippleRepeat; ++j)
+      {
+        *pixel       = on;
+        *(pixel + 1) = on;
+        *(pixel + 2 )= on;
+        *(pixel + 3) = on;
+        pixel += 4;
+      }
+    }
+  }
+  vtkPolyData* polyData = vtkPolyData::SafeDownCast(actor->GetMapper()->GetInput());
+
+  // Create texture coordinates
+  tcoords->SetNumberOfComponents(1);
+  tcoords->SetNumberOfTuples(polyData->GetNumberOfPoints());
+  for (int i = 0; i < polyData->GetNumberOfPoints(); ++i)
+  {
+    double value = static_cast<double>(i) * .5;
+    tcoords->SetTypedTuple(i, &value);
+  }
+
+  polyData->GetPointData()->SetTCoords(tcoords);
+  texture->SetInputData(image);
+  texture->InterpolateOff();
+  texture->RepeatOn();
+
+  actor->SetTexture(texture);
+  tcoords->Delete();
+  image->Delete();
+  texture->Delete();
 }
 
 //---------------------------------------------------------------------------

@@ -49,7 +49,6 @@ public:
   void RemoveDisplayableNode(vtkMRMLDisplayableNode* displayableNode);
 
 protected:
-
   vtkMRMLModelSliceDisplayableManager();
   virtual ~vtkMRMLModelSliceDisplayableManager();
 
@@ -69,14 +68,12 @@ protected:
   int AddingDisplayableNode;
 
 private:
-
   vtkMRMLModelSliceDisplayableManager(const vtkMRMLModelSliceDisplayableManager&);// Not implemented
   void operator=(const vtkMRMLModelSliceDisplayableManager&);                     // Not Implemented
 
   class vtkInternal;
   vtkInternal * Internal;
   friend class vtkInternal;
-
 };
 
 #endif

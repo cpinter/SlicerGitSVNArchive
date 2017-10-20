@@ -47,6 +47,14 @@ public:
     SliceDisplayMode_Last // placeholder after the last valid value, this must be the last in the list of modes
     };
 
+  enum SliceIntersectionLineStyleType
+    {
+    SliceIntersectionLineSolid,
+    SliceIntersectionLineDashed,
+    SliceIntersectionLineDotted,
+    SliceIntersectionLineStyle_Last // placeholder after the last valid value, this must be the last in the list of modes
+    };
+
   ///
   /// Read node attributes from XML file
   virtual void ReadXMLAttributes(const char** atts) VTK_OVERRIDE;
@@ -145,9 +153,20 @@ public:
   void SetSliceDisplayModeToProjection();
   void SetSliceDisplayModeToDistanceEncodedProjection();
 
+  /// Specifies line style of model slice intersection. Default is solid line.
+  vtkGetMacro(SliceIntersectionLineStyle, int);
+  vtkSetMacro(SliceIntersectionLineStyle, int);
+  void SetSliceIntersectionLineStyleToSolid();
+  void SetSliceIntersectionLineStyleToDashed();
+  void SetSliceIntersectionLineStyleToDotted();
+
   /// Convert between slice display mode ID and name
   static const char* GetSliceDisplayModeAsString(int id);
   static int GetSliceDisplayModeFromString(const char* name);
+
+  /// Convert between slice intersection line style ID and name
+  static const char* GetSliceIntersectionLineStyleAsString(int id);
+  static int GetSliceIntersectionLineStyleFromString(const char* name);
 
   /// Set and observe color node for distance encoded slice projection.
   /// Model that is projected to the slice will be colored based on the
@@ -205,7 +224,13 @@ protected:
   /// \sa ThresholdFilter
   bool ThresholdEnabled;
 
+  /// Specifies how to represent the 3D model in a 2D slice.
+  /// By default intersection is showed.
+  /// \sa SetAndObserveDistanceEncodedProjectionColorNodeID
   int SliceDisplayMode;
+
+  /// Specifies line style of model slice intersection. Default is solid line.
+  int SliceIntersectionLineStyle;
 };
 
 #endif
