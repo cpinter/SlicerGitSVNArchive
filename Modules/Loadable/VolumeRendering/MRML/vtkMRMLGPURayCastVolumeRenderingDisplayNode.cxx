@@ -35,7 +35,7 @@ vtkMRMLGPURayCastVolumeRenderingDisplayNode::vtkMRMLGPURayCastVolumeRenderingDis
 {
   this->RaycastTechnique = vtkMRMLGPURayCastVolumeRenderingDisplayNode::Composite;
   this->UseJittering = 0;
-  this->LockSampleDistanceToInputSpacing = 0;
+  this->LockSampleDistanceToInputSpacing = 1;
 }
 
 //----------------------------------------------------------------------------

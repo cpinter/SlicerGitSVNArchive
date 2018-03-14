@@ -118,7 +118,6 @@ void qSlicerVolumeRenderingPresetComboBoxPrivate::populatePresetsIcons()
     {
     vtkMRMLNode* presetNode = this->PresetComboBox->nodeFromIndex(i);
     QIcon presetIcon(QString(":/presets/") + presetNode->GetName());
-    //QIcon presetIcon(":/Icons/VisibleOff.png");
     if (!presetIcon.isNull())
       {
       qMRMLSceneModel* sceneModel = qobject_cast<qMRMLSceneModel*>(

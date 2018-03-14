@@ -68,7 +68,6 @@ public:
 
   virtual void setupUi(qSlicerVolumeRenderingModuleWidget*);
   vtkMRMLVolumeRenderingDisplayNode* createVolumeRenderingDisplayNode(vtkMRMLVolumeNode* volumeNode);
-  void populateRenderingTechniqueComboBox();
 
   vtkMRMLVolumeRenderingDisplayNode* DisplayNode;
   QMap<int, int>                     LastTechniques;
@@ -820,6 +819,9 @@ void qSlicerVolumeRenderingModuleWidget::onChartsExtentChanged()
   volumePropertyNode->DisableModifiedEventOn();
   volumePropertyNode->SetEffectiveRange(effectiveRange[0], effectiveRange[1]);
   volumePropertyNode->SetDisableModifiedEvent(wasDisabled);
+
+  // Update presets slider range
+  d->PresetComboBox->updatePresetSliderRange();
 }
 
 //-----------------------------------------------------------

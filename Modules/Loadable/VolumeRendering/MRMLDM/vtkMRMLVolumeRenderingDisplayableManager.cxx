@@ -419,15 +419,24 @@ void vtkMRMLVolumeRenderingDisplayableManager
   this->UpdateMapper(mapper, vspNode);
   const bool maximumQuality = vspNode->GetPerformanceControl() ==
     vtkMRMLVolumeRenderingDisplayNode::MaximumQuality;
-  const bool lockSampleDistance = vspNode->GetLockSampleDistanceToInputSpacing() == 1;
-  // AutoAdjustSampleDistances disables LockSampleDistanceToInputSpacing, so if
-  // LockSampleDistanceToInputSpacing is on then disable AutoAdjustSampleDistances
-  mapper->SetAutoAdjustSampleDistances(maximumQuality || lockSampleDistance ? 0 : 1);
-  mapper->SetLockSampleDistanceToInputSpacing(lockSampleDistance);
+  if (maximumQuality)
+    {
+    mapper->SetAutoAdjustSampleDistances(0);
+    mapper->SetLockSampleDistanceToInputSpacing(0);
+    mapper->SetUseJittering(0);
+    }
+  else
+    {
+    const bool lockSampleDistance = (bool)vspNode->GetLockSampleDistanceToInputSpacing();
+    // AutoAdjustSampleDistances disables LockSampleDistanceToInputSpacing, so if
+    // LockSampleDistanceToInputSpacing is on then disable AutoAdjustSampleDistances
+    mapper->SetAutoAdjustSampleDistances(maximumQuality || lockSampleDistance ? 0 : 1);
+    mapper->SetLockSampleDistanceToInputSpacing(lockSampleDistance);
+    mapper->SetUseJittering(vspNode->GetUseJittering());
+    }
   mapper->SetSampleDistance(this->GetSampleDistance(vspNode));
-  mapper->SetImageSampleDistance(maximumQuality ? 1. : 1.);
+  mapper->SetImageSampleDistance(1.0);
   mapper->SetMaxMemoryInBytes(this->GetMaxMemoryInBytes(mapper, vspNode));
-  mapper->SetUseJittering(vspNode->GetUseJittering());
 
   switch(vspNode->GetRaycastTechnique())
     {
