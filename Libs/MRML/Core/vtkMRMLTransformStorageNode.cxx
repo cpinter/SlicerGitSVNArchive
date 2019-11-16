@@ -25,6 +25,7 @@ Version:   $Revision: 1.2 $
 #include <vtkObjectFactory.h>
 #include <vtkSmartPointer.h>
 #include <vtkStringArray.h>
+#include <vtkTransform.h>
 #include <vtkVersion.h>
 #include "vtksys/SystemTools.hxx"
 
@@ -479,6 +480,13 @@ int vtkMRMLTransformStorageNode::WriteToTransformFile(vtkMRMLNode *refNode)
 
   // Get VTK transform from the transform node
   vtkAbstractTransform* transformVtk = transformNode->GetTransformFromParent();
+  vtkTransform* identityTransform = nullptr;
+  if (transformVtk==nullptr)
+    {
+    identityTransform = vtkTransform::New();
+    identityTransform->Identity();
+    transformVtk = identityTransform;
+    }
   if (transformVtk==nullptr)
     {
     vtkErrorMacro("WriteTransform failed: cannot get VTK transform");
@@ -523,6 +531,12 @@ int vtkMRMLTransformStorageNode::WriteToTransformFile(vtkMRMLNode *refNode)
     vtkErrorMacro("Unknown exception caught while writing transform file: "
                   << fullName.c_str());
     return 0;
+    }
+
+  if (identityTransform)
+    {
+    identityTransform->Delete();
+    identityTransform = nullptr;
     }
 
   return 1;
